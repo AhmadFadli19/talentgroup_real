@@ -1,0 +1,77 @@
+.ws-why {
+  background: linear-gradient(90deg, #0b0144, #3533cd);
+  margin-top: 80px;
+}
+
+
+.ws-why-skilvul {
+  max-width: 1200px;
+  margin: 60px auto;
+  padding: 0 20px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.ws-heading-title {
+  text-align: center;
+  font-size: 32px;
+  color: #ff900d;
+  position: relative;
+  margin-bottom: 40px;
+}
+
+.ws-heading-title::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 5px;
+  background-color: #d72638;
+  border-radius: 3px;
+}
+
+.ws-card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.ws-card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  gap: 15px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s;
+}
+
+.ws-card:hover {
+  transform: translateY(-5px);
+}
+
+.ws-card img {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.ws-card h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  color: #1e3a8a;
+}
+
+.ws-card p {
+  font-size: 14px;
+  color: #444444;
+  line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ws-card-container {
+    grid-template-columns: 1fr;
+  }
+}
