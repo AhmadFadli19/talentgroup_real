@@ -3,219 +3,353 @@
 @section('title', 'User Results - ' . $user->name)
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="mb-8">
-        <div class="flex items-center mb-4">
-            <a href="{{ route('admin.courses.results', $course) }}" class="text-blue-600 hover:text-blue-800 mr-4">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                </svg>
-            </a>
-            <h1 class="text-3xl font-bold text-gray-800">User Results</h1>
+
+<style>
+/* ================= PIXEL USER RESULT ================= */
+.pixel-user-result {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* HEADER */
+.pixel-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 22px;
+}
+
+.pixel-back-btn {
+    border: 3px solid var(--border);
+    background: var(--bg);
+    padding: 6px 8px;
+    box-shadow: 3px 3px 0 var(--shadow);
+}
+
+.pixel-back-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.pixel-header h1 {
+    font-size: 16px;
+    color: var(--accent);
+}
+
+.pixel-header p {
+    font-size: 9px;
+    color: var(--muted);
+}
+
+/* STATS */
+.pixel-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+    gap: 14px;
+    margin-bottom: 24px;
+}
+
+.pixel-stat {
+    background: var(--card);
+    border: 3px solid var(--border);
+    box-shadow: 4px 4px 0 var(--shadow);
+    padding: 14px;
+}
+
+.pixel-stat h3 {
+    font-size: 9px;
+    color: var(--muted);
+}
+
+.pixel-stat-value {
+    font-size: 16px;
+    margin-top: 6px;
+}
+
+/* GRID */
+.pixel-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(260px,1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+/* CARD */
+.pixel-card {
+    background: var(--card);
+    border: 3px solid var(--border);
+    box-shadow: 4px 4px 0 var(--shadow);
+    padding: 16px;
+}
+
+.pixel-card h3 {
+    font-size: 11px;
+    color: var(--accent);
+    margin-bottom: 10px;
+}
+
+.pixel-row {
+    font-size: 9px;
+    color: var(--muted);
+    margin-bottom: 8px;
+}
+
+/* PROGRESS */
+.pixel-progress {
+    background: var(--bg);
+    border: 2px solid var(--border);
+    height: 16px;
+    margin-top: 6px;
+}
+
+.pixel-progress-fill {
+    background: var(--accent);
+    height: 100%;
+}
+
+/* GRADE */
+.pixel-grade {
+    font-size: 22px;
+    margin-top: 10px;
+}
+
+/* ANSWERS */
+.pixel-answer {
+    background: var(--bg);
+    border: 2px solid var(--border);
+    padding: 14px;
+    margin-bottom: 14px;
+}
+
+.pixel-answer h4 {
+    font-size: 10px;
+    margin-bottom: 6px;
+}
+
+.pixel-option {
+    font-size: 9px;
+    padding: 6px;
+    border: 2px solid var(--border);
+    margin-bottom: 4px;
+}
+
+.pixel-correct {
+    border-color: #22c55e;
+    color: #22c55e;
+}
+
+.pixel-wrong {
+    border-color: #ff5555;
+    color: #ff5555;
+}
+
+/* BADGE */
+.pixel-badge {
+    border: 2px solid;
+    padding: 2px 6px;
+    font-size: 8px;
+}
+
+.pixel-good { border-color:#22c55e;color:#22c55e; }
+.pixel-mid { border-color:#facc15;color:#facc15; }
+.pixel-bad { border-color:#ff5555;color:#ff5555; }
+
+/* RESPONSIVE */
+@media(max-width:640px){
+    .pixel-header h1 { font-size:14px; }
+}
+</style>
+
+<div class="pixel-user-result">
+
+    <!-- HEADER -->
+    <div class="pixel-header">
+        <a href="{{ route('admin.courses.results', $course) }}" class="pixel-back-btn">◀</a>
+        <div>
+            <h1>USER RESULT</h1>
+            <p>{{ $user->name }} • {{ $course->title }}</p>
         </div>
-        <p class="text-gray-600">{{ $user->name }} - {{ $course->title }}</p>
     </div>
 
-    <!-- User Summary -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Student</h3>
-                    <p class="text-sm font-medium text-blue-600">{{ $user->name }}</p>
-                </div>
-            </div>
+    @if(session('success'))
+        <div style="margin-bottom: 20px; padding: 12px; border: 2px solid #22c55e; color: #22c55e; background: rgba(34, 197, 94, 0.05); font-size: 10px; font-weight: bold; font-family: 'Fira Code', monospace;">
+            ✓ {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div style="margin-bottom: 20px; padding: 12px; border: 2px solid #ef4444; color: #ef4444; background: rgba(239, 68, 68, 0.05); font-size: 10px; font-weight: bold; font-family: 'Fira Code', monospace;">
+            ✗ {{ session('error') }}
+        </div>
+    @endif
+
+    <!-- STATS -->
+    <div class="pixel-stats">
+        <div class="pixel-stat">
+            <h3>STUDENT</h3>
+            <div class="pixel-stat-value">{{ $user->name }}</div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-green-100 text-green-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Score</h3>
-                    <p class="text-2xl font-bold text-green-600">{{ $score }}%</p>
-                </div>
-            </div>
+        <div class="pixel-stat">
+            <h3>SCORE</h3>
+            <div class="pixel-stat-value">{{ $score }}%</div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Correct</h3>
-                    <p class="text-2xl font-bold text-yellow-600">{{ $correctAnswers }}/{{ $totalQuestions }}</p>
-                </div>
-            </div>
+        <div class="pixel-stat">
+            <h3>CORRECT</h3>
+            <div class="pixel-stat-value">{{ $correctAnswers }}/{{ $totalQuestions }}</div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                </div>
-                <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Status</h3>
-                    <p class="text-sm font-bold {{ $userCourse->is_completed ? 'text-green-600' : 'text-yellow-600' }}">
-                        {{ $userCourse->is_completed ? 'Completed' : 'In Progress' }}
-                    </p>
-                </div>
+        <div class="pixel-stat">
+            <h3>STATUS</h3>
+            <div class="pixel-stat-value">
+                {{ $userCourse->is_completed ? 'COMPLETED' : 'IN PROGRESS' }}
             </div>
         </div>
     </div>
 
-    <!-- User Information -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">User Information</h3>
-            <div class="space-y-3">
-                <div>
-                    <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider">Name</h4>
-                    <p class="text-gray-800">{{ $user->name }}</p>
-                </div>
-                <div>
-                    <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider">Email</h4>
-                    <p class="text-gray-800">{{ $user->email }}</p>
-                </div>
-                <div>
-                    <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider">Enrolled Date</h4>
-                    <p class="text-gray-800">{{ $userCourse->created_at->format('M d, Y H:i') }}</p>
-                </div>
-                @if($userCourse->is_completed)
-                <div>
-                    <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider">Completed Date</h4>
-                    <p class="text-gray-800">{{ $userCourse->updated_at->format('M d, Y H:i') }}</p>
-                </div>
+    <!-- INFO -->
+    <div class="pixel-info-grid">
+
+        <!-- USER -->
+        <div class="pixel-card">
+            <h3>USER INFO</h3>
+            <div class="pixel-row">Name: {{ $user->name }}</div>
+            <div class="pixel-row">Email: {{ $user->email }}</div>
+            <div class="pixel-row">Enrolled: {{ $userCourse->created_at->format('M d, Y H:i') }}</div>
+            @if($userCourse->is_completed)
+                <div class="pixel-row">Completed: {{ $userCourse->updated_at->format('M d, Y H:i') }}</div>
+            @endif
+        </div>
+
+        <!-- COURSE -->
+        <div class="pixel-card">
+            <h3>COURSE INFO</h3>
+            <div class="pixel-row">Title: {{ $course->title }}</div>
+            <div class="pixel-row">Total Questions: {{ $totalQuestions }}</div>
+            <div class="pixel-row">Price: Rp {{ number_format($course->price) }}</div>
+        </div>
+
+        <!-- PERFORMANCE -->
+        <div class="pixel-card">
+            <h3>PERFORMANCE</h3>
+            <div class="pixel-progress">
+                <div class="pixel-progress-fill" style="width: {{ $score }}%"></div>
+            </div>
+
+            <div class="pixel-grade
+                {{ $score >= 80 ? 'pixel-good' : ($score >= 60 ? 'pixel-mid' : 'pixel-bad') }}">
+                @if($score >= 80) A
+                @elseif($score >= 70) B
+                @elseif($score >= 60) C
+                @elseif($score >= 50) D
+                @else F
                 @endif
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Course Information</h3>
-            <div class="space-y-3">
-                <div>
-                    <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider">Course Title</h4>
-                    <p class="text-gray-800">{{ $course->title }}</p>
-                </div>
-                <div>
-                    <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Questions</h4>
-                    <p class="text-gray-800">{{ $totalQuestions }}</p>
-                </div>
-                <div>
-                    <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider">Course Price</h4>
-                    <p class="text-gray-800">Rp {{ number_format($course->price) }}</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Performance Summary</h3>
-            <div class="space-y-3">
-                <div>
-                    <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider">Overall Score</h4>
-                    <div class="flex items-center">
-                        <div class="w-full bg-gray-200 rounded-full h-3 mr-3">
-                            <div class="bg-gradient-to-r from-red-500 via-yellow-500 to-green-500 h-3 rounded-full" style="width: {{ $score }}%"></div>
-                        </div>
-                        <span class="text-lg font-bold {{ $score >= 70 ? 'text-green-600' : ($score >= 50 ? 'text-yellow-600' : 'text-red-600') }}">{{ $score }}%</span>
+        <!-- CERTIFICATE MANAGEMENT -->
+        @if($userCourse->is_completed)
+            @php
+                $certificate = \App\Models\Certificate::where('user_id', $user->id)
+                    ->where('course_id', $course->id)
+                    ->first();
+            @endphp
+            <div class="pixel-card" style="grid-column: 1 / -1;">
+                <h3>CERTIFICATE MANAGEMENT</h3>
+                
+                @if($certificate)
+                    <div class="pixel-row">Status: 
+                        <span class="pixel-badge {{ $certificate->isManual() ? 'pixel-progress' : 'pixel-good' }}" style="font-weight: bold; border-width: 1px;">
+                            {{ strtoupper($certificate->type) }}
+                        </span>
                     </div>
-                </div>
-                <div>
-                    <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider">Grade</h4>
-                    <p class="text-2xl font-bold {{ $score >= 80 ? 'text-green-600' : ($score >= 70 ? 'text-blue-600' : ($score >= 60 ? 'text-yellow-600' : 'text-red-600')) }}">
-                        @if($score >= 80) A
-                        @elseif($score >= 70) B
-                        @elseif($score >= 60) C
-                        @elseif($score >= 50) D
-                        @else F
-                        @endif
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Detailed Answers -->
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
-    <div class="px-6 py-4 border-b border-gray-200">
-        <h2 class="text-xl font-semibold text-gray-800">Detailed Answers</h2>
-    </div>
-    
-    @if($answers->count() > 0)
-    <div class="divide-y divide-gray-200">
-        @foreach($answers as $answer)
-        <div class="p-6">
-            <div class="flex items-start justify-between mb-4">
-                <div class="flex-1">
-                    <!-- Fix: Use courseQuestion instead of courseContent -->
-                    <h3 class="text-lg font-medium text-gray-800 mb-2">{{ $answer->courseQuestion->title }}</h3>
-                    <div class="text-gray-600 mb-4">{{ $answer->courseQuestion->content }}</div>
+                    <div class="pixel-row">Code: <span style="font-family: 'Fira Code', monospace; color: var(--accent); font-weight: bold;">{{ $certificate->certificate_code }}</span></div>
+                    <div class="pixel-row">Issued At: {{ $certificate->issued_at->format('M d, Y H:i') }}</div>
                     
-                    @if($answer->courseQuestion->options)
-                    <div class="mb-4">
-                        <h4 class="text-sm font-medium text-gray-700 mb-2">Available Options:</h4>
-                        <div class="space-y-2">
-                            @foreach($answer->courseQuestion->options as $index => $option)
-                            <div class="flex items-center p-2 rounded {{ $option === $answer->courseQuestion->correct_answer ? 'bg-green-50' : 'bg-gray-50' }}">
-                                <span class="w-6 h-6 rounded-full {{ $option === $answer->courseQuestion->correct_answer ? 'bg-green-100 text-green-600' : 'bg-gray-200 text-gray-600' }} flex items-center justify-center text-sm font-medium mr-3">
-                                    {{ chr(65 + $index) }}
-                                </span>
-                                <span class="text-gray-800">{{ $option }}</span>
-                                @if($option === $answer->courseQuestion->correct_answer)
-                                <span class="ml-auto text-green-600 text-sm font-medium">Correct</span>
-                                @endif
-                            </div>
-                            @endforeach
+                    @if($certificate->isManual() && $certificate->file_path)
+                        <div class="pixel-row" style="margin-top: 8px;">
+                            <a href="{{ Storage::url($certificate->file_path) }}" target="_blank" style="color: var(--accent); text-decoration: underline; font-weight: bold;">
+                                🔗 View Uploaded Certificate File
+                            </a>
                         </div>
-                    </div>
                     @endif
-                </div>
-                <div class="ml-6 text-right">
-                    <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full {{ $answer->is_correct ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                        {{ $answer->is_correct ? 'Correct' : 'Incorrect' }}
-                    </span>
+                    
+                    @if($certificate->isManual())
+                        <form action="{{ route('admin.courses.certificate.reset', $course->id) }}" method="POST" style="margin-top: 14px;">
+                            @csrf
+                            <input type="hidden" name="user_id" value="{{ $user->id }}">
+                            <button type="submit" class="pixel-badge pixel-bad font-bold" style="background: transparent; cursor: pointer; padding: 4px 10px;">
+                                🔄 Reset to Automatic Certificate
+                            </button>
+                        </form>
+                    @endif
+                @else
+                    <div class="pixel-row" style="color: #ff5555; font-weight: bold;">⚠️ Certificate is not yet active. (It will be generated automatically when the user requests it).</div>
+                @endif
+                
+                <!-- Upload Override Form -->
+                <div style="margin-top: 20px; padding-top: 16px; border-top: 2px solid var(--border);">
+                    <h4 style="font-size: 10px; color: var(--accent); margin-bottom: 10px;" class="font-bold">UPLOAD MANUAL CERTIFICATE OVERRIDE</h4>
+                    <form action="{{ route('admin.courses.certificate.upload', $course->id) }}" method="POST" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 12px;">
+                        @csrf
+                        <input type="hidden" name="user_id" value="{{ $user->id }}">
+                        
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <span style="font-size: 8px; color: var(--muted); font-weight: bold;">SELECT CERTIFICATE FILE (PDF, JPG, PNG):</span>
+                            <input type="file" name="certificate_file" required style="font-size: 9px; padding: 6px; border: 2px solid var(--border); background: var(--bg); color: var(--text); width: 100%; max-width: 400px;">
+                        </div>
+                        
+                        <div>
+                            <button type="submit" class="pixel-badge pixel-good font-bold" style="background: transparent; cursor: pointer; padding: 6px 14px; border-width: 2px; font-size: 9px;">
+                                📤 Upload & Set Manual Override
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                    <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">User's Answer</h4>
-                    <p class="text-gray-800 font-medium">{{ $answer->answer }}</p>
-                </div>
-                <div>
-                    <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-1">Correct Answer</h4>
-                    <p class="text-green-600 font-medium">{{ $answer->courseQuestion->correct_answer }}</p>
-                </div>
-            </div>
-            
-            <div class="mt-4 text-sm text-gray-500">
-                Answered on {{ $answer->created_at->format('M d, Y H:i') }}
-            </div>
-        </div>
-        @endforeach
+        @endif
+
     </div>
-    @else
-    <div class="px-6 py-8 text-center">
-        <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-        </svg>
-        <h3 class="text-lg font-medium text-gray-900 mb-2">No answers submitted</h3>
-        <p class="text-gray-500">This user hasn't answered any questions yet.</p>
+
+    <!-- ANSWERS -->
+    <div class="pixel-card">
+        <h3>DETAILED ANSWERS</h3>
+
+        @forelse($answers as $answer)
+
+            <div class="pixel-answer">
+                <h4>{{ $answer->courseQuestion->title }}</h4>
+                <div class="pixel-row">{{ $answer->courseQuestion->content }}</div>
+
+                @if($answer->courseQuestion->options)
+                    @foreach($answer->courseQuestion->options as $option)
+                        <div class="pixel-option
+                            {{ $option === $answer->courseQuestion->correct_answer ? 'pixel-correct' : '' }}">
+                            {{ $option }}
+                        </div>
+                    @endforeach
+                @endif
+
+                <div class="pixel-row {{ $answer->is_correct ? 'pixel-good' : 'pixel-bad' }}">
+                    Your Answer: {{ $answer->answer }}
+                </div>
+
+                <div class="pixel-row pixel-good">
+                    Correct Answer: {{ $answer->courseQuestion->correct_answer }}
+                </div>
+
+                <div class="pixel-row">
+                    {{ $answer->is_correct ? '✔ CORRECT' : '✖ WRONG' }}
+                    • {{ $answer->created_at->format('M d, Y H:i') }}
+                </div>
+            </div>
+
+        @empty
+            <p class="pixel-row">No answers submitted</p>
+        @endforelse
     </div>
-    @endif
+
 </div>
-</div>
+
 @endsection

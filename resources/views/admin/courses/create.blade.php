@@ -3,85 +3,218 @@
 @section('title', 'Create Course')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="mb-8">
-        <div class="flex items-center mb-4">
-            <a href="{{ route('admin.courses.index') }}" class="text-blue-600 hover:text-blue-800 mr-4">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                </svg>
-            </a>
-            <h1 class="text-3xl font-bold text-gray-800">Create New Course</h1>
+
+<style>
+/* ================= PIXEL CREATE COURSE ================= */
+.pixel-create {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* HEADER */
+.pixel-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.pixel-back {
+    border: 3px solid var(--border);
+    background: var(--bg);
+    padding: 6px 8px;
+    box-shadow: 3px 3px 0 var(--shadow);
+}
+
+.pixel-back:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.pixel-header h1 {
+    font-size: 16px;
+    color: var(--accent);
+}
+
+.pixel-header p {
+    font-size: 9px;
+    color: var(--muted);
+}
+
+/* CARD */
+.pixel-card {
+    background: var(--card);
+    border: 3px solid var(--border);
+    box-shadow: 4px 4px 0 var(--shadow);
+    padding: 20px;
+}
+
+/* FORM */
+.pixel-group {
+    margin-bottom: 16px;
+}
+
+.pixel-label {
+    font-size: 9px;
+    color: var(--muted);
+    display: block;
+    margin-bottom: 6px;
+}
+
+.pixel-input,
+.pixel-textarea,
+.pixel-file {
+    width: 100%;
+    background: var(--bg);
+    border: 3px solid var(--border);
+    padding: 10px;
+    font-size: 10px;
+}
+
+.pixel-input:focus,
+.pixel-textarea:focus,
+.pixel-file:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.pixel-textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+.pixel-hint {
+    font-size: 8px;
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+.pixel-error {
+    font-size: 8px;
+    color: #ff5555;
+    margin-top: 4px;
+}
+
+/* CHECKBOX */
+.pixel-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 9px;
+}
+
+/* ACTIONS */
+.pixel-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.pixel-btn {
+    border: 3px solid var(--border);
+    background: var(--bg);
+    padding: 8px 14px;
+    font-size: 9px;
+}
+
+.pixel-btn.primary {
+    background: var(--accent);
+    color: #fff;
+}
+
+.pixel-btn:hover {
+    border-color: var(--accent);
+}
+
+/* RESPONSIVE */
+@media(max-width:640px){
+    .pixel-actions {
+        flex-direction: column;
+    }
+}
+</style>
+
+<div class="pixel-create">
+
+    <!-- HEADER -->
+    <div class="pixel-header">
+        <a href="{{ route('admin.courses.index') }}" class="pixel-back">◀</a>
+        <div>
+            <h1>CREATE NEW COURSE</h1>
+            <p>Build a new English Brain course</p>
         </div>
-        <p class="text-gray-600">Fill in the details to create a new course</p>
     </div>
 
-    <div class="max-w-2xl">
-        <form action="{{ route('admin.courses.store') }}" method="POST" enctype="multipart/form-data" class="bg-white rounded-lg shadow-md p-6">
+    <!-- FORM -->
+    <div class="pixel-card">
+        <form action="{{ route('admin.courses.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
-            <div class="mb-6">
-                <label for="title" class="block text-sm font-medium text-gray-700 mb-2">Course Title</label>
-                <input type="text" id="title" name="title" value="{{ old('title') }}" 
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('title') border-red-500 @enderror"
-                       placeholder="Enter course title" required>
+            <!-- TITLE -->
+            <div class="pixel-group">
+                <label class="pixel-label">COURSE TITLE</label>
+                <input type="text" name="title" value="{{ old('title') }}" required
+                       class="pixel-input @error('title') border-red-500 @enderror"
+                       placeholder="e.g. Basic English Vocabulary">
                 @error('title')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    <div class="pixel-error">{{ $message }}</div>
                 @enderror
             </div>
 
-            <div class="mb-6">
-                <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-                <textarea id="description" name="description" rows="4" 
-                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('description') border-red-500 @enderror"
-                          placeholder="Enter course description" required>{{ old('description') }}</textarea>
+            <!-- DESCRIPTION -->
+            <div class="pixel-group">
+                <label class="pixel-label">DESCRIPTION</label>
+                <textarea name="description" required
+                          class="pixel-textarea @error('description') border-red-500 @enderror"
+                          placeholder="Describe what users will learn">{{ old('description') }}</textarea>
                 @error('description')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    <div class="pixel-error">{{ $message }}</div>
                 @enderror
             </div>
 
-            <div class="mb-6">
-                <label for="price" class="block text-sm font-medium text-gray-700 mb-2">Price (Rp)</label>
-                <input type="number" id="price" name="price" value="{{ old('price') }}" min="0" step="1000"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('price') border-red-500 @enderror"
-                       placeholder="0" required>
+            <!-- PRICE -->
+            <div class="pixel-group">
+                <label class="pixel-label">PRICE (Rp)</label>
+                <input type="number" name="price" min="0" step="1000"
+                       value="{{ old('price', 0) }}" required
+                       class="pixel-input @error('price') border-red-500 @enderror">
                 @error('price')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    <div class="pixel-error">{{ $message }}</div>
                 @enderror
             </div>
 
-            <div class="mb-6">
-                <label for="image" class="block text-sm font-medium text-gray-700 mb-2">Course Image</label>
-                <input type="file" id="image" name="image" accept="image/*"
-                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('image') border-red-500 @enderror">
-                <p class="text-sm text-gray-500 mt-1">Accepted formats: JPEG, PNG, JPG, GIF (max 2MB)</p>
+            <!-- IMAGE -->
+            <div class="pixel-group">
+                <label class="pixel-label">COURSE IMAGE</label>
+                <input type="file" name="image" accept="image/*"
+                       class="pixel-file @error('image') border-red-500 @enderror">
+                <div class="pixel-hint">PNG, JPG, JPEG, GIF • Max 2MB</div>
                 @error('image')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    <div class="pixel-error">{{ $message }}</div>
                 @enderror
             </div>
 
-            <div class="mb-6">
-                <div class="flex items-center">
-                    <input type="checkbox" id="is_active" name="is_active" value="1" 
-                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded" {{ old('is_active') ? 'checked' : '' }}>
-                    <label for="is_active" class="ml-2 block text-sm text-gray-900">
-                        Make course active (visible to users)
-                    </label>
-                </div>
-                @error('is_active')
-                <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                @enderror
+            <!-- ACTIVE -->
+            <div class="pixel-group pixel-check">
+                <input type="checkbox" name="is_active" value="1"
+                       {{ old('is_active') ? 'checked' : '' }}>
+                <span>Make course active (visible to users)</span>
             </div>
 
-            <div class="flex justify-end space-x-4">
-                <a href="{{ route('admin.courses.index') }}" class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors">
-                    Cancel
+            <!-- ACTIONS -->
+            <div class="pixel-actions">
+                <a href="{{ route('admin.courses.index') }}" class="pixel-btn">
+                    CANCEL
                 </a>
-                <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-                    Create Course
+                <button type="submit" class="pixel-btn primary">
+                    CREATE COURSE
                 </button>
             </div>
+
         </form>
     </div>
+
 </div>
+
 @endsection

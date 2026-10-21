@@ -154,16 +154,87 @@ class CourseController extends Controller
             ->get();
 
         foreach ($enrolledUsers as $enrolledUser) {
-            $totalQuestions = $course->questions()->count();
-            $answeredQuestions = UserAnswer::where('user_id', $enrolledUser->user_id)
-                ->where('content_type', 'question')
-                ->whereIn('content_id', $course->questions()->pluck('id'))
-                ->distinct()
-                ->count('content_id');
+            $totalNodes = $course->stories()->count() + $course->questions()->count();
+            
+            $storyRefs = $course->stories()->pluck('id')->map(fn($id) => "story:{$id}")->toArray();
+            $questionRefs = $course->questions()->pluck('id')->map(fn($id) => "question:{$id}")->toArray();
+            $allRefs = array_merge($storyRefs, $questionRefs);
 
-            $enrolledUser->progress = $totalQuestions > 0 ? round(($answeredQuestions / $totalQuestions) * 100) : 0;
+            $syncedNodes = UserAnswer::where('user_id', $enrolledUser->user_id)
+                ->whereIn('content_reference', $allRefs)
+                ->distinct('content_reference')
+                ->count();
+
+            $enrolledUser->progress = $totalNodes > 0 ? round(($syncedNodes / $totalNodes) * 100) : 0;
         }
 
         return view('admin.courses.results', compact('course', 'enrolledUsers'));
+    }
+
+    /**
+     * Upload a manual certificate for a student
+     */
+    public function uploadCertificate(Request $request, Course $course)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'certificate_file' => 'required|file|mimes:pdf,jpeg,png,jpg|max:5120',
+        ]);
+
+        $userId = $request->input('user_id');
+
+        if ($request->hasFile('certificate_file')) {
+            $file = $request->file('certificate_file');
+            $path = $file->store('certificates', 'public');
+
+            \App\Models\Certificate::updateOrCreate(
+                [
+                    'user_id' => $userId,
+                    'course_id' => $course->id,
+                ],
+                [
+                    'certificate_code' => 'TG-MAN-' . strtoupper(uniqid()),
+                    'type' => 'manual',
+                    'file_path' => $path,
+                    'issued_at' => now(),
+                ]
+            );
+
+            return redirect()->back()->with('success', 'Sertifikat manual berhasil diunggah!');
+        }
+
+        return redirect()->back()->with('error', 'Gagal mengunggah file sertifikat.');
+    }
+
+    /**
+     * Reset manual certificate back to automatic
+     */
+    public function resetCertificate(Request $request, Course $course)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+        ]);
+
+        $userId = $request->input('user_id');
+
+        $certificate = \App\Models\Certificate::where('user_id', $userId)
+            ->where('course_id', $course->id)
+            ->first();
+
+        if ($certificate) {
+            if ($certificate->file_path) {
+                Storage::disk('public')->delete($certificate->file_path);
+            }
+
+            $certificate->update([
+                'type' => 'automatic',
+                'file_path' => null,
+                'certificate_code' => 'TG-' . strtoupper(uniqid()),
+            ]);
+
+            return redirect()->back()->with('success', 'Sertifikat berhasil di-reset kembali ke otomatis!');
+        }
+
+        return redirect()->back()->with('error', 'Sertifikat tidak ditemukan.');
     }
 }

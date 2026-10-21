@@ -1,176 +1,326 @@
 @extends('layouts.app')
 
-@section('title', 'Admin Dashboard')
+@section('title', 'Admin Command Center')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-    <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-        <p class="text-gray-600 mt-2">Welcome back! Here's an overview of your platform.</p>
+
+<style>
+/* ================= CYBER ADMIN OVERRIDES ================= */
+/* Use theme accent variables dynamically */
+:root {
+    --admin-accent: var(--accent);
+    --admin-accent2: var(--accent2);
+}
+
+.admin-dashboard {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.admin-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    position: relative;
+    transition: all 0.3s;
+    overflow: hidden;
+}
+
+body.light .admin-card {
+    background: #ffffff;
+    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
+}
+
+.admin-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 2px;
+    background: linear-gradient(90deg, var(--php), var(--cyan));
+}
+
+.admin-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    background: rgba(124, 92, 191, 0.1);
+    border: 1px solid rgba(124, 92, 191, 0.2);
+    color: var(--accent);
+}
+
+body.light .admin-stat-icon {
+    background: rgba(0, 86, 210, 0.05) !important;
+    border-color: rgba(0, 86, 210, 0.1) !important;
+    color: #0056d2 !important;
+}
+
+.admin-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(124, 92, 191, 0.05);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 10px 16px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+body.light .admin-btn {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    color: #4a5b78;
+}
+
+.admin-btn:hover {
+    border-color: var(--accent);
+    background: rgba(124, 92, 191, 0.1);
+    color: var(--accent);
+}
+
+body.light .admin-btn:hover {
+    border-color: var(--php);
+    color: var(--php);
+    background: rgba(0, 86, 210, 0.04);
+}
+
+.admin-btn.primary {
+    background: rgba(124, 92, 191, 0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+body.light .admin-btn.primary {
+    background: rgba(0, 86, 210, 0.05);
+    border-color: var(--php);
+    color: var(--php);
+}
+
+.admin-btn.primary:hover {
+    background: rgba(124, 92, 191, 0.2);
+    box-shadow: 0 0 20px rgba(124, 92, 191, 0.2);
+}
+
+body.light .admin-btn.primary:hover {
+    background: rgba(0, 86, 210, 0.1);
+    box-shadow: 0 0 20px rgba(0, 86, 210, 0.15);
+}
+</style>
+
+<div class="admin-dashboard px-4 py-8">
+
+    <!-- HEADER -->
+    <div class="cyber-card p-6 md:p-8 mb-8 overflow-hidden relative" style="border-left-width: 4px; border-left-color: var(--accent);">
+        <div class="absolute inset-0 opacity-5" style="background: linear-gradient(135deg, var(--php), var(--cyan));"></div>
+        
+        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div class="flex items-center gap-6">
+                <div class="text-5xl" style="color: var(--accent);">👁️‍🗨️</div>
+                <div>
+                    <h1 class="text-3xl font-bold mb-2 uppercase tracking-wider" style="color: var(--text); font-family: 'Outfit', sans-serif;">Command Center</h1>
+                    <p class="text-xs font-mono uppercase tracking-widest" style="color: var(--accent2);">Root Access Established // System Overview</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <div class="text-[10px] font-mono uppercase tracking-widest" style="color: var(--text3);">System Status</div>
+                <div class="text-sm font-bold mt-1 flex items-center justify-end gap-2" style="color: var(--green);">
+                    <div class="w-2 h-2 rounded-full bg-[var(--green)] animate-pulse"></div>
+                    Online & Secure
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-                    </svg>
+    <!-- STATS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="admin-card p-6 rounded-lg">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 class="text-[10px] font-mono uppercase tracking-widest mb-1" style="color: var(--text3);">Total Subjects</h3>
+                    <div class="text-3xl font-bold font-mono" style="color: var(--text);">{{ number_format($stats['total_users']) }}</div>
                 </div>
-                <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Total Users</h3>
-                    <p class="text-2xl font-bold text-blue-600">{{ number_format($stats['total_users']) }}</p>
+                <div class="admin-stat-icon">
+                    <i class="fas fa-users"></i>
                 </div>
+            </div>
+            <div class="text-[9px] font-mono uppercase tracking-widest mt-2" style="color: var(--green);">
+                <i class="fas fa-arrow-up mr-1"></i> Active Database
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-green-100 text-green-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                    </svg>
+        <div class="admin-card p-6 rounded-lg">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 class="text-[10px] font-mono uppercase tracking-widest mb-1" style="color: var(--text3);">Data Matrices</h3>
+                    <div class="text-3xl font-bold font-mono" style="color: var(--text);">{{ number_format($stats['total_courses']) }}</div>
                 </div>
-                <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Total Courses</h3>
-                    <p class="text-2xl font-bold text-green-600">{{ number_format($stats['total_courses']) }}</p>
-                    <p class="text-sm text-gray-500">{{ number_format($stats['active_courses']) }} active</p>
+                <div class="admin-stat-icon" style="color: var(--admin-accent2); background: rgba(176, 38, 255, 0.1); border-color: rgba(176, 38, 255, 0.3);">
+                    <i class="fas fa-database"></i>
                 </div>
+            </div>
+            <div class="text-[9px] font-mono uppercase tracking-widest mt-2" style="color: var(--admin-accent2);">
+                {{ number_format($stats['active_courses']) }} Operational
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
-                    </svg>
+        <div class="admin-card p-6 rounded-lg">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 class="text-[10px] font-mono uppercase tracking-widest mb-1" style="color: var(--text3);">Total Links</h3>
+                    <div class="text-3xl font-bold font-mono" style="color: var(--text);">{{ number_format($stats['total_enrollments']) }}</div>
                 </div>
-                <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Enrollments</h3>
-                    <p class="text-2xl font-bold text-yellow-600">{{ number_format($stats['total_enrollments']) }}</p>
+                <div class="admin-stat-icon" style="color: var(--cyan); background: rgba(0, 217, 255, 0.1); border-color: rgba(0, 217, 255, 0.3);">
+                    <i class="fas fa-link"></i>
                 </div>
+            </div>
+            <div class="text-[9px] font-mono uppercase tracking-widest mt-2" style="color: var(--text3);">
+                Cross-referenced
             </div>
         </div>
 
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <div class="flex items-center">
-                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                    </svg>
+        <div class="admin-card p-6 rounded-lg">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h3 class="text-[10px] font-mono uppercase tracking-widest mb-1" style="color: var(--text3);">Acquisitions</h3>
+                    <div class="text-xl font-bold font-mono mt-2" style="color: var(--admin-accent);">Rp {{ number_format($stats['total_revenue']) }}</div>
                 </div>
-                <div class="ml-4">
-                    <h3 class="text-lg font-semibold text-gray-800">Total Revenue</h3>
-                    <p class="text-2xl font-bold text-purple-600">Rp {{ number_format($stats['total_revenue']) }}</p>
+                <div class="admin-stat-icon" style="color: var(--yellow); background: rgba(255, 215, 0, 0.1); border-color: rgba(255, 215, 0, 0.3);">
+                    <i class="fas fa-coins"></i>
                 </div>
+            </div>
+            <div class="text-[9px] font-mono uppercase tracking-widest mt-2" style="color: var(--green);">
+                <i class="fas fa-shield-check mr-1"></i> Secured
             </div>
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
-            <div class="space-y-3">
-                <a href="{{ route('admin.courses.create') }}" class="flex items-center p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
-                    <svg class="w-5 h-5 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
-                    </svg>
-                    <span class="text-blue-700 font-medium">Create New Course</span>
-                </a>
-                <a href="{{ route('admin.courses.index') }}" class="flex items-center p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors">
-                    <svg class="w-5 h-5 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
-                    </svg>
-                    <span class="text-green-700 font-medium">Manage Courses</span>
-                </a>
-            </div>
+    <!-- GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+
+        <!-- ACTIONS -->
+        <div class="admin-card p-6 rounded-lg flex flex-col gap-4">
+            <h3 class="text-sm font-bold uppercase tracking-widest border-b pb-3 mb-2 flex items-center gap-2" style="color: var(--admin-accent); border-color: var(--border);">
+                <i class="fas fa-terminal"></i> Terminal Commands
+            </h3>
+            <a href="{{ route('admin.courses.create') }}" class="admin-btn primary">
+                <i class="fas fa-plus-square"></i> Initialize New Matrix
+            </a>
+            <a href="{{ route('admin.courses.index') }}" class="admin-btn">
+                <i class="fas fa-folder-open"></i> Access Matrix Records
+            </a>
         </div>
 
-        <!-- Recent Users -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Users</h3>
-            <div class="space-y-3">
+        <!-- USERS -->
+        <div class="admin-card p-0 rounded-lg lg:col-span-1 flex flex-col">
+            <div class="p-6 pb-4 border-b" style="border-color: var(--border);">
+                <h3 class="text-sm font-bold uppercase tracking-widest flex items-center gap-2" style="color: var(--admin-accent2);">
+                    <i class="fas fa-user-shield"></i> Recent Subjects
+                </h3>
+            </div>
+            <div class="p-4 flex-1 flex flex-col gap-2 overflow-y-auto max-h-[300px] custom-scrollbar">
                 @forelse($stats['recent_users'] as $user)
-                <div class="flex items-center">
-                    <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                        <span class="text-sm font-medium text-gray-600">{{ substr($user->name, 0, 1) }}</span>
+                    <div class="flex items-center justify-between p-3 rounded bg-black/40 border border-transparent hover:border-[var(--border)] transition-colors">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded border flex items-center justify-center font-bold text-[10px]" style="border-color: var(--admin-accent2); color: var(--admin-accent2); background: rgba(176, 38, 255, 0.1);">
+                                {{ strtoupper(substr($user->name,0,1)) }}
+                            </div>
+                            <div class="text-xs font-mono truncate max-w-[120px]" style="color: var(--text);">{{ $user->name }}</div>
+                        </div>
+                        <span class="text-[9px] font-mono uppercase tracking-widest" style="color: var(--muted);">
+                            {{ $user->created_at->diffForHumans() }}
+                        </span>
                     </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-800">{{ $user->name }}</p>
-                        <p class="text-xs text-gray-500">{{ $user->created_at->diffForHumans() }}</p>
-                    </div>
-                </div>
                 @empty
-                <p class="text-gray-500 text-sm">No recent users</p>
+                    <div class="text-center p-4 text-[10px] font-mono uppercase tracking-widest" style="color: var(--muted);">No new subjects detected</div>
                 @endforelse
             </div>
         </div>
 
-        <!-- Popular Courses -->
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Popular Courses</h3>
-            <div class="space-y-3">
+        <!-- POPULAR COURSES -->
+        <div class="admin-card p-0 rounded-lg lg:col-span-1 flex flex-col">
+            <div class="p-6 pb-4 border-b" style="border-color: var(--border);">
+                <h3 class="text-sm font-bold uppercase tracking-widest flex items-center gap-2" style="color: var(--cyan);">
+                    <i class="fas fa-fire"></i> High-Traffic Matrices
+                </h3>
+            </div>
+            <div class="p-4 flex-1 flex flex-col gap-2 overflow-y-auto max-h-[300px] custom-scrollbar">
                 @forelse($stats['popular_courses'] as $course)
-                <div class="flex justify-between items-center">
-                    <div>
-                        <p class="text-sm font-medium text-gray-800">{{ Str::limit($course->title, 25) }}</p>
-                        <p class="text-xs text-gray-500">{{ $course->user_courses_count }} enrollments</p>
+                    <div class="flex items-center justify-between p-3 rounded bg-black/40 border border-transparent hover:border-[var(--border)] transition-colors">
+                        <div>
+                            <div class="text-xs font-mono font-bold mb-1" style="color: var(--text);">{{ Str::limit($course->title, 22) }}</div>
+                            <div class="text-[9px] font-mono uppercase tracking-widest" style="color: var(--muted);">
+                                <i class="fas fa-link mr-1" style="color: var(--cyan);"></i> {{ $course->user_courses_count }} Links
+                            </div>
+                        </div>
+                        <a href="{{ route('admin.courses.show', $course) }}" class="w-8 h-8 flex items-center justify-center rounded border transition-colors hover:bg-[rgba(0,217,255,0.1)]" style="border-color: var(--border); color: var(--cyan);">
+                            <i class="fas fa-chevron-right text-[10px]"></i>
+                        </a>
                     </div>
-                    <a href="{{ route('admin.courses.show', $course) }}" class="text-blue-600 hover:text-blue-800">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                        </svg>
-                    </a>
-                </div>
                 @empty
-                <p class="text-gray-500 text-sm">No courses available</p>
+                    <div class="text-center p-4 text-[10px] font-mono uppercase tracking-widest" style="color: var(--muted);">No data matrices found</div>
                 @endforelse
             </div>
         </div>
+
     </div>
 
-    <!-- Recent Enrollments -->
-    <div class="bg-white rounded-lg shadow-md p-6">
-        <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Enrollments</h3>
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+    <!-- ENROLLMENTS -->
+    <div class="admin-card p-0 rounded-lg overflow-hidden">
+        <div class="p-6 border-b" style="border-color: var(--border); background: rgba(0,0,0,0.5);">
+            <h3 class="text-sm font-bold uppercase tracking-widest flex items-center gap-2" style="color: var(--text);">
+                <i class="fas fa-network-wired" style="color: var(--admin-accent);"></i> Recent Network Links (Enrollments)
+            </h3>
+        </div>
+
+        <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left whitespace-nowrap text-[11px] font-mono">
+                <thead>
+                    <tr style="background: rgba(255,255,255,0.02); border-bottom: 2px solid var(--border);">
+                        <th class="p-4 uppercase tracking-widest" style="color: var(--text3);">Subject</th>
+                        <th class="p-4 uppercase tracking-widest" style="color: var(--text3);">Matrix</th>
+                        <th class="p-4 uppercase tracking-widest" style="color: var(--text3);">Timestamp</th>
+                        <th class="p-4 uppercase tracking-widest" style="color: var(--text3);">Status</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody>
                     @forelse($stats['recent_enrollments'] as $enrollment)
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {{ $enrollment->user->name }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ Str::limit($enrollment->course->title, 30) }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ $enrollment->created_at->format('M d, Y') }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $enrollment->is_completed ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                {{ $enrollment->is_completed ? 'Completed' : 'In Progress' }}
-                            </span>
-                        </td>
-                    </tr>
+                        <tr class="border-b transition-colors hover:bg-white/5" style="border-color: var(--border);">
+                            <td class="p-4" style="color: var(--text);">{{ $enrollment->user->name }}</td>
+                            <td class="p-4" style="color: var(--text2);">{{ Str::limit($enrollment->course->title, 30) }}</td>
+                            <td class="p-4" style="color: var(--muted);">{{ $enrollment->created_at->format('M d, Y H:i') }}</td>
+                            <td class="p-4">
+                                @if($enrollment->is_completed)
+                                    <span class="px-2 py-1 rounded border text-[9px] uppercase tracking-widest font-bold" style="border-color: var(--green); color: var(--green); background: rgba(0,255,136,0.1);">
+                                        Synchronized
+                                    </span>
+                                @else
+                                    <span class="px-2 py-1 rounded border text-[9px] uppercase tracking-widest font-bold" style="border-color: var(--yellow); color: var(--yellow); background: rgba(255,215,0,0.1);">
+                                        In Progress
+                                    </span>
+                                @endif
+                            </td>
+                        </tr>
                     @empty
-                    <tr>
-                        <td colspan="4" class="px-6 py-4 text-center text-gray-500">No recent enrollments</td>
-                    </tr>
+                        <tr>
+                            <td colspan="4" class="p-12 text-center text-[10px] uppercase tracking-widest" style="color: var(--muted);">
+                                No recent link activity detected in the network.
+                            </td>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
     </div>
+
 </div>
+
 @endsection
+

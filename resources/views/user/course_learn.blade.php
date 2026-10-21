@@ -1,348 +1,189 @@
 @extends('layouts.app')
 
-@section('title', 'Materi: ' . $course->title)
+@section('title', 'Modul Belajar: ' . $course->title)
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <!-- Course Header -->
-        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ $course->title }}</h1>
-                    <p class="text-gray-600">{{ $course->description }}</p>
-                </div>
-                <div class="text-right">
-                    <div class="text-sm text-gray-500 mb-1">Progress</div>
-                    <div class="text-2xl font-bold text-blue-600">
-                        {{ $contents->count() > 0 ? round((count($userAnswers) / $contents->where('type', 'question')->count()) * 100) : 0 }}%
-                    </div>
-                </div>
+@php
+    $totalNodes = $contents->count();
+    $completedNodes = count($userAnswers);
+    $completionPercentage = $totalNodes > 0 ? round(($completedNodes / $totalNodes) * 100) : 0;
+@endphp
+
+<div class="max-w-6xl mx-auto py-8 px-4 flex flex-col gap-8 relative items-start">
+    
+    <!-- Quick Matrix Overview Header -->
+    <div class="cyber-card w-full mb-2 relative overflow-hidden bg-[var(--bg2)] border-[var(--accent)]" style="border-left-width: 4px;">
+        <div class="absolute inset-0 opacity-5" style="background: repeating-linear-gradient(45deg, transparent, transparent 10px, var(--accent) 10px, var(--accent) 20px);"></div>
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10 p-2">
+            <div class="flex-1">
+                <span class="text-[9px] uppercase tracking-wider text-[var(--cyan)] font-bold font-mono">Modul Belajar</span>
+                <h1 class="text-2xl font-black mb-2 text-white" style="font-family: 'Outfit', sans-serif;">{{ $course->title }}</h1>
+                <p class="text-xs text-[var(--text2)] leading-relaxed max-w-2xl">{{ $course->description }}</p>
             </div>
             
-            <!-- Progress Bar -->
-            <div class="mt-4">
-                <div class="bg-gray-200 rounded-full h-3">
-                    <div class="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-500" 
-                         style="width: {{ $contents->count() > 0 ? round((count($userAnswers) / $contents->where('type', 'question')->count()) * 100) : 0 }}%"></div>
+            <!-- Conic Progress Meter -->
+            <div class="relative w-24 h-24 flex-shrink-0 flex items-center justify-center rounded-full border-4 border-white/5 bg-black/20">
+                <div class="absolute inset-0 rounded-full" style="background: conic-gradient(var(--cyan) {{ $completionPercentage }}%, transparent 0);"></div>
+                <div class="absolute inset-1.5 rounded-full flex flex-col items-center justify-center font-bold text-sm bg-[var(--bg2)] text-[var(--cyan)] font-mono">
+                    <span>{{ $completionPercentage }}%</span>
+                    <span class="text-[8px] text-[var(--text3)] uppercase">Selesai</span>
                 </div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <!-- Question Navigator -->
-            <div class="lg:col-span-1">
-                <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-8">
-                    <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-                        <i class="fas fa-list-ol mr-2 text-blue-600"></i>
-                        Question Navigator
-                    </h2>
-                    
-                    <div class="space-y-2 max-h-96 overflow-y-auto">
-                        @foreach($contents as $index => $content)
-                            @php
-                                $isAnswered = in_array($content->id, $userAnswers);
-                                $isQuestion = $content->type === 'question';
-                            @endphp
-                            
-                            <div class="relative">
-                                <a href="{{ route('user.courses.content', [$course->id, $content->type . ':' . $content->id]) }}" 
-                                   class="block p-3 rounded-lg border-2 transition-all duration-200 hover:shadow-md
-                                          @if($isQuestion)
-                                              @if($isAnswered)
-                                                  border-green-200 bg-green-50 hover:bg-green-100
-                                              @else
-                                                  border-yellow-200 bg-yellow-50 hover:bg-yellow-100
-                                              @endif
-                                          @else
-                                              border-blue-200 bg-blue-50 hover:bg-blue-100
-                                          @endif">
-                                    
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex items-center space-x-3">
-                                            <div class="flex-shrink-0">
-                                                @if($isQuestion)
-                                                    @if($isAnswered)
-                                                        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                                                            <i class="fas fa-check text-white text-sm"></i>
-                                                        </div>
-                                                    @else
-                                                        <div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
-                                                            <span class="text-white text-sm font-bold">{{ $index + 1 }}</span>
-                                                        </div>
-                                                    @endif
-                                                @else
-                                                    <div class="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                                                        <i class="fas fa-book text-white text-sm"></i>
-                                                    </div>
-                                                @endif
-                                            </div>
-                                            
-                                            <div class="flex-1 min-w-0">
-                                                <p class="text-sm font-medium text-gray-900 truncate">
-                                                    {{ $content->title }}
-                                                </p>
-                                                <p class="text-xs text-gray-500">
-                                                    @if($isQuestion)
-                                                        @if($isAnswered)
-                                                            <span class="text-green-600">✓ Completed</span>
-                                                        @else
-                                                            <span class="text-yellow-600">⚠ Required</span>
-                                                        @endif
-                                                    @else
-                                                        <span class="text-blue-600">📖 Material</span>
-                                                    @endif
-                                                </p>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="flex-shrink-0">
-                                            <i class="fas fa-chevron-right text-gray-400"></i>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                        @endforeach
-                    </div>
-                    
-                    <!-- Legend -->
-                    <div class="mt-6 pt-4 border-t border-gray-200">
-                        <h3 class="text-sm font-medium text-gray-700 mb-3">Legend:</h3>
-                        <div class="space-y-2 text-xs">
-                            <div class="flex items-center space-x-2">
-                                <div class="w-4 h-4 bg-green-500 rounded-full"></div>
-                                <span class="text-gray-600">Completed</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <div class="w-4 h-4 bg-yellow-500 rounded-full"></div>
-                                <span class="text-gray-600">Required</span>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <div class="w-4 h-4 bg-blue-500 rounded-full"></div>
-                                <span class="text-gray-600">Material</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Content Area -->
-            <div class="lg:col-span-3">
-                @if($contents->isEmpty())
-                    <div class="bg-white rounded-2xl shadow-lg p-12 text-center">
-                        <i class="fas fa-book-open text-gray-400 text-6xl mb-4"></i>
-                        <h3 class="text-xl font-semibold text-gray-700 mb-2">No Content Available</h3>
-                        <p class="text-gray-500">This course doesn't have any content yet. Please check back later.</p>
-                    </div>
-                @else
-                    <!-- Quick Stats -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
-                                    <i class="fas fa-book text-blue-500 text-2xl"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-600">Total Materials</p>
-                                    <p class="text-2xl font-bold text-gray-900">{{ $contents->where('type', 'story')->count() }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-yellow-500">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
-                                    <i class="fas fa-question-circle text-yellow-500 text-2xl"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-600">Total Questions</p>
-                                    <p class="text-2xl font-bold text-gray-900">{{ $contents->where('type', 'question')->count() }}</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
-                            <div class="flex items-center">
-                                <div class="flex-shrink-0">
-                                    <i class="fas fa-check-circle text-green-500 text-2xl"></i>
-                                </div>
-                                <div class="ml-4">
-                                    <p class="text-sm font-medium text-gray-600">Completed</p>
-                                    <p class="text-2xl font-bold text-gray-900">{{ count($userAnswers) }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Content List -->
-                    <div class="space-y-6">
-                        @foreach($contents as $index => $content)
-                            @php
-                                $isAnswered = in_array($content->id, $userAnswers);
-                                $isQuestion = $content->type === 'question';
-                            @endphp
-                            
-                            <div class="bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-200 hover:shadow-xl">
-                                <div class="p-6">
-                                    <div class="flex items-start justify-between">
-                                        <div class="flex items-start space-x-4 flex-1">
-                                            <!-- Status Icon -->
-                                            <div class="flex-shrink-0 mt-1">
-                                                @if($isQuestion)
-                                                    @if($isAnswered)
-                                                        <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
-                                                            <i class="fas fa-check text-white text-lg"></i>
-                                                        </div>
-                                                    @else
-                                                        <div class="w-12 h-12 bg-yellow-500 rounded-full flex items-center justify-center">
-                                                            <span class="text-white text-lg font-bold">{{ $index + 1 }}</span>
-                                                        </div>
-                                                    @endif
-                                                @else
-                                                    <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
-                                                        <i class="fas fa-book text-white text-lg"></i>
-                                                    </div>
-                                                @endif
-                                            </div>
-                                            
-                                            <!-- Content Info -->
-                                            <div class="flex-1">
-                                                <div class="flex items-center space-x-3 mb-2">
-                                                    <h3 class="text-xl font-semibold text-gray-900">{{ $content->title }}</h3>
-                                                    
-                                                    @if($isQuestion)
-                                                        @if($isAnswered)
-                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                                <i class="fas fa-check mr-1"></i>
-                                                                Completed
-                                                            </span>
-                                                        @else
-                                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                                <i class="fas fa-exclamation-triangle mr-1"></i>
-                                                                Required
-                                                            </span>
-                                                        @endif
-                                                    @else
-                                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                            <i class="fas fa-book mr-1"></i>
-                                                            Material
-                                                        </span>
-                                                    @endif
-                                                </div>
-                                                
-                                                @if($content->content)
-                                                    <p class="text-gray-600 text-sm mb-4 line-clamp-2">
-                                                        {{ Str::limit(strip_tags($content->content), 150) }}
-                                                    </p>
-                                                @endif
-                                                
-                                                <div class="flex items-center text-xs text-gray-500 space-x-4">
-                                                    <span>
-                                                        <i class="fas fa-clock mr-1"></i>
-                                                        {{ $content->type === 'question' ? 'Question' : 'Reading Material' }}
-                                                    </span>
-                                                    @if($isQuestion && $isAnswered)
-                                                        <span class="text-green-600">
-                                                            <i class="fas fa-check-double mr-1"></i>
-                                                            Answered
-                                                        </span>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <!-- Action Button -->
-                                        <div class="flex-shrink-0 ml-4">
-                                            <a href="{{ route('user.courses.content', [$course->id, $content->type . ':' . $content->id]) }}" 
-                                               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white
-                                                      @if($isQuestion)
-                                                          @if($isAnswered)
-                                                              bg-green-600 hover:bg-green-700
-                                                          @else
-                                                              bg-yellow-600 hover:bg-yellow-700
-                                                          @endif
-                                                      @else
-                                                          bg-blue-600 hover:bg-blue-700
-                                                      @endif
-                                                      focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors duration-200">
-                                                @if($isQuestion)
-                                                    @if($isAnswered)
-                                                        <i class="fas fa-eye mr-2"></i>
-                                                        Review
-                                                    @else
-                                                        <i class="fas fa-play mr-2"></i>
-                                                        Start
-                                                    @endif
-                                                @else
-                                                    <i class="fas fa-book-open mr-2"></i>
-                                                    Read
-                                                @endif
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-
-                    <!-- Course Completion Status -->
-                    @if($contents->where('type', 'question')->count() > 0)
-                        <div class="mt-8 bg-white rounded-2xl shadow-lg p-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Course Completion</h3>
-                            
-                            @php
-                                $totalQuestions = $contents->where('type', 'question')->count();
-                                $answeredQuestions = count($userAnswers);
-                                $completionPercentage = $totalQuestions > 0 ? round(($answeredQuestions / $totalQuestions) * 100) : 0;
-                            @endphp
-                            
-                            <div class="flex items-center justify-between mb-4">
-                                <span class="text-sm text-gray-600">
-                                    {{ $answeredQuestions }} of {{ $totalQuestions }} questions completed
-                                </span>
-                                <span class="text-sm font-medium text-gray-900">{{ $completionPercentage }}%</span>
-                            </div>
-                            
-                            <div class="w-full bg-gray-200 rounded-full h-3 mb-4">
-                                <div class="bg-gradient-to-r from-blue-500 to-indigo-600 h-3 rounded-full transition-all duration-500" 
-                                     style="width: {{ $completionPercentage }}%"></div>
-                            </div>
-                            
-                            @if($completionPercentage === 100)
-                                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                                    <div class="flex items-center">
-                                        <i class="fas fa-trophy text-green-500 text-xl mr-3"></i>
-                                        <div>
-                                            <h4 class="text-green-800 font-semibold">Congratulations!</h4>
-                                            <p class="text-green-700 text-sm">You have completed all questions in this course.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            @else
-                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                    <div class="flex items-center">
-                                        <i class="fas fa-info-circle text-blue-500 text-xl mr-3"></i>
-                                        <div>
-                                            <h4 class="text-blue-800 font-semibold">Keep Going!</h4>
-                                            <p class="text-blue-700 text-sm">Complete all questions to finish this course.</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-                    @endif
-                @endif
             </div>
         </div>
     </div>
-</div>
 
-<style>
-.line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-}
-</style>
+    @if($contents->isEmpty())
+        <!-- Empty State -->
+        <div class="cyber-card w-full text-center py-16 bg-[var(--bg2)] border-[var(--border)]">
+            <div class="text-5xl mb-6 opacity-40 animate-pulse">📡</div>
+            <h3 class="text-base font-bold text-white mb-2">Belum Ada Materi Belajar</h3>
+            <p class="text-xs text-[var(--text3)] font-mono">Modul ini belum memiliki materi belajar terpasang. Hubungi admin untuk informasi lebih lanjut.</p>
+        </div>
+    @else
+        <!-- Stats Widgets -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 w-full mb-2">
+            <div class="cyber-card p-4 flex items-center gap-4 bg-[var(--bg2)] border-[var(--border)]" style="border-top: 3px solid var(--cyan);">
+                <div class="text-2xl">📹</div>
+                <div>
+                    <div class="text-[8px] uppercase tracking-wider text-[var(--text3)] font-mono font-bold">Video</div>
+                    <div class="text-lg font-black text-white font-mono">{{ $contents->where('type', 'video')->count() }} Node</div>
+                </div>
+            </div>
+            <div class="cyber-card p-4 flex items-center gap-4 bg-[var(--bg2)] border-[var(--border)]" style="border-top: 3px solid var(--php);">
+                <div class="text-2xl">📘</div>
+                <div>
+                    <div class="text-[8px] uppercase tracking-wider text-[var(--text3)] font-mono font-bold">Story</div>
+                    <div class="text-lg font-black text-white font-mono">{{ $contents->where('type', 'story')->count() }} Node</div>
+                </div>
+            </div>
+            <div class="cyber-card p-4 flex items-center gap-4 bg-[var(--bg2)] border-[var(--border)]" style="border-top: 3px solid var(--yellow);">
+                <div class="text-2xl">❓</div>
+                <div>
+                    <div class="text-[8px] uppercase tracking-wider text-[var(--text3)] font-mono font-bold">Kuis</div>
+                    <div class="text-lg font-black text-white font-mono">{{ $contents->where('type', 'question')->where('question_type', '!=', 'coding')->count() }} Node</div>
+                </div>
+            </div>
+            <div class="cyber-card p-4 flex items-center gap-4 bg-[var(--bg2)] border-[var(--border)]" style="border-top: 3px solid var(--green);">
+                <div class="text-2xl">💻</div>
+                <div>
+                    <div class="text-[8px] uppercase tracking-wider text-[var(--text3)] font-mono font-bold">Coding</div>
+                    <div class="text-lg font-black text-white font-mono">{{ $contents->where('type', 'question')->where('question_type', 'coding')->count() }} Node</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contents List (Coursera Inspired Node Timeline) -->
+        <div class="w-full flex flex-col gap-4">
+            <h2 class="text-xs font-extrabold uppercase tracking-widest text-[var(--text2)] font-mono border-b border-[var(--border)] pb-2 mb-2">
+                <i class="fas fa-list-ol mr-1 text-[var(--cyan)]"></i> Kurikulum & Garis Waktu Pelajaran
+            </h2>
+            
+            <div class="flex flex-col gap-3 w-full">
+                @foreach($contents as $index => $content)
+                    @php
+                        $isAnswered = in_array($content->type . ':' . $content->id, $userAnswers);
+                        $isQuestion = $content->type === 'question';
+                        $isCoding = $isQuestion && isset($content->question_type) && $content->question_type === 'coding';
+                        
+                        // Select border color based on completion & type
+                        if ($isAnswered) {
+                            $nodeColor = 'var(--green)';
+                            $badgeText = 'Selesai';
+                            $badgeBorder = 'border-[var(--green)] text-[var(--green)] bg-green-500/5';
+                        } elseif ($isCoding) {
+                            $nodeColor = 'var(--cyan)';
+                            $badgeText = 'Coding';
+                            $badgeBorder = 'border-[var(--cyan)] text-[var(--cyan)] bg-cyan-500/5';
+                        } elseif ($content->type === 'video') {
+                            $nodeColor = 'var(--pink)';
+                            $badgeText = 'Video';
+                            $badgeBorder = 'border-[var(--pink)] text-[var(--pink)] bg-pink-500/5';
+                        } elseif ($isQuestion) {
+                            $nodeColor = 'var(--yellow)';
+                            $badgeText = 'Kuis';
+                            $badgeBorder = 'border-[var(--yellow)] text-[var(--yellow)] bg-yellow-500/5';
+                        } else {
+                            $nodeColor = 'var(--php)';
+                            $badgeText = 'Story';
+                            $badgeBorder = 'border-[var(--php)] text-[var(--php)] bg-purple-500/5';
+                        }
+                    @endphp
+                    
+                    <div class="cyber-card flex gap-4 md:gap-6 p-5 bg-[var(--bg2)] border-[var(--border)] transition-all hover:translate-x-1" 
+                         style="border-left-width: 4px; border-left-color: {{ $nodeColor }};">
+                        
+                        <!-- Number Icon Badge -->
+                        <div class="w-12 h-12 rounded-xl border flex items-center justify-center flex-shrink-0 text-xl font-bold font-mono" 
+                             style="background: rgba(0,0,0,0.2); border-color: {{ $nodeColor }}; color: {{ $nodeColor }};">
+                            @if($isAnswered)
+                                <i class="fas fa-check-circle text-base"></i>
+                            @elseif($isCoding)
+                                💻
+                            @elseif($content->type === 'video')
+                                📹
+                            @elseif($isQuestion)
+                                ❓
+                            @else
+                                📘
+                            @endif
+                        </div>
+
+                        <!-- Info details -->
+                        <div class="flex-1 flex flex-col justify-center min-w-0">
+                            <div class="flex justify-between items-start gap-4 mb-2">
+                                <h3 class="font-extrabold text-sm md:text-base text-white truncate" title="{{ $content->title }}">
+                                    {{ $content->title }}
+                                </h3>
+                                <span class="px-2 py-0.5 text-[8px] uppercase tracking-wider font-extrabold rounded border flex-shrink-0 {{ $badgeBorder }}">
+                                    {{ $badgeText }}
+                                </span>
+                            </div>
+
+                            @if($content->content)
+                                <p class="text-[11px] text-[var(--text2)] leading-relaxed truncate max-w-3xl mb-2 font-mono">
+                                    {{ strip_tags($content->content) }}
+                                </p>
+                            @endif
+                            
+                            <div class="flex items-center gap-4 text-[9px] text-[var(--text3)] font-mono uppercase">
+                                <span><i class="fas fa-layer-group mr-1 text-[var(--cyan)]"></i> Urutan ke-{{ $content->order }}</span>
+                                @if($isAnswered)
+                                    <span class="text-[var(--green)]"><i class="fas fa-check-double mr-1"></i> Data Tersinkron</span>
+                                @endif
+                            </div>
+                        </div>
+
+                        <!-- Action play button -->
+                        <div class="flex items-center justify-center pl-4 border-l border-[var(--border)]">
+                            <a href="{{ route('user.courses.content', [$course->id, $content->type . ':' . $content->id]) }}" 
+                               class="w-10 h-10 rounded-full border border-[var(--border)] hover:border-white flex items-center justify-center text-sm transition-all hover:scale-105"
+                               style="color: {{ $nodeColor }}; border-color: {{ $nodeColor }}60; background: {{ $nodeColor }}10;">
+                                @if($isAnswered)
+                                    <i class="fas fa-eye"></i>
+                                @else
+                                    <i class="fas fa-play pl-0.5"></i>
+                                @endif
+                            </a>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        <!-- Course Sync Completed Panel -->
+        @if($completionPercentage === 100)
+            <div class="cyber-card w-full mt-6 p-6 border-[var(--green)] bg-green-500/5 text-center flex flex-col items-center justify-center">
+                <div class="text-4xl mb-4 animate-bounce">🏆</div>
+                <h3 class="text-sm md:text-base font-extrabold text-[var(--green)] uppercase tracking-wider mb-1">Seluruh Modul Sinkron!</h3>
+                <p class="text-xs text-[var(--text2)] font-mono max-w-md">Selamat! Anda telah menyelesaikan semua tahapan pembelajaran dalam modul ini dengan sukses.</p>
+            </div>
+        @else
+            <div class="cyber-card w-full mt-6 p-6 border-[var(--accent)] bg-[var(--accent)]/5 text-center flex flex-col items-center justify-center">
+                <div class="text-3xl mb-3 opacity-80 animate-pulse">⚡</div>
+                <h3 class="text-sm md:text-base font-extrabold text-[var(--cyan)] uppercase tracking-wider mb-1">Modul Pembelajaran Aktif</h3>
+                <p class="text-xs text-[var(--text2)] font-mono max-w-md">Lanjutkan belajar node berikutnya untuk mencapai sinkronisasi pembelajaran 100%.</p>
+            </div>
+        @endif
+    @endif
+</div>
 @endsection

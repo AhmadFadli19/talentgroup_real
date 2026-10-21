@@ -16,8 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('course_id');
             $table->string('title');
             $table->text('content');
-            $table->json('options'); // untuk pilihan ABCD
-            $table->string('correct_answer'); // untuk jawaban benar (A, B, C, D)
+            $table->json('options')->nullable(); // untuk pilihan ABCD (null untuk coding)
+            $table->string('correct_answer')->nullable(); // untuk jawaban benar (null untuk coding)
             $table->integer('order')->default(0);
             $table->timestamps();
             

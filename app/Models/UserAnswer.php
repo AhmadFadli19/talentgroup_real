@@ -15,6 +15,9 @@ class UserAnswer extends Model
         'content_type',
         'content_reference',
         'answer',
+        'code_submitted',
+        'code_output',
+        'rules_passed',
         'is_correct',
         'points',
     ];
@@ -22,6 +25,7 @@ class UserAnswer extends Model
     protected $casts = [
         'is_correct' => 'boolean',
         'points' => 'integer',
+        'rules_passed' => 'array',
     ];
 
     public function user()
@@ -29,7 +33,6 @@ class UserAnswer extends Model
         return $this->belongsTo(User::class);
     }
 
-    // Simple relationship without additional conditions
     public function courseQuestion()
     {
         return $this->belongsTo(CourseQuestion::class, 'content_id');

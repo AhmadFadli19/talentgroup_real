@@ -113,8 +113,18 @@ class User extends Authenticatable
         return $this->hasMany(Transaction::class, 'processed_by');
     }
 
+    public function moduleAccesses()
+    {
+        return $this->hasMany(UserModuleAccess::class);
+    }
+
     public function isBank()
     {
         return $this->role && $this->role->name === 'bank';
+    }
+
+    public function prototypes()
+    {
+        return $this->hasMany(Prototype::class);
     }
 }

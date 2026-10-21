@@ -8,8 +8,11 @@ use App\Models\UserCourse;
 use App\Models\UserAnswer;
 use App\Models\Transaction;
 use App\Models\CourseQuestion;
+use App\Models\CourseVideo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -20,17 +23,20 @@ class DashboardController extends Controller
         
         // Get enrolled courses with progress calculation
         $enrolledCourses = UserCourse::where('user_id', $user->id)
-            ->with(['course.stories', 'course.questions'])
+            ->with(['course.stories', 'course.questions', 'course.videos'])
             ->get()
             ->map(function ($userCourse) use ($user) {
                 $course = $userCourse->course;
-                $totalLessons = $course->stories->count() + $course->questions->count();
+                $totalLessons = $course->stories->count() + $course->questions->count() + $course->videos->count();
                 
-                $questionIds = $course->questions()->pluck('id');
+                $storyRefs = $course->stories->map(fn($s) => "story:{$s->id}")->toArray();
+                $questionRefs = $course->questions->map(fn($q) => "question:{$q->id}")->toArray();
+                $videoRefs = $course->videos->map(fn($v) => "video:{$v->id}")->toArray();
+                $allRefs = array_merge($storyRefs, $questionRefs, $videoRefs);
+
                 $completedLessons = UserAnswer::where('user_id', $user->id)
-                    ->where('content_type', 'question')
-                    ->whereIn('content_id', $questionIds)
-                    ->distinct('content_id')
+                    ->whereIn('content_reference', $allRefs)
+                    ->distinct('content_reference')
                     ->count();
                 
                 $progress = $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100) : 0;
@@ -175,5 +181,48 @@ class DashboardController extends Controller
             'recentTransactions',
             'overallScore'
         ));
+    }
+
+    public function profile()
+    {
+        $user = Auth::user();
+        $transactions = Transaction::where('user_id', $user->id)
+            ->latest()
+            ->paginate(10);
+            
+        return view('user.profile', compact('user', 'transactions'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'password' => 'nullable|string|min:8|confirmed',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $user->name = $request->name;
+        $user->email = $request->email;
+
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        if ($request->hasFile('avatar')) {
+            // Delete old avatar if exists
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            $path = $request->file('avatar')->store('avatars', 'public');
+            $user->avatar = $path;
+        }
+
+        $user->save();
+
+        return redirect()->back()->with('success', 'Profil Anda berhasil diperbarui!');
     }
 }

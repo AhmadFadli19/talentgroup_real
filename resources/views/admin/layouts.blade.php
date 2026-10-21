@@ -53,30 +53,6 @@
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <nav class="flex-grow">
-                <ul>
-                    <ul>
-                        <li class="mb-2">
-                            <a href="{{ route('admin-home') }}"
-                                class="flex items-center py-2 px-4 rounded text-gray-300 hover:bg-gray-700 hover:text-white bg-gray-700 text-white">
-                                <i class="fas fa-home mr-3"></i> Dasbor
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="{{ route('admin-kelolaakun') }}"
-                                class="flex items-center py-2 px-4 rounded text-gray-300 hover:bg-gray-700 hover:text-white">
-                                <i class="fas fa-cog mr-3"></i> Kelola Akun
-                            </a>
-                        </li>
-                        <li class="mb-2">
-                            <a href="{{ route('admin-content') }}"
-                                class="flex items-center py-2 px-4 rounded text-gray-300 hover:bg-gray-700 hover:text-white">
-                                <i class="fas fa-cog mr-3"></i> content
-                            </a>
-                        </li>
-                    </ul>
-                </ul>
-            </nav>
             <div class="mt-auto">
                 <ul>
                     <li>

@@ -20,7 +20,7 @@
 
 
 
-    <title>TalentGroup</title>
+    <title>EnglishBrain</title>
 
 </head>
 <body>

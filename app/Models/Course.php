@@ -23,6 +23,22 @@ class Course extends Model
         'is_active' => 'boolean',
     ];
 
+    /**
+     * Get secure URL for course image with fallback capability.
+     */
+    public function getImageUrlAttribute()
+    {
+        if (!$this->image) {
+            return null;
+        }
+
+        if (str_starts_with($this->image, 'http://') || str_starts_with($this->image, 'https://')) {
+            return $this->image;
+        }
+
+        return route('storage.stream', $this->image);
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -43,6 +59,16 @@ class Course extends Model
         return $this->hasMany(CourseQuestion::class)->orderBy('order');
     }
 
+    public function videos()
+    {
+        return $this->hasMany(CourseVideo::class)->orderBy('order');
+    }
+
+    public function htmls()
+    {
+        return $this->hasMany(CourseHtml::class)->orderBy('order');
+    }
+
     public function allContents()
     {
         $stories = $this->stories()->get()->map(function($story) {
@@ -54,8 +80,18 @@ class Course extends Model
             $question->type = 'question';
             return $question;
         });
+
+        $videos = $this->videos()->get()->map(function($video) {
+            $video->type = 'video';
+            return $video;
+        });
+
+        $htmls = $this->htmls()->get()->map(function($html) {
+            $html->type = 'html';
+            return $html;
+        });
         
-        return $stories->concat($questions)->sortBy('order');
+        return $stories->concat($questions)->concat($videos)->concat($htmls)->sortBy('order');
     }
 
     public function users()

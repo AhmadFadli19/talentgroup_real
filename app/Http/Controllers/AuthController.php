@@ -8,17 +8,23 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use App\Services\WhatsAppService;
 
 class AuthController extends Controller
 {
-    public function showLoginDashboard()
+    public function showLogin()
     {
-        // Jika sudah login, redirect ke dashboard sesuai role
         if (Auth::check()) {
             return $this->redirectBasedOnRole(Auth::user());
         }
 
-        return view('auth.login-user');
+        return view('auth.login');
+    }
+
+    public function showLoginDashboard()
+    {
+        return $this->showLogin();
     }
 
     public function showRegister()
@@ -34,6 +40,7 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users',
             'phone' => 'required|string|unique:users',
             'password' => 'required|min:8|confirmed',
+            'verification_method' => 'required|in:email,whatsapp',
         ]);
 
         $code = rand(100000, 999999);
@@ -48,11 +55,23 @@ class AuthController extends Controller
             'role_id' => 2, // Default user
         ]);
 
-        Mail::to($user->email)->send(new OTPMail($code, 'verification'));
+        $method = $request->input('verification_method', 'email');
+        session(['verify_method' => $method]);
+
+        if ($method === 'email') {
+            Mail::to($user->email)->send(new OTPMail($code, 'verification'));
+            $msg = 'Kode verifikasi telah dikirim ke email Anda.';
+        } else {
+            if ($user->phone) {
+                $waMsg = "Halo {$user->name},\n\nKode verifikasi akun talentgroup.id Anda adalah: *{$code}*.\n\nMasukkan kode ini di halaman verifikasi untuk mengaktifkan akun Anda. Jangan bagikan kode ini kepada siapapun.";
+                WhatsAppService::sendMessage($user->phone, $waMsg);
+            }
+            $msg = 'Kode verifikasi telah dikirim ke nomor WhatsApp Anda.';
+        }
 
         session(['verify_user_id' => $user->id]);
 
-        return redirect()->route('verify.show')->with('success', 'Kode verifikasi telah dikirim ke email Anda.');
+        return redirect()->route('verify.show')->with('success', $msg);
     }
 
     public function showVerify()
@@ -101,20 +120,31 @@ class AuthController extends Controller
         $code = rand(100000, 999999);
         $user->update(['email_verification_code' => $code]);
 
-        Mail::to($user->email)->send(new OTPMail($code, 'verification'));
+        $method = session('verify_method', 'email');
 
-        return back()->with('success', 'Kode verifikasi baru telah dikirim.');
+        if ($method === 'email') {
+            Mail::to($user->email)->send(new OTPMail($code, 'verification'));
+            $msg = 'Kode verifikasi baru telah dikirim ke email Anda.';
+        } else {
+            if ($user->phone) {
+                $waMsg = "Halo {$user->name},\n\nKode verifikasi baru akun talentgroup.id Anda adalah: *{$code}*.\n\nJangan bagikan kode ini kepada siapapun.";
+                WhatsAppService::sendMessage($user->phone, $waMsg);
+            }
+            $msg = 'Kode verifikasi baru telah dikirim ke WhatsApp Anda.';
+        }
+
+        return back()->with('success', $msg);
     }
 
     // ==================== LOGIN SPLIT ====================
     public function showLoginAdmin()
     {
-        return view('auth.login-admin');
+        return $this->showLogin();
     }
 
     public function showLoginUser()
     {
-        return view('auth.login-user');
+        return $this->showLogin();
     }
 
     public function showBankLogin()
@@ -122,11 +152,14 @@ class AuthController extends Controller
         return view('auth.bank-login');
     }
 
-    public function loginAdmin(Request $request)
+    public function login(Request $request)
     {
         $request->validate([
             'login' => 'required',
             'password' => 'required',
+        ], [
+            'login.required' => 'Email atau Username wajib diisi.',
+            'password.required' => 'Password wajib diisi.',
         ]);
 
         $loginType = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
@@ -134,48 +167,28 @@ class AuthController extends Controller
         $user = User::where($loginType, $request->login)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {
-            return back()->with('error', 'Username/Email atau password salah.');
+            return back()->withInput($request->only('login'))->with('error', 'Username/Email atau password salah.');
         }
 
-        if ($user->role_id != 1) {
-            return back()->with('error', 'Anda tidak memiliki akses admin.');
-        }
-
-        Auth::login($user);
-        return redirect()->route('admin-home');
-    }
-
-    public function loginUser(Request $request)
-    {
-        $request->validate([
-            'login' => 'required',
-            'password' => 'required',
-        ]);
-
-        $loginType = filter_var($request->login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
-
-        $user = User::where($loginType, $request->login)->first();
-
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return back()->with('error', 'Username/Email atau password salah.');
-        }
-
-        if (!$user->email_verified_at) {
+        // Email verification only required for regular users (role_id 2)
+        if ($user->role_id == 2 && !$user->email_verified_at) {
             session(['verify_user_id' => $user->id]);
             return redirect()->route('verify.show')->with('error', 'Silakan verifikasi email Anda terlebih dahulu.');
         }
 
-        if ($user->role_id == 1) {
-            return back()->with('error', 'Silakan gunakan halaman login admin.');
-        }
+        Auth::login($user, $request->boolean('remember'));
 
-        Auth::login($user);
+        return $this->redirectBasedOnRole($user);
+    }
 
-        if ($user->role_id == 3) {
-            return redirect()->route('developer-home', ['user' => $user->id]);
-        }
+    public function loginAdmin(Request $request)
+    {
+        return $this->login($request);
+    }
 
-        return redirect()->route('user-home', ['user' => $user->id]);
+    public function loginUser(Request $request)
+    {
+        return $this->login($request);
     }
 
     // ==================== BANK LOGIN (FIXED: Tambah method ini) ====================
@@ -227,8 +240,14 @@ class AuthController extends Controller
             Mail::to($user->email)->send(new OTPMail($code, 'reset'));
             $message = 'Kode reset password telah dikirim ke email Anda.';
         } else {
-            // WhatsApp implementation jika ada
-            $message = 'Kode reset password telah dikirim ke WhatsApp Anda.';
+            // WhatsApp Reset Password Delivery
+            $waMsg = "Halo {$user->name},\n\nKode verifikasi untuk reset password akun talentgroup.id Anda adalah: *{$code}*.\n\nKode ini berlaku selama 10 menit. Jangan bagikan kode ini kepada siapapun.";
+            $waResult = WhatsAppService::sendMessage($user->phone, $waMsg);
+            
+            $message = 'Kode reset password telah dikirim ke nomor WhatsApp Anda.';
+            if (!$waResult['success']) {
+                $message .= ' (Catatan: ' . $waResult['message'] . ')';
+            }
         }
 
         session(['reset_user_id' => $user->id]);
@@ -295,7 +314,7 @@ class AuthController extends Controller
 
         session()->forget('reset_user_id');
 
-        return redirect()->route('login.user')->with('success', 'Password berhasil direset!');
+        return redirect()->route('login')->with('success', 'Password berhasil direset!');
     }
 
     // ==================== GOOGLE OAUTH ====================
@@ -309,51 +328,70 @@ class AuthController extends Controller
         try {
             $googleUser = \Laravel\Socialite\Facades\Socialite::driver('google')->user();
 
+            if (!$googleUser || empty($googleUser->email)) {
+                return redirect()->route('login')->with('error', 'Gagal mendapatkan data akun dari Google.');
+            }
+
+            // 1. User yang sudah terhubung dengan google_id
             $user = User::where('google_id', $googleUser->id)->first();
 
             if ($user) {
-                Auth::login($user);
+                Auth::login($user, true);
                 return $this->redirectBasedOnRole($user);
             }
 
+            // 2. User dengan email yang sama (sambungkan google_id)
             $existingUser = User::where('email', $googleUser->email)->first();
 
             if ($existingUser) {
                 $existingUser->update([
                     'google_id' => $googleUser->id,
-                    'avatar' => $googleUser->avatar,
+                    'avatar' => $googleUser->avatar ?: $existingUser->avatar,
+                    'email_verified_at' => $existingUser->email_verified_at ?: now(),
                 ]);
 
-                Auth::login($existingUser);
+                Auth::login($existingUser, true);
                 return $this->redirectBasedOnRole($existingUser);
             }
 
+            // 3. Pendaftaran akun baru via Google
+            $baseUsername = Str::slug($googleUser->name ?: 'user', '_');
+            if (empty($baseUsername)) {
+                $baseUsername = 'user';
+            }
+            $username = $baseUsername;
+            while (User::where('username', $username)->exists()) {
+                $username = $baseUsername . '_' . rand(100, 9999);
+            }
+
             $newUser = User::create([
-                'name' => $googleUser->name,
+                'name' => $googleUser->name ?: 'Pengguna Google',
+                'username' => $username,
                 'email' => $googleUser->email,
                 'google_id' => $googleUser->id,
                 'avatar' => $googleUser->avatar,
-                'role_id' => 2,
-                'email_verified_at' => now(),
+                'role_id' => 2, // Regular user secara default
+                'email_verified_at' => now(), // Email Google otomatis terverifikasi
+                'password' => Hash::make(Str::random(32)),
             ]);
 
-            Auth::login($newUser);
+            Auth::login($newUser, true);
             return $this->redirectBasedOnRole($newUser);
+
         } catch (\Exception $e) {
-            return redirect()->route('login.user')->withErrors([
-                'google' => 'Terjadi kesalahan saat login dengan Google.'
-            ]);
+            \Illuminate\Support\Facades\Log::error('Google OAuth Error: ' . $e->getMessage());
+            return redirect()->route('login')->with('error', 'Terjadi kesalahan saat masuk dengan Google: ' . $e->getMessage());
         }
     }
 
     private function redirectBasedOnRole($user)
     {
-        if ($user->role_id == 1) {
-            return redirect()->route('admin-home');
+        if ($user->role_id == 1 || (method_exists($user, 'isAdmin') && $user->isAdmin())) {
+            return redirect()->route('admin.dashboard');
         } elseif ($user->role_id == 2) {
-            return redirect()->route('user-home', ['user' => $user->id]);
+            return redirect()->route('user.dashboard');
         } elseif ($user->role_id == 3) {
-            return redirect()->route('developer-home', ['user' => $user->id]);
+            return redirect()->route('developer.dashboard');
         } elseif ($user->role_id == 4) {
             return redirect()->route('bank.dashboard');
         }
@@ -369,6 +407,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login-dashboard');
+        return redirect()->route('login');
     }
 }

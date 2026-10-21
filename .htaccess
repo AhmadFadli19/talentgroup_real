@@ -1,4 +1,10 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteRule ^(.*)$ public/$1 [L]
+
+    # Belokkan URL /storage secara aman ke /public/storage
+    RewriteRule ^storage/(.*)$ public/storage/$1 [L]
+
+    # Arahkan seluruh lalu lintas web utama ke folder public
+    RewriteRule ^$ public/ [L]
+    RewriteRule ^((?!public/).*)$ public/$1 [L]
 </IfModule>

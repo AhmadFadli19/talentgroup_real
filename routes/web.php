@@ -16,21 +16,46 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Bank\TransactionController as BankTransactionController;
 use App\Http\Controllers\User\TransactionController as UserTransactionController;
 use App\Http\Controllers\Admin\CourseContentController as AdminCourseContentController;
+use App\Http\Controllers\User\CodeExecutionController;
+use App\Http\Controllers\ModuleController;
+use App\Http\Controllers\Admin\ModuleController as AdminModuleController;
+use App\Http\Controllers\Admin\ModuleCategoryController as AdminModuleCategoryController;
+use App\Http\Controllers\Admin\ReferralCodeController as AdminReferralCodeController;
+use App\Http\Controllers\PrototypeHostController;
+use App\Http\Controllers\User\PrototypeController as UserPrototypeController;
+use App\Http\Controllers\Admin\PrototypeAdminController as AdminPrototypeController;
 
 // ============================================
 // PUBLIC ROUTES
 // ============================================
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/about', [HomeController::class, 'about'])->name('about');
-Route::get('/blog', [HomeController::class, 'blog'])->name('blog');
-Route::get('/partnerkolaborasi', [HomeController::class, 'partnerkolaborasi'])->name('partnerkolaborasi');
+Route::get('/storage-file/{path}', [HomeController::class, 'streamFile'])->where('path', '.*')->name('storage.stream');
 
-// FIXED: Login Dashboard sekarang mengarah ke halaman pemilihan login
-Route::get('/login-dashboard', [AuthController::class, 'showLoginDashboard'])->name('login-dashboard');
+// Virtual Subdomain / Free Hosting Prototype Route
+Route::get('/p/{slug}/{path?}', [PrototypeHostController::class, 'serve'])->where('path', '.*')->name('prototype.serve');
+
+// Documentation / Separate Module Routes
+Route::get('/modules', [ModuleController::class, 'index'])->name('modules.index');
+Route::get('/modules/search', [ModuleController::class, 'search'])->name('modules.search');
+Route::post('/modules/unlock', [ModuleController::class, 'unlock'])->name('modules.unlock');
+Route::get('/modules/read/{slug}', [ModuleController::class, 'showLegacy'])->name('modules.show');
+Route::get('/modules/{moduleSlug}', [ModuleController::class, 'showModule'])->name('modules.module.show');
+Route::get('/modules/{moduleSlug}/{lessonSlug}', [ModuleController::class, 'showLesson'])->name('modules.lesson.show');
 
 // ============================================
 // AUTH ROUTES (UNIFIED SYSTEM)
 // ============================================
+
+// Unified Login (Satu Tempat Login untuk Admin dan User)
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+
+// Backward Compatibility redirects
+Route::get('/login-dashboard', function () { return redirect()->route('login'); })->name('login-dashboard');
+Route::get('/login/admin', function () { return redirect()->route('login'); })->name('login.admin');
+Route::post('/login/admin', [AuthController::class, 'login']);
+Route::get('/login/user', function () { return redirect()->route('login'); })->name('login.user');
+Route::post('/login/user', [AuthController::class, 'login']);
 
 // Register dengan Email Verification
 Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
@@ -40,13 +65,6 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::get('/verify', [AuthController::class, 'showVerify'])->name('verify.show');
 Route::post('/verify', [AuthController::class, 'verify'])->name('verify');
 Route::post('/verify/resend', [AuthController::class, 'resendCode'])->name('verify.resend');
-
-// Login Split
-Route::get('/login/admin', [AuthController::class, 'showLoginAdmin'])->name('login.admin');
-Route::post('/login/admin', [AuthController::class, 'loginAdmin']);
-
-Route::get('/login/user', [AuthController::class, 'showLoginUser'])->name('login.user');
-Route::post('/login/user', [AuthController::class, 'loginUser']);
 
 // Bank Login
 Route::get('/bank/login', [AuthController::class, 'showBankLogin'])->name('bank.login');
@@ -88,52 +106,45 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     // Course Results
     Route::get('courses/{course}/results', [AdminCourseController::class, 'results'])->name('admin.courses.results');
     Route::get('users/{user}/course/{course}/results', [AdminCourseController::class, 'userResults'])->name('admin.users.course.results');
+    Route::post('courses/{course}/certificate/upload', [AdminCourseController::class, 'uploadCertificate'])->name('admin.courses.certificate.upload');
+    Route::post('courses/{course}/certificate/reset', [AdminCourseController::class, 'resetCertificate'])->name('admin.courses.certificate.reset');
 
-    // Admin Content Management
-    Route::get('/content', [AdminController::class, 'content'])->name('admin-content');
-    Route::get('/kelolaakun', [AdminController::class, 'kelolaakun'])->name('admin-kelolaakun');
-    Route::get('/home/search', [AdminController::class, 'search'])->name('adminSearch');
-    Route::post('/register-proses', [AdminController::class, 'registar_proses'])->name('admin-register');
-    Route::post('/slidebanner/store', [AdminController::class, 'store'])->name('slidebanner.store');
-    Route::delete('/slidebanner/delete/{id}', [AdminController::class, 'delete'])->name('slidebanner.delete');
-    Route::post('/login/update/{id}', [AdminController::class, 'update'])->name('login-update');
-    Route::post('/login/akun-delete/{id}', [AdminController::class, 'akun_delete'])->name('akun-delete');
+    // Admin: compile code to test output
+    Route::post('code/compile', [AdminCourseContentController::class, 'compileCode'])->name('admin.code.compile');
 
-    // Kolaborasi
-    Route::prefix('kolaborasi')->group(function () {
-        Route::get('/create', [KolaborasiController::class, 'create'])->name('kolaborasi.create');
-        Route::post('/', [KolaborasiController::class, 'store'])->name('kolaborasi.store');
-        Route::get('{id}/detail-form', [KolaborasiController::class, 'detailForm'])->name('kolaborasi.detail.form');
-        Route::post('{id}/detail-form', [KolaborasiController::class, 'submitDetail'])->name('kolaborasi.detail.submit');
-        Route::delete('/delete/{id}', [KolaborasiController::class, 'delete'])->name('kolaborasi.delete');
-    });
+    // MODULE MANAGER (Matching Screenshot 1 Course Manager pattern)
+    Route::post('modules/preview', [AdminModuleController::class, 'preview'])->name('admin.modules.preview');
+    Route::post('modules/upload-image', [AdminModuleController::class, 'uploadImage'])->name('admin.modules.upload-image');
+    
+    // Module Contents (Bab / Lessons of this module)
+    Route::get('modules/{module}/contents', [AdminModuleController::class, 'contentsIndex'])->name('admin.modules.contents.index');
+    Route::get('modules/{module}/contents/create', [AdminModuleController::class, 'contentsCreate'])->name('admin.modules.contents.create');
+    Route::post('modules/{module}/contents', [AdminModuleController::class, 'contentsStore'])->name('admin.modules.contents.store');
+    Route::get('modules/{module}/contents/{content}/edit', [AdminModuleController::class, 'contentsEdit'])->name('admin.modules.contents.edit');
+    Route::put('modules/{module}/contents/{content}', [AdminModuleController::class, 'contentsUpdate'])->name('admin.modules.contents.update');
+    Route::delete('modules/{module}/contents/{content}', [AdminModuleController::class, 'contentsDestroy'])->name('admin.modules.contents.destroy');
 
-    // BannerCard
-    Route::prefix('bannercard')->group(function () {
-        Route::get('/create', [BannerCardController::class, 'create'])->name('bannercard.create');
-        Route::post('/', [BannerCardController::class, 'store'])->name('bannercard.store');
-        Route::get('{id}/detail-form', [BannerCardController::class, 'detailForm'])->name('bannercard.detail.form');
-        Route::post('{id}/detail-form', [BannerCardController::class, 'submitDetail'])->name('bannercard.detail.submit');
-        Route::delete('/delete/{id}', [BannerCardController::class, 'delete'])->name('bannercard.delete');
-    });
+    // Private Module User Access
+    Route::get('modules/{module}/access', [AdminModuleController::class, 'accessIndex'])->name('admin.modules.access.index');
+    Route::post('modules/{module}/access', [AdminModuleController::class, 'accessGrant'])->name('admin.modules.access.grant');
+    Route::delete('modules/{module}/access/{accessId}', [AdminModuleController::class, 'accessRevoke'])->name('admin.modules.access.revoke');
 
-    // Cards
-    Route::prefix('cards')->group(function () {
-        Route::get('/create', [CardController::class, 'create'])->name('cards.create');
-        Route::post('/', [CardController::class, 'store'])->name('cards.store');
-        Route::get('{id}/detail-form', [CardController::class, 'detailForm'])->name('cards.detail.form');
-        Route::post('{id}/detail-form', [CardController::class, 'submitDetail'])->name('cards.detail.submit');
-        Route::delete('/delete/{id}', [CardController::class, 'delete'])->name('card.delete');
-    });
+    // Toggle active / publish status
+    Route::post('modules/{id}/toggle-active', [AdminModuleController::class, 'toggleActive'])->name('admin.modules.toggle-active');
+    Route::post('modules/{module}/contents/{content}/toggle-publish', [AdminModuleController::class, 'contentsTogglePublish'])->name('admin.modules.contents.toggle-publish');
 
-    // Slide Blogger
-    Route::prefix('slideblogger')->group(function () {
-        Route::get('/create', [SlideBloggerController::class, 'create'])->name('slideblogger.create');
-        Route::post('/', [SlideBloggerController::class, 'store'])->name('slideblogger.store');
-        Route::get('{id}/detail-form', [SlideBloggerController::class, 'detailForm'])->name('slideblogger.detail.form');
-        Route::post('{id}/detail-form', [SlideBloggerController::class, 'submitDetail'])->name('slideblogger.detail.submit');
-        Route::delete('/delete/{id}', [SlideBloggerController::class, 'delete'])->name('blogger.delete');
-    });
+    Route::resource('modules', AdminModuleController::class)->names('admin.modules');
+
+    // Referral Code Management
+    Route::post('referral-codes/{id}/toggle-active', [AdminReferralCodeController::class, 'toggleActive'])->name('admin.referral-codes.toggle-active');
+    Route::resource('referral-codes', AdminReferralCodeController::class)->names('admin.referral-codes');
+
+    // Prototype Management & AI Settings
+    Route::get('prototypes', [AdminPrototypeController::class, 'index'])->name('admin.prototypes.index');
+    Route::post('prototypes/{id}/toggle-active', [AdminPrototypeController::class, 'toggleActive'])->name('admin.prototypes.toggle-active');
+    Route::delete('prototypes/{id}', [AdminPrototypeController::class, 'destroy'])->name('admin.prototypes.destroy');
+    Route::get('prototype-settings', [AdminPrototypeController::class, 'settings'])->name('admin.prototype-settings.index');
+    Route::post('prototype-settings', [AdminPrototypeController::class, 'updateSettings'])->name('admin.prototype-settings.update');
 });
 
 // ============================================
@@ -171,12 +182,23 @@ Route::prefix('user')->middleware(['auth', 'role:user'])->group(function () {
     Route::get('/courses', [UserCourseController::class, 'index'])->name('user.courses.index');
     Route::get('/courses/{course}', [UserCourseController::class, 'show'])->name('user.courses.show');
     Route::post('/courses/{course}/purchase', [UserCourseController::class, 'purchase'])->name('user.courses.purchase');
+    Route::post('/courses/{course}/check-referral', [UserCourseController::class, 'checkReferral'])->name('user.courses.check-referral');
+    Route::post('/courses/{course}/retake', [UserCourseController::class, 'retake'])->name('user.courses.retake');
+    
+
 
     // Course learning
     Route::get('/my-courses', [UserCourseController::class, 'myCourses'])->name('user.my-courses');
     Route::get('/courses/{course}/learn', [UserCourseController::class, 'learn'])->name('user.courses.learn');
     Route::get('/courses/{course}/content/{contentId}', [UserCourseController::class, 'content'])->name('user.courses.content');
     Route::post('/courses/{course}/content/{contentId}/answer', [UserCourseController::class, 'submitAnswer'])->name('user.courses.answer');
+    Route::get('/courses/{course}/certificate', [UserCourseController::class, 'certificate'])->name('user.courses.certificate');
+
+    // Code Execution API
+    Route::post('/code/compile', [CodeExecutionController::class, 'compile'])->name('user.code.compile');
+    Route::post('/code/validate-rules', [CodeExecutionController::class, 'validateRules'])->name('user.code.validate-rules');
+    Route::post('/code/check', [CodeExecutionController::class, 'check'])->name('user.code.check');
+    Route::post('/code/run-tests', [CodeExecutionController::class, 'runTests'])->name('user.code.run-tests');
 
     // Results
     Route::get('/courses/{course}/results', [UserCourseController::class, 'results'])->name('user.courses.results');
@@ -191,6 +213,15 @@ Route::prefix('user')->middleware(['auth', 'role:user'])->group(function () {
 
     // Midtrans callback
     Route::post('/midtrans/callback', [UserTransactionController::class, 'midtransCallback'])->name('user.midtrans.callback');
+
+    // AI Prototype Lab & Free Hosting
+    Route::get('/prototypes', [UserPrototypeController::class, 'index'])->name('user.prototypes.index');
+    Route::get('/prototypes/create', [UserPrototypeController::class, 'create'])->name('user.prototypes.create');
+    Route::post('/prototypes/analyze', [UserPrototypeController::class, 'analyze'])->name('user.prototypes.analyze');
+    Route::get('/prototypes/check-slug', [UserPrototypeController::class, 'checkSlug'])->name('user.prototypes.check-slug');
+    Route::post('/prototypes/deploy', [UserPrototypeController::class, 'deploy'])->name('user.prototypes.deploy');
+    Route::get('/prototypes/{id}/report', [UserPrototypeController::class, 'showReport'])->name('user.prototypes.report');
+    Route::delete('/prototypes/{id}', [UserPrototypeController::class, 'destroy'])->name('user.prototypes.destroy');
 });
 
 // ============================================
@@ -202,9 +233,9 @@ Route::prefix('developer')->middleware(['auth', 'role:developer'])->group(functi
 });
 
 // ============================================
-// DYNAMIC ROUTES (Public)
+// PROFILE ROUTES (ANY AUTHENTICATED USER)
 // ============================================
-Route::get('kolaborasi/{slug}', [KolaborasiController::class, 'dynamicView'])->name('kolaborasi.dynamic')->where('slug', '[A-Za-z0-9\-_]+');
-Route::get('bannercard/{slug}', [BannerCardController::class, 'dynamicView'])->name('bannercard.dynamic')->where('slug', '[A-Za-z0-9\-_]+');
-Route::get('cards/{slug}', [CardController::class, 'dynamicView'])->name('cards.dynamic')->where('slug', '[A-Za-z0-9\-_]+');
-Route::get('slideblogger/{slug}', [SlideBloggerController::class, 'dynamicView'])->name('slideblogger.dynamic')->where('slug', '[A-Za-z0-9\-_]+');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/user/profile', [UserDashboardController::class, 'profile'])->name('user.profile');
+    Route::post('/user/profile', [UserDashboardController::class, 'updateProfile'])->name('user.profile.update');
+});

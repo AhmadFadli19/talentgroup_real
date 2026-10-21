@@ -13,7 +13,19 @@ class CourseStory extends Model
         'course_id',
         'title',
         'content',
+        'image_path',
+        'audio_path',
+        'video_url',
+        'use_image',
+        'use_audio',
+        'use_video',
         'order',
+    ];
+
+    protected $casts = [
+        'use_image' => 'boolean',
+        'use_audio' => 'boolean',
+        'use_video' => 'boolean',
     ];
 
     public function course()

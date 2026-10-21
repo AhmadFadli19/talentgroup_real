@@ -21,7 +21,7 @@ class BankUserSeeder extends Seeder
             DB::table('users')->insert([
                 [
                     'name' => 'Bank Officer',
-                    'email' => 'talentgroup.bank@gmail.com',
+                    'email' => 'brain.bank@gmail.com',
                     'password' => Hash::make('password'),
                     'role_id' => 3, // Bank role
                     'balance' => 0,
@@ -30,7 +30,7 @@ class BankUserSeeder extends Seeder
                 ],
                 [
                     'name' => 'Bank Manager',
-                    'email' => 'talentgroup.manager@gmail.com',
+                    'email' => 'brain.manager@gmail.com',
                     'password' => Hash::make('password'),
                     'role_id' => 3, // Bank role
                     'balance' => 0,

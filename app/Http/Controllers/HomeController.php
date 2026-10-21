@@ -2,37 +2,43 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Card;
-use App\Models\CardDetail;
-use App\Models\Kolaborasi;
-use App\Models\Slidebanner;
-use App\Models\SlideBlogger;
 use Illuminate\Http\Request;
-use App\Models\BannerCardCreate;
 
 class HomeController extends Controller
 {
     public function index() {
-        $slidecard = Card::all();
-        $kolaborasi = Kolaborasi::all();
-        $slidebanner = Slidebanner::all();
-        $bannerCard = BannerCardCreate::all();
-        $slideblogger = SlideBlogger::all();
-        return view('Home/index', compact('slidecard', 'slidebanner', 'bannerCard', 'kolaborasi','slideblogger'));
+        $courses = \App\Models\Course::where('is_active', true)->withCount('questions')->latest()->take(6)->get();
+        return view("Home.index", compact('courses'));
     }
 
+    public function streamFile($path)
+    {
+        // 1. Check public disk
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+            $file = \Illuminate\Support\Facades\Storage::disk('public')->get($path);
+            $type = \Illuminate\Support\Facades\Storage::disk('public')->mimeType($path) ?: 'application/octet-stream';
+            return response($file, 200)->header('Content-Type', $type);
+        }
 
-    public function about() {
-        return view('Home/about');
-    }
+        // 2. Check local disk
+        if (\Illuminate\Support\Facades\Storage::disk('local')->exists($path)) {
+            $file = \Illuminate\Support\Facades\Storage::disk('local')->get($path);
+            $type = \Illuminate\Support\Facades\Storage::disk('local')->mimeType($path) ?: 'application/octet-stream';
+            return response($file, 200)->header('Content-Type', $type);
+        }
 
-    public function blog() {
-        $slideblogger = SlideBlogger::all();
-        return view('Home/blog', compact('slideblogger'));
-    }
+        // 3. Fallback direct filesystem in storage/app/public
+        $fullPath = storage_path('app/public/' . $path);
+        if (file_exists($fullPath) && is_file($fullPath)) {
+            return response()->file($fullPath);
+        }
 
-    public function partnerkolaborasi() {
-        $kolaborasi = Kolaborasi::all();
-        return view('Home/partnerkolaborasi', compact('kolaborasi'));
+        // 4. Fallback direct filesystem in storage/app
+        $fullLocalPath = storage_path('app/' . $path);
+        if (file_exists($fullLocalPath) && is_file($fullLocalPath)) {
+            return response()->file($fullLocalPath);
+        }
+
+        abort(404, 'File tidak ditemukan: ' . $path);
     }
 }
