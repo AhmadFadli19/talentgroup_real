@@ -25,7 +25,7 @@
 
             <div class="flex items-center gap-3">
                 <!-- View Mode Buttons -->
-                <div class="hidden sm:inline-flex p-1 rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-400">
+                <div id="viewModeButtonsGroup" class="hidden sm:inline-flex p-1 rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-400">
                     <button type="button" onclick="setViewMode('split')" id="btnViewSplit" class="px-3 py-1.5 rounded-lg bg-cyan-500/20 text-cyan-300">
                         <i class="fas fa-columns mr-1"></i> Split View
                     </button>
@@ -58,15 +58,15 @@
             </div>
         @endif
 
-        <!-- Pilihan Format Konten Bab Materi (Markdown / PDF / Word) -->
+        <!-- Pilihan Format Konten Bab Materi (Markdown / PDF / Word / PPT) -->
         <input type="hidden" name="content_type" id="contentTypeInput" value="{{ old('content_type', 'markdown') }}">
 
         <div class="mb-6">
             <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
                 <i class="fas fa-shapes text-cyan-400"></i>
-                <span>Pilih Format Penyajian Bab Materi Ini:</span>
+                <span>Pilih Format Penyajian Bab Materi Ini (4 Format Tersedia):</span>
             </label>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Option 1: Markdown (.md) / Manual -->
                 <div onclick="selectContentType('markdown')" 
                      id="typeCardMarkdown" 
@@ -77,11 +77,11 @@
                         </div>
                         <div>
                             <div class="flex items-center gap-2">
-                                <h3 class="text-sm font-bold text-white">1. Markdown (.md) / Manual</h3>
+                                <h3 class="text-sm font-bold text-white">1. Markdown (.md)</h3>
                                 <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">INTERAKTIF</span>
                             </div>
                             <p class="text-xs text-slate-400 mt-1 leading-relaxed">
-                                Tulis manual dengan syntax markdown, code block, tabel, atau upload langsung berkas <code class="text-cyan-300">.md</code>.
+                                Tulis manual dengan markdown, tabel, code block, atau import <code class="text-cyan-300">.md</code>.
                             </p>
                         </div>
                     </div>
@@ -98,10 +98,10 @@
                         <div>
                             <div class="flex items-center gap-2">
                                 <h3 class="text-sm font-bold text-white">2. Dokumen PDF (.pdf)</h3>
-                                <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800">DIGITAL VIEWER</span>
+                                <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800">DIGITAL</span>
                             </div>
                             <p class="text-xs text-slate-400 mt-1 leading-relaxed">
-                                Upload berkas PDF materi lengkap. Dilengkapi pembaca dokumen digital interaktif di browser.
+                                Upload berkas PDF. Pembaca digital interaktif langsung di browser.
                             </p>
                         </div>
                     </div>
@@ -117,11 +117,31 @@
                         </div>
                         <div>
                             <div class="flex items-center gap-2">
-                                <h3 class="text-sm font-bold text-white">3. Microsoft Word (.docx/.doc)</h3>
+                                <h3 class="text-sm font-bold text-white">3. Word (.docx/.doc)</h3>
                                 <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800">OFFICE</span>
                             </div>
                             <p class="text-xs text-slate-400 mt-1 leading-relaxed">
-                                Upload file materi Microsoft Word. Peserta dapat membaca rangkuman serta mengunduh dokumen.
+                                Upload dokumen Microsoft Word materi bab lengkap.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Option 4: PowerPoint Presentation -->
+                <div onclick="selectContentType('ppt')" 
+                     id="typeCardPpt" 
+                     class="p-4 rounded-2xl border-2 cursor-pointer transition-all bg-slate-900/40 hover:bg-slate-900 border-slate-800 opacity-80 hover:opacity-100">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 text-amber-300 flex items-center justify-center text-lg shrink-0">
+                            <i class="fas fa-file-powerpoint"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-sm font-bold text-white">4. PowerPoint (.pptx/.ppt)</h3>
+                                <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-800">SLIDE</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                                Upload materi slide presentasi PowerPoint untuk peserta.
                             </p>
                         </div>
                     </div>
@@ -264,8 +284,8 @@
             </div>
         </div>
 
-        <!-- CMS Editor & Preview Area -->
-        <div class="cyber-card p-0 overflow-hidden">
+        <!-- CMS Editor & Preview Area (Only shown for Markdown) -->
+        <div id="cmsEditorContainer" class="cyber-card p-0 overflow-hidden">
 
             <!-- CMS Toolbar -->
             <div class="p-3 bg-[#0e1628] border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
@@ -494,23 +514,26 @@
         this.dataset.manual = 'true';
     });
 
-    // Content Type Handling (Markdown, PDF, Word)
+    // Content Type Handling (Markdown, PDF, Word, PPT)
     function selectContentType(type) {
         document.getElementById('contentTypeInput').value = type;
 
         const cardMd = document.getElementById('typeCardMarkdown');
         const cardPdf = document.getElementById('typeCardPdf');
         const cardWord = document.getElementById('typeCardWord');
+        const cardPpt = document.getElementById('typeCardPpt');
         const uploadSection = document.getElementById('documentUploadSection');
         const docFileInput = document.getElementById('documentFileInput');
-        const editorLabel = document.getElementById('editorPaneLabel');
-        const textarea = document.getElementById('markdownInput');
+        const cmsEditor = document.getElementById('cmsEditorContainer');
+        const viewButtons = document.getElementById('viewModeButtonsGroup');
 
         const activeClasses = ['border-cyan-500/80', 'bg-slate-900/80', 'shadow-lg', 'shadow-cyan-500/10'];
         const inactiveClasses = ['border-slate-800', 'bg-slate-900/40', 'opacity-80'];
 
-        [cardMd, cardPdf, cardWord].forEach(card => {
+        [cardMd, cardPdf, cardWord, cardPpt].forEach(card => {
+            if (!card) return;
             activeClasses.forEach(c => card.classList.remove(c));
+            card.classList.remove('border-rose-500/80', 'shadow-rose-500/10', 'border-sky-500/80', 'shadow-sky-500/10', 'border-amber-500/80', 'shadow-amber-500/10');
             inactiveClasses.forEach(c => card.classList.add(c));
         });
 
@@ -518,28 +541,36 @@
             inactiveClasses.forEach(c => cardMd.classList.remove(c));
             activeClasses.forEach(c => cardMd.classList.add(c));
             uploadSection.classList.add('hidden');
-            editorLabel.innerText = 'MARKDOWN SOURCE';
-            textarea.placeholder = "# Tuliskan judul bab materi Anda di sini...\n\nJelaskan materi dengan format markdown, sisipkan kerangka kode menggunakan tombol di toolbar, atau import berkas .md langsung.";
-        } else if (type === 'pdf') {
-            inactiveClasses.forEach(c => cardPdf.classList.remove(c));
-            cardPdf.classList.add('border-rose-500/80', 'bg-slate-900/80', 'shadow-lg', 'shadow-rose-500/10');
+            if (cmsEditor) cmsEditor.classList.remove('hidden');
+            if (viewButtons) viewButtons.classList.remove('hidden');
+        } else {
+            // Hide the entire Markdown editor & view buttons so documents are strictly standalone
+            if (cmsEditor) cmsEditor.classList.add('hidden');
+            if (viewButtons) viewButtons.classList.add('hidden');
             uploadSection.classList.remove('hidden');
-            docFileInput.accept = '.pdf';
-            document.getElementById('docUploadTitle').innerHTML = '<i class="fas fa-file-pdf text-rose-400"></i><span>Unggah Dokumen PDF Materi</span>';
-            document.getElementById('docUploadDesc').innerText = 'Pilih file PDF yang akan ditampilkan melalui Digital PDF Viewer.';
-            document.getElementById('docUploadHint').innerText = 'Format berkas: .PDF (Maksimal 50 MB)';
-            editorLabel.innerText = 'CATATAN / RANGKUMAN MATERI (OPSIONAL)';
-            textarea.placeholder = "Tuliskan catatan pendukung, ringkasan, atau instruksi pengerjaan dari dokumen PDF ini...";
-        } else if (type === 'word') {
-            inactiveClasses.forEach(c => cardWord.classList.remove(c));
-            cardWord.classList.add('border-sky-500/80', 'bg-slate-900/80', 'shadow-lg', 'shadow-sky-500/10');
-            uploadSection.classList.remove('hidden');
-            docFileInput.accept = '.doc,.docx';
-            document.getElementById('docUploadTitle').innerHTML = '<i class="fas fa-file-word text-sky-400"></i><span>Unggah Berkas Microsoft Word</span>';
-            document.getElementById('docUploadDesc').innerText = 'Pilih berkas Word (.docx atau .doc) untuk materi bab ini.';
-            document.getElementById('docUploadHint').innerText = 'Format berkas: .DOCX, .DOC (Maksimal 50 MB)';
-            editorLabel.innerText = 'CATATAN / RANGKUMAN MATERI (OPSIONAL)';
-            textarea.placeholder = "Tuliskan ringkasan pokok bahasan dari dokumen Microsoft Word ini...";
+
+            if (type === 'pdf') {
+                inactiveClasses.forEach(c => cardPdf.classList.remove(c));
+                cardPdf.classList.add('border-rose-500/80', 'bg-slate-900/80', 'shadow-lg', 'shadow-rose-500/10');
+                docFileInput.accept = '.pdf';
+                document.getElementById('docUploadTitle').innerHTML = '<i class="fas fa-file-pdf text-rose-400"></i><span>Unggah Dokumen PDF Materi</span>';
+                document.getElementById('docUploadDesc').innerText = 'Pilih file PDF yang akan ditampilkan melalui Digital PDF Viewer.';
+                document.getElementById('docUploadHint').innerText = 'Format berkas: .PDF (Maksimal 50 MB)';
+            } else if (type === 'word') {
+                inactiveClasses.forEach(c => cardWord.classList.remove(c));
+                cardWord.classList.add('border-sky-500/80', 'bg-slate-900/80', 'shadow-lg', 'shadow-sky-500/10');
+                docFileInput.accept = '.doc,.docx';
+                document.getElementById('docUploadTitle').innerHTML = '<i class="fas fa-file-word text-sky-400"></i><span>Unggah Berkas Microsoft Word</span>';
+                document.getElementById('docUploadDesc').innerText = 'Pilih berkas Word (.docx atau .doc) untuk materi bab ini.';
+                document.getElementById('docUploadHint').innerText = 'Format berkas: .DOCX, .DOC (Maksimal 50 MB)';
+            } else if (type === 'ppt') {
+                inactiveClasses.forEach(c => cardPpt.classList.remove(c));
+                cardPpt.classList.add('border-amber-500/80', 'bg-slate-900/80', 'shadow-lg', 'shadow-amber-500/10');
+                docFileInput.accept = '.ppt,.pptx';
+                document.getElementById('docUploadTitle').innerHTML = '<i class="fas fa-file-powerpoint text-amber-400"></i><span>Unggah Berkas PowerPoint</span>';
+                document.getElementById('docUploadDesc').innerText = 'Pilih berkas PowerPoint (.pptx atau .ppt) untuk slide presentasi materi ini.';
+                document.getElementById('docUploadHint').innerText = 'Format berkas: .PPTX, .PPT (Maksimal 50 MB)';
+            }
         }
     }
 

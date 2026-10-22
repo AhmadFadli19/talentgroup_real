@@ -64,6 +64,21 @@ class Module extends Model
         );
     }
 
+    public function isPpt(): bool
+    {
+        return $this->content_type === 'ppt' || (
+            !empty($this->file_path) && (
+                str_ends_with(strtolower($this->file_path), '.pptx') || 
+                str_ends_with(strtolower($this->file_path), '.ppt')
+            )
+        );
+    }
+
+    public function isDocument(): bool
+    {
+        return $this->isPdf() || $this->isWord() || $this->isPpt();
+    }
+
     public function getFileUrlAttribute(): ?string
     {
         return $this->file_path ? asset('storage/' . $this->file_path) : null;
@@ -141,6 +156,9 @@ class Module extends Model
      */
     public function getTableOfContentsAttribute()
     {
+        if ($this->isDocument()) {
+            return [];
+        }
         return ModuleMarkdownParser::extractTableOfContents($this->content ?? '');
     }
 

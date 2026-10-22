@@ -547,18 +547,31 @@
             <!-- ============================================== -->
             <!-- MAIN CONTENT (Middle Column)                   -->
             <!-- ============================================== -->
-            <main class="flex-1 min-w-0 py-8 lg:py-10 max-w-4xl mx-auto @if(isset($module) && $module->enable_protection) protected-content @endif">
+            @php
+                $isDocumentMode = isset($module) && method_exists($module, 'isDocument') && $module->isDocument();
+                $hasToc = !$isDocumentMode && isset($tableOfContents) && count($tableOfContents) > 0;
+            @endphp
+            <main id="mainArticleContainer" class="flex-1 min-w-0 py-8 lg:py-10 transition-all duration-300 {{ $isDocumentMode ? 'w-full max-w-none' : ($hasToc ? 'max-w-4xl mx-auto' : 'max-w-5xl mx-auto') }} @if(isset($module) && $module->enable_protection) protected-content @endif">
                 @yield('content')
             </main>
 
             <!-- ============================================== -->
             <!-- RIGHT SIDEBAR ("ON THIS PAGE" Table of Contents)-->
             <!-- ============================================== -->
-            @if(isset($tableOfContents) && count($tableOfContents) > 0)
-                <aside class="hidden xl:block w-64 shrink-0 py-10 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto pl-6 border-l border-slate-800/60">
-                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
-                        <i class="fas fa-list-ul text-[10px] text-cyan-400"></i>
-                        <span>On this page</span>
+            @if($hasToc)
+                <aside id="tocSidebar" class="hidden xl:block w-64 shrink-0 py-10 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto pl-6 border-l border-slate-800/60 transition-all duration-300">
+                    <div class="flex items-center justify-between mb-4 pb-2 border-b border-slate-800/50">
+                        <div class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                            <i class="fas fa-list-ul text-[10px] text-cyan-400"></i>
+                            <span>On this page</span>
+                        </div>
+                        <button type="button" 
+                                onclick="toggleToc(true)" 
+                                title="Sembunyikan daftar isi untuk memperluas tampilan bacaan"
+                                class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono text-slate-400 hover:text-cyan-300 hover:bg-slate-800 border border-slate-700/60 transition group">
+                            <span>Hidden</span>
+                            <i class="fas fa-chevron-right text-[9px] group-hover:translate-x-0.5 transition-transform"></i>
+                        </button>
                     </div>
 
                     <nav class="space-y-2 text-[13px] font-normal" id="tocNavigation">
@@ -571,6 +584,16 @@
                         @endforeach
                     </nav>
                 </aside>
+
+                <!-- Floating button to reopen/unhide TOC when hidden -->
+                <button type="button" 
+                        id="unhideTocBtn" 
+                        onclick="toggleToc(false)" 
+                        class="hidden fixed right-6 bottom-8 z-30 px-3.5 py-2 rounded-xl bg-slate-900/95 hover:bg-slate-800 text-cyan-400 border border-slate-700 hover:border-cyan-500/50 shadow-2xl text-xs font-semibold items-center gap-2 backdrop-blur transition-all duration-200 group"
+                        title="Tampilkan kembali On this page">
+                    <i class="fas fa-list-ul text-xs group-hover:scale-110 transition-transform"></i>
+                    <span>Tampilkan On this page</span>
+                </button>
             @endif
 
         </div>
@@ -772,7 +795,43 @@
         }
 
         window.addEventListener('scroll', updateActiveToc, { passive: true });
-        updateActiveToc();
+        // Toggle "On this page" TOC visibility to expand content reading width
+        function toggleToc(hide) {
+            const tocSidebar = document.getElementById('tocSidebar');
+            const mainContainer = document.getElementById('mainArticleContainer');
+            const unhideBtn = document.getElementById('unhideTocBtn');
+
+            if (!tocSidebar || !mainContainer) return;
+
+            if (hide) {
+                tocSidebar.classList.add('!hidden');
+                mainContainer.classList.remove('max-w-4xl', 'mx-auto');
+                mainContainer.classList.add('w-full', 'max-w-none');
+                if (unhideBtn) {
+                    unhideBtn.classList.remove('hidden');
+                    unhideBtn.classList.add('inline-flex');
+                }
+                try { localStorage.setItem('talent_hide_toc', 'true'); } catch (e) {}
+            } else {
+                tocSidebar.classList.remove('!hidden');
+                mainContainer.classList.remove('w-full', 'max-w-none');
+                mainContainer.classList.add('max-w-4xl', 'mx-auto');
+                if (unhideBtn) {
+                    unhideBtn.classList.add('hidden');
+                    unhideBtn.classList.remove('inline-flex');
+                }
+                try { localStorage.setItem('talent_hide_toc', 'false'); } catch (e) {}
+            }
+        }
+
+        // Restore TOC visibility preference on load
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                if (localStorage.getItem('talent_hide_toc') === 'true') {
+                    toggleToc(true);
+                }
+            } catch (e) {}
+        });
 
         // Global smart go back handler (supporting Google and external referrer)
         function handleSmartGoBack() {

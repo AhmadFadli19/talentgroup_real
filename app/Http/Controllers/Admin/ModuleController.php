@@ -238,10 +238,10 @@ class ModuleController extends Controller
             'title' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255',
             'section' => 'nullable|string|max:100',
-            'content_type' => 'nullable|string|in:markdown,pdf,word',
+            'content_type' => 'nullable|string|in:markdown,pdf,word,ppt',
             'excerpt' => 'nullable|string',
             'content' => 'nullable|string',
-            'document_file' => 'nullable|file|mimes:pdf,doc,docx,md,txt|max:51200',
+            'document_file' => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,md,txt|max:51200',
             'order' => 'nullable|integer',
             'is_published' => 'nullable|boolean',
             'enable_protection' => 'nullable|boolean',
@@ -259,7 +259,7 @@ class ModuleController extends Controller
         $fileName = null;
         $fileSize = null;
 
-        // Handle file upload (PDF, Word, or Markdown)
+        // Handle file upload (PDF, Word, PPT, or Markdown)
         if ($request->hasFile('document_file')) {
             $file = $request->file('document_file');
             $fileName = $file->getClientOriginalName();
@@ -275,20 +275,24 @@ class ModuleController extends Controller
             } elseif ($extension === 'pdf') {
                 $contentType = 'pdf';
                 $filePath = $file->store('modules/documents', 'public');
-                if (empty($content)) {
-                    $content = "Dokumen Materi PDF: " . $fileName;
-                }
+                $content = "Dokumen Materi PDF: " . $fileName;
             } elseif (in_array($extension, ['doc', 'docx'])) {
                 $contentType = 'word';
                 $filePath = $file->store('modules/documents', 'public');
-                if (empty($content)) {
-                    $content = "Dokumen Materi Microsoft Word: " . $fileName;
-                }
+                $content = "Dokumen Materi Microsoft Word: " . $fileName;
+            } elseif (in_array($extension, ['ppt', 'pptx'])) {
+                $contentType = 'ppt';
+                $filePath = $file->store('modules/documents', 'public');
+                $content = "Dokumen Presentasi PowerPoint: " . $fileName;
             }
         }
 
+        if (in_array($contentType, ['pdf', 'word', 'ppt']) && empty($filePath)) {
+            return back()->withInput()->withErrors(['document_file' => 'Berkas dokumen (' . strtoupper($contentType) . ') wajib dipilih dan diunggah.']);
+        }
+
         if (empty($content) && empty($filePath)) {
-            return back()->withInput()->withErrors(['content' => 'Isi materi Markdown atau unggah berkas dokumen (PDF/Word/.md) wajib diisi.']);
+            return back()->withInput()->withErrors(['content' => 'Isi materi Markdown atau unggah berkas dokumen (PDF/Word/PPT/.md) wajib diisi.']);
         }
 
         $slug = $request->slug ? Str::slug($request->slug) : Str::slug($request->title);
@@ -349,10 +353,10 @@ class ModuleController extends Controller
             'title' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:modules,slug,' . $lesson->id,
             'section' => 'nullable|string|max:100',
-            'content_type' => 'nullable|string|in:markdown,pdf,word',
+            'content_type' => 'nullable|string|in:markdown,pdf,word,ppt',
             'excerpt' => 'nullable|string',
             'content' => 'nullable|string',
-            'document_file' => 'nullable|file|mimes:pdf,doc,docx,md,txt|max:51200',
+            'document_file' => 'nullable|file|mimes:pdf,doc,docx,ppt,pptx,md,txt|max:51200',
             'order' => 'nullable|integer',
             'is_published' => 'nullable|boolean',
             'enable_protection' => 'nullable|boolean',
@@ -390,16 +394,20 @@ class ModuleController extends Controller
             } elseif ($extension === 'pdf') {
                 $contentType = 'pdf';
                 $filePath = $file->store('modules/documents', 'public');
-                if (empty($content)) {
-                    $content = "Dokumen Materi PDF: " . $fileName;
-                }
+                $content = "Dokumen Materi PDF: " . $fileName;
             } elseif (in_array($extension, ['doc', 'docx'])) {
                 $contentType = 'word';
                 $filePath = $file->store('modules/documents', 'public');
-                if (empty($content)) {
-                    $content = "Dokumen Materi Microsoft Word: " . $fileName;
-                }
+                $content = "Dokumen Materi Microsoft Word: " . $fileName;
+            } elseif (in_array($extension, ['ppt', 'pptx'])) {
+                $contentType = 'ppt';
+                $filePath = $file->store('modules/documents', 'public');
+                $content = "Dokumen Presentasi PowerPoint: " . $fileName;
             }
+        }
+
+        if (in_array($contentType, ['pdf', 'word', 'ppt']) && empty($filePath)) {
+            return back()->withInput()->withErrors(['document_file' => 'Berkas dokumen (' . strtoupper($contentType) . ') wajib dipilih dan diunggah.']);
         }
 
         $section = $request->section ? strtoupper(trim($request->section)) : ($lesson->section ?: 'GETTING STARTED');

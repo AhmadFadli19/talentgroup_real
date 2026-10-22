@@ -161,62 +161,82 @@
                 </div>
             @endif
 
-            <!-- Document / File Attachment Box (PDF or Word or Attached Document) -->
+            <!-- Document / File Viewer Box (PDF, Word, PPT) -->
             @if(!empty($module->file_path))
-                <div class="mb-8 p-5 rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900/90 to-[#0e1628] shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="mb-6 p-4 sm:p-5 rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900/90 to-[#0e1628] shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0 {{ $module->isPdf() ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30' : ($module->isWord() ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30' : 'bg-purple-500/15 text-purple-400 border border-purple-500/30') }}">
-                            <i class="{{ $module->isPdf() ? 'fas fa-file-pdf' : ($module->isWord() ? 'fas fa-file-word' : 'fas fa-file-alt') }}"></i>
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0 {{ $module->isPdf() ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30' : ($module->isWord() ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30' : ($module->isPpt() ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' : 'bg-purple-500/15 text-purple-400 border border-purple-500/30')) }}">
+                            <i class="{{ $module->isPdf() ? 'fas fa-file-pdf' : ($module->isWord() ? 'fas fa-file-word' : ($module->isPpt() ? 'fas fa-file-powerpoint' : 'fas fa-file-alt')) }}"></i>
                         </div>
                         <div>
                             <div class="flex items-center gap-2">
-                                <span class="text-xs uppercase font-mono font-bold px-2 py-0.5 rounded {{ $module->isPdf() ? 'bg-rose-950 text-rose-300 border border-rose-800' : ($module->isWord() ? 'bg-sky-950 text-sky-300 border border-sky-800' : 'bg-purple-950 text-purple-300 border border-purple-800') }}">
-                                    {{ strtoupper($module->content_type ?: ($module->isPdf() ? 'PDF' : ($module->isWord() ? 'WORD' : 'DOKUMEN'))) }}
+                                <span class="text-xs uppercase font-mono font-bold px-2 py-0.5 rounded {{ $module->isPdf() ? 'bg-rose-950 text-rose-300 border border-rose-800' : ($module->isWord() ? 'bg-sky-950 text-sky-300 border border-sky-800' : ($module->isPpt() ? 'bg-amber-950 text-amber-300 border border-amber-800' : 'bg-purple-950 text-purple-300 border border-purple-800')) }}">
+                                    {{ strtoupper($module->content_type ?: ($module->isPdf() ? 'PDF' : ($module->isWord() ? 'WORD' : ($module->isPpt() ? 'PPT' : 'DOKUMEN')))) }}
                                 </span>
                                 <span class="text-xs text-slate-400 font-mono">{{ $module->formatted_file_size }}</span>
                             </div>
-                            <h4 class="text-white font-bold text-sm mt-1 truncate max-w-xs sm:max-w-md">
+                            <h4 class="text-white font-bold text-sm mt-1 truncate max-w-xs sm:max-w-xl">
                                 {{ $module->file_name ?? basename($module->file_path) }}
                             </h4>
                         </div>
                     </div>
 
-                    <div class="flex items-center gap-2.5 w-full sm:w-auto">
-                        <a href="{{ $module->file_url }}" 
-                           target="_blank" 
-                           class="flex-1 sm:flex-initial px-4 py-2 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold flex items-center justify-center gap-2 transition">
-                            <i class="fas fa-external-link-alt text-[11px]"></i>
-                            <span>Buka di Tab Baru</span>
-                        </a>
-                        <a href="{{ $module->file_url }}" 
-                           download="{{ $module->file_name ?? basename($module->file_path) }}" 
-                           class="flex-1 sm:flex-initial cyber-btn text-xs flex items-center justify-center gap-2">
-                            <i class="fas fa-download"></i>
-                            <span>Unduh Berkas</span>
-                        </a>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-400 text-xs font-mono">
+                            <i class="fas fa-lock text-[10px] text-emerald-400"></i>
+                            <span>Mode Baca Terproteksi</span>
+                        </span>
                     </div>
                 </div>
 
-                <!-- Embedded PDF Viewer -->
+                <!-- Embedded Document Viewers (Full Size & Large) -->
                 @if($module->isPdf())
                     <div class="mb-10 rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl">
-                        <div class="px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs font-mono text-slate-400">
-                            <div class="flex items-center gap-2">
+                        <div class="px-4 py-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs font-mono text-slate-400">
+                            <div class="flex items-center gap-2.5">
                                 <i class="fas fa-file-pdf text-rose-400"></i>
                                 <span class="text-white font-semibold truncate">{{ $module->file_name ?? $module->title }}</span>
                             </div>
                             <span class="text-[11px] text-slate-500 hidden sm:inline">PDF Document Reader</span>
                         </div>
-                        <iframe src="{{ $module->file_url }}#toolbar=1&navpanes=0" 
-                                class="w-full h-[850px] border-0 bg-slate-950" 
-                                title="Pratinjau Dokumen PDF">
+                        <iframe src="{{ $module->file_url }}#toolbar=0&navpanes=0&scrollbar=1" 
+                                class="w-full h-[90vh] min-h-[850px] border-0 bg-slate-950" 
+                                title="Pembaca Dokumen PDF">
+                        </iframe>
+                    </div>
+                @elseif($module->isWord())
+                    <div class="mb-10 rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl">
+                        <div class="px-4 py-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs font-mono text-slate-400">
+                            <div class="flex items-center gap-2.5">
+                                <i class="fas fa-file-word text-sky-400"></i>
+                                <span class="text-white font-semibold truncate">{{ $module->file_name ?? $module->title }}</span>
+                            </div>
+                            <span class="text-[11px] text-slate-500 hidden sm:inline">Word Document Reader</span>
+                        </div>
+                        <iframe src="https://view.officeapps.live.com/op/embed.aspx?src={{ urlencode(url($module->file_url)) }}" 
+                                class="w-full h-[90vh] min-h-[850px] border-0 bg-slate-950" 
+                                title="Pembaca Dokumen Word">
+                        </iframe>
+                    </div>
+                @elseif($module->isPpt())
+                    <div class="mb-10 rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl">
+                        <div class="px-4 py-3 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs font-mono text-slate-400">
+                            <div class="flex items-center gap-2.5">
+                                <i class="fas fa-file-powerpoint text-amber-400"></i>
+                                <span class="text-white font-semibold truncate">{{ $module->file_name ?? $module->title }}</span>
+                            </div>
+                            <span class="text-[11px] text-slate-500 hidden sm:inline">PowerPoint Slide Reader</span>
+                        </div>
+                        <iframe src="https://view.officeapps.live.com/op/embed.aspx?src={{ urlencode(url($module->file_url)) }}" 
+                                class="w-full h-[90vh] min-h-[850px] border-0 bg-slate-950" 
+                                title="Pembaca Presentasi PowerPoint">
                         </iframe>
                     </div>
                 @endif
             @endif
 
-            <!-- Parsed Markdown / Framed Content (if available) -->
-            @if(!empty($module->content))
+            <!-- Parsed Markdown / Framed Content (Only displayed for Markdown modules) -->
+            @if($module->isMarkdown() && !empty($module->content))
                 <div class="module-body text-[15px] leading-relaxed text-slate-300">
                     {!! $module->rendered_content !!}
                 </div>
