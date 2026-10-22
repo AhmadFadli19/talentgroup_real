@@ -234,12 +234,12 @@
                         <i class="fas fa-code text-white text-sm"></i>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="text-base font-extrabold text-white tracking-tight">flowacademy</span>
+                        <span class="text-base font-extrabold text-white tracking-tight">talentgroup.id</span>
                         <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-slate-800 text-cyan-400 border border-slate-700">v4.3</span>
                     </div>
                 </a>
 
-                <!-- JUDUL MODUL DI NAVBAR (Sesuai Permintaan: Judul modul kasih di atas saja di navbar) -->
+                <!-- Module Title in Navbar -->
                 @if(isset($learningModule))
                     <div class="hidden sm:flex items-center gap-2.5 pl-3 ml-1 border-l border-slate-800">
                         <div class="flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-900/90 border border-slate-700/70 shadow-sm">
@@ -300,7 +300,7 @@
                     @endif
                     <div class="h-4 w-px bg-slate-800 hidden sm:block"></div>
                     <div class="flex items-center gap-2">
-                        <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : 'https://www.gravatar.com/avatar/' . md5(auth()->user()->email) . '?d=mp' }}" 
+                        <img src="{{ auth()->user()->avatar_url }}" 
                              alt="Avatar" class="w-7 h-7 rounded-full object-cover border border-slate-700">
                     </div>
                 @else
@@ -315,7 +315,7 @@
         <div class="flex gap-8">
 
             <!-- ============================================== -->
-            <!-- DESKTOP LEFT SIDEBAR (Tailwind Docs Style - Matching Image 2) -->
+            <!-- DESKTOP LEFT SIDEBAR -->
             <!-- ============================================== -->
             <aside class="hidden lg:block w-72 shrink-0 py-8 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto pr-4 border-r border-slate-800/60">
                 <div class="space-y-6">
@@ -329,7 +329,7 @@
                             </a>
                         </div>
 
-                        <!-- Grouped Sections & Lessons (Matching Screenshot Image 2 Exactly) -->
+                        <!-- Grouped Sections & Lessons -->
                         @if(isset($groupedLessons) && $groupedLessons->count() > 0)
                             @foreach($groupedLessons as $sectionName => $sectionLessons)
                                 <div class="mb-6">

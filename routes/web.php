@@ -112,7 +112,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     // Admin: compile code to test output
     Route::post('code/compile', [AdminCourseContentController::class, 'compileCode'])->name('admin.code.compile');
 
-    // MODULE MANAGER (Matching Screenshot 1 Course Manager pattern)
+    // Module Management
     Route::post('modules/preview', [AdminModuleController::class, 'preview'])->name('admin.modules.preview');
     Route::post('modules/upload-image', [AdminModuleController::class, 'uploadImage'])->name('admin.modules.upload-image');
     

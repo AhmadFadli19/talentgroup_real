@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 class ModuleController extends Controller
 {
     /**
-     * Display the module catalog (matching Screenshot 2 course catalog style).
+     * Display the module catalog.
      */
     public function index(Request $request)
     {

@@ -1,17 +1,17 @@
 @extends('layouts.app')
 
-@section('title', 'Katalog Modul Pembelajaran | Flow Academy')
+@section('title', 'Katalog Modul Pembelajaran | talentgroup.id')
 
 @section('content')
 <style>
-/* ================= MODULE CATALOG (Matching Screenshot 2) ================= */
+/* ================= MODULE CATALOG ================= */
 .catalog-container {
     max-width: 1200px;
     margin: 0 auto;
     padding: 24px 16px 60px;
 }
 
-/* TOP FILTER & SEARCH BAR (Matching Screenshot 2) */
+/* TOP FILTER & SEARCH BAR */
 .filter-search-box {
     background: #080d1a;
     border: 1px solid #1e293b;
@@ -124,7 +124,7 @@
     background: #7c3aed;
 }
 
-/* CARDS GRID (Matching Screenshot 2) */
+/* CARDS GRID */
 .module-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
@@ -267,7 +267,7 @@
     font-size: 14px;
 }
 
-/* INITIALIZE VIEW BUTTON (Matching Screenshot 2) */
+/* INITIALIZE VIEW BUTTON */
 .btn-initialize {
     background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
     color: #ffffff;
@@ -340,7 +340,7 @@
         </div>
     @endif
 
-    <!-- CATEGORY FILTER & SEARCH (Matching Screenshot 2) -->
+    <!-- CATEGORY FILTER & SEARCH -->
     <div class="filter-search-box">
         <!-- Category Filter -->
         <div class="filter-group">
@@ -386,7 +386,7 @@
         </div>
     </div>
 
-    <!-- MODULE CARDS GRID (Matching Screenshot 2) -->
+    <!-- MODULE CARDS GRID -->
     <div class="module-grid">
         @forelse($modules as $item)
             @php

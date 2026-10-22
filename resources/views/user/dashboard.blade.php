@@ -24,7 +24,7 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div class="cyber-card" style="border-top: 3px solid var(--cyan);">
             <div class="text-4xl mb-4 text-center">📚</div>
             <div class="text-center">
@@ -51,15 +51,6 @@
                 <div class="text-xs mt-2" style="color: var(--text2);">Completed</div>
             </div>
         </div>
-
-        <div class="cyber-card" style="border-top: 3px solid var(--pink);">
-            <div class="text-4xl mb-4 text-center">💰</div>
-            <div class="text-center">
-                <div class="text-xs uppercase tracking-widest mb-2" style="color: var(--text3);">Credits</div>
-                <div class="text-xl font-bold mt-2 mb-1" style="color: var(--pink); font-family: 'Fira Code', monospace;">Rp {{ number_format(auth()->user()->balance ?? 0, 0, ',', '.') }}</div>
-                <div class="text-xs mt-2" style="color: var(--text2);">Available</div>
-            </div>
-        </div>
     </div>
 
     <!-- Main Content Grid -->
@@ -81,10 +72,6 @@
                     </a>
                     <a href="{{ route('user.transactions.index') }}" class="cyber-btn flex justify-between items-center" style="border-color: var(--green); color: var(--text); background: rgba(16,185,129,0.1);">
                         <span><i class="fas fa-history mr-2"></i> Transaction Log</span>
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
-                    <a href="{{ route('user.transactions.topup') }}" class="cyber-btn flex justify-between items-center" style="border-color: var(--yellow); color: var(--text); background: rgba(234,179,8,0.1);">
-                        <span><i class="fas fa-credit-card mr-2"></i> Inject Credits</span>
                         <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>

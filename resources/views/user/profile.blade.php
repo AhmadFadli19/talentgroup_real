@@ -40,7 +40,7 @@
                 <!-- Avatar Preview -->
                 <div class="relative group cursor-pointer mb-4">
                     <img id="avatarPreview" 
-                         src="{{ $user->avatar ? asset('storage/' . $user->avatar) : 'https://www.gravatar.com/avatar/' . md5($user->email) . '?d=mp&s=150' }}" 
+                         src="{{ $user->avatar_url }}" 
                          class="w-32 h-32 rounded-full object-cover border-4 border-[var(--border)] group-hover:border-[var(--cyan)] transition-all" 
                          alt="Avatar">
                     <div class="absolute inset-0 rounded-full bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs transition-opacity" 
@@ -67,18 +67,11 @@
                         <span class="text-[var(--text3)]">PHONE</span>
                         <span class="text-[var(--text2)]">{{ $user->phone ?? '-' }}</span>
                     </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-[var(--text3)]">BALANCE</span>
-                        <span class="text-[var(--green)] font-bold">Rp {{ number_format($user->balance, 0, ',', '.') }}</span>
+                    <div class="flex justify-between">
+                        <span class="text-[var(--text3)]">STATUS</span>
+                        <span class="text-[var(--cyan)] font-bold">ACTIVE</span>
                     </div>
                 </div>
-
-                <!-- Inject Credit Button -->
-                @if(!$user->isAdmin())
-                    <a href="{{ route('user.transactions.topup') }}" class="cyber-btn w-full mt-5 text-center font-bold" style="background: linear-gradient(135deg, var(--green), #059669); box-shadow: 0 0 16px rgba(16,185,129,0.3)">
-                        <i class="fas fa-plus-circle mr-2"></i> Inject Credits Saldo
-                    </a>
-                @endif
             </div>
         </div>
 

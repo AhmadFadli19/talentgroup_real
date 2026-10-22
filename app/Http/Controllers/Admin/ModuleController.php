@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
 class ModuleController extends Controller
 {
     /**
-     * Display a listing of modules (MODULE MANAGER - matching Screenshot 1).
+     * Display a listing of modules.
      */
     public function index(Request $request)
     {
@@ -238,12 +238,52 @@ class ModuleController extends Controller
             'title' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255',
             'section' => 'nullable|string|max:100',
+            'content_type' => 'nullable|string|in:markdown,pdf,word',
             'excerpt' => 'nullable|string',
-            'content' => 'required|string',
+            'content' => 'nullable|string',
+            'document_file' => 'nullable|file|mimes:pdf,doc,docx,md,txt|max:51200',
             'order' => 'nullable|integer',
             'is_published' => 'nullable|boolean',
             'enable_protection' => 'nullable|boolean',
         ]);
+
+        $contentType = $request->input('content_type', 'markdown');
+        $content = $request->input('content', '');
+        $filePath = null;
+        $fileName = null;
+        $fileSize = null;
+
+        // Handle file upload (PDF, Word, or Markdown)
+        if ($request->hasFile('document_file')) {
+            $file = $request->file('document_file');
+            $fileName = $file->getClientOriginalName();
+            $fileSize = $file->getSize();
+            $extension = strtolower($file->getClientOriginalExtension());
+
+            if ($extension === 'md' || $extension === 'txt') {
+                $contentType = 'markdown';
+                $uploadedMarkdown = file_get_contents($file->getRealPath());
+                if (!empty($uploadedMarkdown)) {
+                    $content = $uploadedMarkdown;
+                }
+            } elseif ($extension === 'pdf') {
+                $contentType = 'pdf';
+                $filePath = $file->store('modules/documents', 'public');
+                if (empty($content)) {
+                    $content = "Dokumen Materi PDF: " . $fileName;
+                }
+            } elseif (in_array($extension, ['doc', 'docx'])) {
+                $contentType = 'word';
+                $filePath = $file->store('modules/documents', 'public');
+                if (empty($content)) {
+                    $content = "Dokumen Materi Microsoft Word: " . $fileName;
+                }
+            }
+        }
+
+        if (empty($content) && empty($filePath)) {
+            return back()->withInput()->withErrors(['content' => 'Isi materi Markdown atau unggah berkas dokumen (PDF/Word/.md) wajib diisi.']);
+        }
 
         $slug = $request->slug ? Str::slug($request->slug) : Str::slug($request->title);
         $originalSlug = $slug;
@@ -259,8 +299,12 @@ class ModuleController extends Controller
             'section' => $section,
             'title' => $request->title,
             'slug' => $slug,
+            'content_type' => $contentType,
             'excerpt' => $request->excerpt,
-            'content' => $request->content,
+            'content' => $content,
+            'file_path' => $filePath,
+            'file_name' => $fileName,
+            'file_size' => $fileSize,
             'order' => $request->order ?? (Module::where('category_id', $module->id)->max('order') + 1),
             'is_published' => $request->has('is_published') ? $request->boolean('is_published') : true,
             'enable_protection' => $request->has('enable_protection') ? $request->boolean('enable_protection') : true,
@@ -299,12 +343,52 @@ class ModuleController extends Controller
             'title' => 'required|string|max:255',
             'slug' => 'required|string|max:255|unique:modules,slug,' . $lesson->id,
             'section' => 'nullable|string|max:100',
+            'content_type' => 'nullable|string|in:markdown,pdf,word',
             'excerpt' => 'nullable|string',
-            'content' => 'required|string',
+            'content' => 'nullable|string',
+            'document_file' => 'nullable|file|mimes:pdf,doc,docx,md,txt|max:51200',
             'order' => 'nullable|integer',
             'is_published' => 'nullable|boolean',
             'enable_protection' => 'nullable|boolean',
         ]);
+
+        $contentType = $request->input('content_type', $lesson->content_type ?: 'markdown');
+        $content = $request->input('content', $lesson->content);
+        $filePath = $lesson->file_path;
+        $fileName = $lesson->file_name;
+        $fileSize = $lesson->file_size;
+
+        if ($request->hasFile('document_file')) {
+            // Delete old file if exists
+            if ($lesson->file_path && Storage::disk('public')->exists($lesson->file_path)) {
+                Storage::disk('public')->delete($lesson->file_path);
+            }
+
+            $file = $request->file('document_file');
+            $fileName = $file->getClientOriginalName();
+            $fileSize = $file->getSize();
+            $extension = strtolower($file->getClientOriginalExtension());
+
+            if ($extension === 'md' || $extension === 'txt') {
+                $contentType = 'markdown';
+                $uploadedMarkdown = file_get_contents($file->getRealPath());
+                if (!empty($uploadedMarkdown)) {
+                    $content = $uploadedMarkdown;
+                }
+            } elseif ($extension === 'pdf') {
+                $contentType = 'pdf';
+                $filePath = $file->store('modules/documents', 'public');
+                if (empty($content)) {
+                    $content = "Dokumen Materi PDF: " . $fileName;
+                }
+            } elseif (in_array($extension, ['doc', 'docx'])) {
+                $contentType = 'word';
+                $filePath = $file->store('modules/documents', 'public');
+                if (empty($content)) {
+                    $content = "Dokumen Materi Microsoft Word: " . $fileName;
+                }
+            }
+        }
 
         $section = $request->section ? strtoupper(trim($request->section)) : ($lesson->section ?: 'GETTING STARTED');
 
@@ -312,8 +396,12 @@ class ModuleController extends Controller
             'section' => $section,
             'title' => $request->title,
             'slug' => Str::slug($request->slug),
+            'content_type' => $contentType,
             'excerpt' => $request->excerpt,
-            'content' => $request->content,
+            'content' => $content,
+            'file_path' => $filePath,
+            'file_name' => $fileName,
+            'file_size' => $fileSize,
             'order' => $request->order ?? $lesson->order,
             'is_published' => $request->has('is_published') ? $request->boolean('is_published') : false,
             'enable_protection' => $request->has('enable_protection') ? $request->boolean('enable_protection') : false,

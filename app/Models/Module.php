@@ -16,8 +16,12 @@ class Module extends Model
         'section',
         'title',
         'slug',
+        'content_type',
         'excerpt',
         'content',
+        'file_path',
+        'file_name',
+        'file_size',
         'order',
         'is_published',
         'is_public',
@@ -32,7 +36,47 @@ class Module extends Model
         'is_public' => 'boolean',
         'enable_protection' => 'boolean',
         'views_count' => 'integer',
+        'file_size' => 'integer',
     ];
+
+    /**
+     * Helper methods for document / content types
+     */
+    public function isMarkdown(): bool
+    {
+        return empty($this->content_type) || $this->content_type === 'markdown';
+    }
+
+    public function isPdf(): bool
+    {
+        return $this->content_type === 'pdf' || (
+            !empty($this->file_path) && str_ends_with(strtolower($this->file_path), '.pdf')
+        );
+    }
+
+    public function isWord(): bool
+    {
+        return $this->content_type === 'word' || (
+            !empty($this->file_path) && (
+                str_ends_with(strtolower($this->file_path), '.docx') || 
+                str_ends_with(strtolower($this->file_path), '.doc')
+            )
+        );
+    }
+
+    public function getFileUrlAttribute(): ?string
+    {
+        return $this->file_path ? asset('storage/' . $this->file_path) : null;
+    }
+
+    public function getFormattedFileSizeAttribute(): string
+    {
+        if (!$this->file_size) return '0 KB';
+        if ($this->file_size >= 1048576) {
+            return number_format($this->file_size / 1048576, 2) . ' MB';
+        }
+        return number_format($this->file_size / 1024, 0) . ' KB';
+    }
 
     protected static function boot()
     {

@@ -5,7 +5,7 @@
 @section('content')
 <div class="max-w-[96rem] mx-auto px-4 py-6">
 
-    <form action="{{ route('admin.modules.contents.store', $module->id) }}" method="POST" id="moduleForm">
+    <form action="{{ route('admin.modules.contents.store', $module->id) }}" method="POST" enctype="multipart/form-data" id="moduleForm">
         @csrf
 
         <!-- Top Header & Action Buttons -->
@@ -57,6 +57,115 @@
                 </ul>
             </div>
         @endif
+
+        <!-- Pilihan Format Konten Bab Materi (Markdown / PDF / Word) -->
+        <input type="hidden" name="content_type" id="contentTypeInput" value="{{ old('content_type', 'markdown') }}">
+
+        <div class="mb-6">
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-2">
+                <i class="fas fa-shapes text-cyan-400"></i>
+                <span>Pilih Format Penyajian Bab Materi Ini:</span>
+            </label>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Option 1: Markdown (.md) / Manual -->
+                <div onclick="selectContentType('markdown')" 
+                     id="typeCardMarkdown" 
+                     class="p-4 rounded-2xl border-2 cursor-pointer transition-all bg-slate-900/80 hover:bg-slate-900 border-cyan-500/80 shadow-lg shadow-cyan-500/10">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 flex items-center justify-center text-lg shrink-0">
+                            <i class="fab fa-markdown"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-sm font-bold text-white">1. Markdown (.md) / Manual</h3>
+                                <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-300 border border-cyan-800">INTERAKTIF</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                                Tulis manual dengan syntax markdown, code block, tabel, atau upload langsung berkas <code class="text-cyan-300">.md</code>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Option 2: PDF Document -->
+                <div onclick="selectContentType('pdf')" 
+                     id="typeCardPdf" 
+                     class="p-4 rounded-2xl border-2 cursor-pointer transition-all bg-slate-900/40 hover:bg-slate-900 border-slate-800 opacity-80 hover:opacity-100">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-300 flex items-center justify-center text-lg shrink-0">
+                            <i class="fas fa-file-pdf"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-sm font-bold text-white">2. Dokumen PDF (.pdf)</h3>
+                                <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-rose-950 text-rose-300 border border-rose-800">DIGITAL VIEWER</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                                Upload berkas PDF materi lengkap. Dilengkapi pembaca dokumen digital interaktif di browser.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Option 3: Word Document -->
+                <div onclick="selectContentType('word')" 
+                     id="typeCardWord" 
+                     class="p-4 rounded-2xl border-2 cursor-pointer transition-all bg-slate-900/40 hover:bg-slate-900 border-slate-800 opacity-80 hover:opacity-100">
+                    <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-500/30 text-sky-300 flex items-center justify-center text-lg shrink-0">
+                            <i class="fas fa-file-word"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-sm font-bold text-white">3. Microsoft Word (.docx/.doc)</h3>
+                                <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-sky-950 text-sky-300 border border-sky-800">OFFICE</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+                                Upload file materi Microsoft Word. Peserta dapat membaca rangkuman serta mengunduh dokumen.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Document File Upload Box (Shown for PDF & Word, or optional companion) -->
+        <div id="documentUploadSection" class="cyber-card p-5 mb-6 hidden">
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-800">
+                <div>
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2" id="docUploadTitle">
+                        <i class="fas fa-cloud-upload-alt text-cyan-400"></i>
+                        <span>Unggah Berkas Dokumen Materi</span>
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5" id="docUploadDesc">Pilih berkas PDF atau Word dari komputer Anda.</p>
+                </div>
+                <span class="text-[11px] font-mono text-slate-400 px-2.5 py-1 rounded bg-slate-900 border border-slate-800">Maks: 50 MB</span>
+            </div>
+
+            <div class="relative border-2 border-dashed border-slate-700 hover:border-cyan-500/60 rounded-2xl p-6 text-center bg-slate-950/40 transition-all cursor-pointer"
+                 onclick="document.getElementById('documentFileInput').click()">
+                <input type="file" 
+                       name="document_file" 
+                       id="documentFileInput" 
+                       accept=".pdf,.doc,.docx,.md,.txt" 
+                       class="hidden" 
+                       onchange="handleDocumentFileSelected(this)">
+                
+                <div class="flex flex-col items-center justify-center gap-2">
+                    <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center text-xl mb-1" id="docUploadIcon">
+                        <i class="fas fa-file-upload"></i>
+                    </div>
+                    <div class="text-sm font-bold text-white" id="docUploadLabel">Klik untuk memilih berkas atau Drag & Drop ke sini</div>
+                    <div class="text-xs text-slate-400 font-mono" id="docUploadHint">Mendukung format: .PDF, .DOCX, .DOC</div>
+                </div>
+
+                <div id="fileSelectedBadge" class="hidden mt-4 inline-flex items-center gap-3 px-4 py-2 rounded-xl bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-mono font-bold">
+                    <i class="fas fa-check-circle text-emerald-400"></i>
+                    <span id="fileSelectedName">Nama file</span>
+                    <span id="fileSelectedSize" class="text-slate-400 font-normal">0 KB</span>
+                </div>
+            </div>
+        </div>
 
         <!-- Meta Information Card -->
         <div class="cyber-card p-5 mb-6">
@@ -187,6 +296,13 @@
                     <button type="button" onclick="insertCallout('TIP')" class="px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 transition">
                         <i class="fas fa-lightbulb text-emerald-400 mr-1"></i> Tips
                     </button>
+
+                    <!-- Import .md File Button -->
+                    <input type="file" id="mdImportInput" accept=".md,.markdown,.txt" class="hidden" onchange="importMarkdownFile(this)">
+                    <button type="button" onclick="document.getElementById('mdImportInput').click()" class="px-3 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 font-semibold flex items-center gap-1.5 transition ml-auto">
+                        <i class="fas fa-file-import"></i>
+                        <span>Import Berkas .md</span>
+                    </button>
                 </div>
             </div>
 
@@ -196,14 +312,13 @@
                 <!-- Left: Markdown Input Textarea -->
                 <div class="flex flex-col bg-[#080d1a]" id="editorPane">
                     <div class="px-4 py-2 border-b border-slate-800/80 bg-slate-950/40 text-[11px] font-mono text-slate-400 flex items-center justify-between">
-                        <span>MARKDOWN SOURCE</span>
+                        <span id="editorPaneLabel">MARKDOWN SOURCE</span>
                         <span id="charCount">0 Karakter</span>
                     </div>
                     <textarea name="content" 
                               id="markdownInput" 
-                              required 
                               class="flex-1 w-full bg-transparent p-4 font-mono text-[13.5px] leading-relaxed text-slate-200 resize-none focus:outline-none border-none selection:bg-cyan-500/30 selection:text-cyan-200 min-h-[500px]"
-                              placeholder="# Tuliskan judul bab materi Anda di sini...&#10;&#10;Jelaskan materi dengan format markdown, sisipkan kerangka kode menggunakan tombol di toolbar.">{{ old('content') }}</textarea>
+                              placeholder="# Tuliskan judul bab materi Anda di sini...&#10;&#10;Jelaskan materi dengan format markdown, sisipkan kerangka kode menggunakan tombol di toolbar, atau import berkas .md langsung.">{{ old('content') }}</textarea>
                 </div>
 
                 <!-- Right: Live Formatted Preview (Tailwind Docs Aesthetic) -->
@@ -377,6 +492,112 @@
 
     document.getElementById('moduleSlugInput').addEventListener('input', function() {
         this.dataset.manual = 'true';
+    });
+
+    // Content Type Handling (Markdown, PDF, Word)
+    function selectContentType(type) {
+        document.getElementById('contentTypeInput').value = type;
+
+        const cardMd = document.getElementById('typeCardMarkdown');
+        const cardPdf = document.getElementById('typeCardPdf');
+        const cardWord = document.getElementById('typeCardWord');
+        const uploadSection = document.getElementById('documentUploadSection');
+        const docFileInput = document.getElementById('documentFileInput');
+        const editorLabel = document.getElementById('editorPaneLabel');
+        const textarea = document.getElementById('markdownInput');
+
+        const activeClasses = ['border-cyan-500/80', 'bg-slate-900/80', 'shadow-lg', 'shadow-cyan-500/10'];
+        const inactiveClasses = ['border-slate-800', 'bg-slate-900/40', 'opacity-80'];
+
+        [cardMd, cardPdf, cardWord].forEach(card => {
+            activeClasses.forEach(c => card.classList.remove(c));
+            inactiveClasses.forEach(c => card.classList.add(c));
+        });
+
+        if (type === 'markdown') {
+            inactiveClasses.forEach(c => cardMd.classList.remove(c));
+            activeClasses.forEach(c => cardMd.classList.add(c));
+            uploadSection.classList.add('hidden');
+            editorLabel.innerText = 'MARKDOWN SOURCE';
+            textarea.placeholder = "# Tuliskan judul bab materi Anda di sini...\n\nJelaskan materi dengan format markdown, sisipkan kerangka kode menggunakan tombol di toolbar, atau import berkas .md langsung.";
+        } else if (type === 'pdf') {
+            inactiveClasses.forEach(c => cardPdf.classList.remove(c));
+            cardPdf.classList.add('border-rose-500/80', 'bg-slate-900/80', 'shadow-lg', 'shadow-rose-500/10');
+            uploadSection.classList.remove('hidden');
+            docFileInput.accept = '.pdf';
+            document.getElementById('docUploadTitle').innerHTML = '<i class="fas fa-file-pdf text-rose-400"></i><span>Unggah Dokumen PDF Materi</span>';
+            document.getElementById('docUploadDesc').innerText = 'Pilih file PDF yang akan ditampilkan melalui Digital PDF Viewer.';
+            document.getElementById('docUploadHint').innerText = 'Format berkas: .PDF (Maksimal 50 MB)';
+            editorLabel.innerText = 'CATATAN / RANGKUMAN MATERI (OPSIONAL)';
+            textarea.placeholder = "Tuliskan catatan pendukung, ringkasan, atau instruksi pengerjaan dari dokumen PDF ini...";
+        } else if (type === 'word') {
+            inactiveClasses.forEach(c => cardWord.classList.remove(c));
+            cardWord.classList.add('border-sky-500/80', 'bg-slate-900/80', 'shadow-lg', 'shadow-sky-500/10');
+            uploadSection.classList.remove('hidden');
+            docFileInput.accept = '.doc,.docx';
+            document.getElementById('docUploadTitle').innerHTML = '<i class="fas fa-file-word text-sky-400"></i><span>Unggah Berkas Microsoft Word</span>';
+            document.getElementById('docUploadDesc').innerText = 'Pilih berkas Word (.docx atau .doc) untuk materi bab ini.';
+            document.getElementById('docUploadHint').innerText = 'Format berkas: .DOCX, .DOC (Maksimal 50 MB)';
+            editorLabel.innerText = 'CATATAN / RANGKUMAN MATERI (OPSIONAL)';
+            textarea.placeholder = "Tuliskan ringkasan pokok bahasan dari dokumen Microsoft Word ini...";
+        }
+    }
+
+    function handleDocumentFileSelected(input) {
+        if (!input.files || input.files.length === 0) return;
+        const file = input.files[0];
+        
+        document.getElementById('fileSelectedBadge').classList.remove('hidden');
+        document.getElementById('fileSelectedName').innerText = file.name;
+        
+        let sizeStr = (file.size / 1024).toFixed(0) + ' KB';
+        if (file.size >= 1048576) {
+            sizeStr = (file.size / 1048576).toFixed(2) + ' MB';
+        }
+        document.getElementById('fileSelectedSize').innerText = sizeStr;
+
+        const titleInput = document.getElementById('moduleTitleInput');
+        if (!titleInput.value.trim()) {
+            const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+            titleInput.value = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+            titleInput.dispatchEvent(new Event('input'));
+        }
+    }
+
+    function importMarkdownFile(input) {
+        if (!input.files || input.files.length === 0) return;
+        const file = input.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+            const content = e.target.result;
+            const textarea = document.getElementById('markdownInput');
+            textarea.value = content;
+            textarea.dispatchEvent(new Event('input'));
+
+            const titleInput = document.getElementById('moduleTitleInput');
+            if (!titleInput.value.trim()) {
+                const headingMatch = content.match(/^#\s+(.+)$/m);
+                if (headingMatch && headingMatch[1]) {
+                    titleInput.value = headingMatch[1].trim();
+                } else {
+                    const cleanName = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+                    titleInput.value = cleanName.charAt(0).toUpperCase() + cleanName.slice(1);
+                }
+                titleInput.dispatchEvent(new Event('input'));
+            }
+
+            selectContentType('markdown');
+            alert('File Markdown "' + file.name + '" berhasil dimuat ke editor!');
+        };
+
+        reader.readAsText(file);
+    }
+
+    // Initialize content type selection on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const initialType = document.getElementById('contentTypeInput').value || 'markdown';
+        selectContentType(initialType);
     });
 </script>
 @endsection

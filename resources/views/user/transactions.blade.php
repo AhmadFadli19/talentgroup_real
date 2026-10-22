@@ -19,10 +19,6 @@
                     </p>
                 </div>
             </div>
-
-            <a href="{{ route('user.transactions.topup') }}" class="btn-primary flex items-center justify-center">
-                <i class="fas fa-plus-circle mr-2"></i> Acquire Credits
-            </a>
         </div>
     </div>
 

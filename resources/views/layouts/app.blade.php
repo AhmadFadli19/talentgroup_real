@@ -441,17 +441,8 @@
                         <i class="fas fa-graduation-cap w-5 text-sm text-[var(--orange)]"></i> Kursus Saya
                     </a>
                     <a href="{{ route('user.transactions.index') }}" class="nav-menu-link {{ Route::is('user.transactions.index') || Route::is('user.balance-history') ? 'active' : '' }}">
-                        <i class="fas fa-wallet w-5 text-sm text-[var(--green)]"></i> Histori Saldo
+                        <i class="fas fa-wallet w-5 text-sm text-[var(--green)]"></i> Histori Aktivitas
                     </a>
-                    
-                    <!-- Credits Balance Card -->
-                    <div class="m-3 p-4 rounded-xl border border-[var(--border)] bg-black/30 flex flex-col gap-1">
-                        <span class="text-[9px] uppercase tracking-wider text-[var(--text3)] font-semibold">Credits Saldo</span>
-                        <span class="text-sm font-extrabold text-[var(--green)] mono">Rp {{ number_format(auth()->user()->balance, 0, ',', '.') }}</span>
-                        <a href="{{ route('user.transactions.topup') }}" class="text-[10px] text-[var(--cyan)] font-bold hover:underline mt-1 inline-flex items-center gap-1">
-                            <i class="fas fa-plus-circle"></i> Inject Credits
-                        </a>
-                    </div>
                 @endif
                 
                 <div class="border-t border-[var(--border)] my-3"></div>
@@ -479,7 +470,7 @@
             <!-- Profile Info Badge -->
             @auth
                 <div class="flex items-center gap-3 p-2.5 rounded-xl bg-black/20 border border-white/5">
-                    <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : 'https://www.gravatar.com/avatar/' . md5(auth()->user()->email) . '?d=mp' }}" 
+                    <img src="{{ auth()->user()->avatar_url }}" 
                          class="w-9 h-9 rounded-full object-cover border border-white/10" 
                          alt="Avatar">
                     <div class="flex-1 min-w-0">
@@ -524,16 +515,11 @@
                 </h2>
             </div>
 
-            <!-- Topbar Right section (Quick credit info for user or simple title) -->
+            <!-- Topbar Right section -->
             <div class="flex items-center gap-4">
                 @auth
-                    @if(!auth()->user()->isAdmin())
-                        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[var(--border)] bg-black/20 font-mono text-[11px] text-[var(--green)]">
-                            <i class="fas fa-wallet"></i> Saldo: Rp {{ number_format(auth()->user()->balance, 0, ',', '.') }}
-                        </div>
-                    @endif
                     <a href="{{ route('user.profile') }}" class="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                        <img src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : 'https://www.gravatar.com/avatar/' . md5(auth()->user()->email) . '?d=mp' }}" 
+                        <img src="{{ auth()->user()->avatar_url }}" 
                              class="w-7 h-7 rounded-full object-cover border border-[var(--border)]" 
                              alt="Avatar">
                     </a>

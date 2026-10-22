@@ -160,7 +160,7 @@ class PrototypeZipService
             ];
         }
 
-        // Read code assets for AI inspection
+        // Read code assets
         $codePayload = $this->gatherCodePayload($destinationDir, $indexPath);
 
         return [
@@ -359,15 +359,15 @@ class PrototypeZipService
     }
 
     /**
-     * Read and gather code content (HTML, CSS, JS) for AI Agent inspection.
+     * Read and gather code content (HTML, CSS, JS) for system inspection.
      */
     protected function gatherCodePayload(string $dir, string $indexPath): array
     {
         $htmlCode = File::exists($indexPath) ? File::get($indexPath) : '';
 
-        // Limit HTML length for AI prompt (first 50,000 chars)
+        // Limit HTML length (first 50,000 chars)
         if (strlen($htmlCode) > 50000) {
-            $htmlCode = substr($htmlCode, 0, 50000) . "\n<!-- [Truncated for AI Analysis] -->";
+            $htmlCode = substr($htmlCode, 0, 50000) . "\n<!-- [Truncated Content] -->";
         }
 
         // Find CSS files
@@ -379,7 +379,7 @@ class PrototypeZipService
             }
         }
         if (strlen($cssCode) > 30000) {
-            $cssCode = substr($cssCode, 0, 30000) . "\n/* [Truncated for AI Analysis] */";
+            $cssCode = substr($cssCode, 0, 30000) . "\n/* [Truncated Content] */";
         }
 
         // Find JS files
@@ -396,7 +396,7 @@ class PrototypeZipService
             }
         }
         if (strlen($jsCode) > 30000) {
-            $jsCode = substr($jsCode, 0, 30000) . "\n// [Truncated for AI Analysis]";
+            $jsCode = substr($jsCode, 0, 30000) . "\n// [Truncated Content]";
         }
 
         return [

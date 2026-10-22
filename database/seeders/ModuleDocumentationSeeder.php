@@ -134,7 +134,7 @@ class ModuleDocumentationSeeder extends Seeder
             ]
         );
 
-        // THEME VARIABLES (Matching Screenshots 1 & 2!)
+        // Theme variables
         Module::updateOrCreate(
             ['slug' => 'theme-variables'],
             [

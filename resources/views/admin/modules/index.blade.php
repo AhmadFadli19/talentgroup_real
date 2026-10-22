@@ -74,7 +74,7 @@
     gap: 14px;
 }
 
-/* MODULE CARD (Matching Screenshot 1) */
+/* MODULE CARD */
 .pixel-course-card {
     background: var(--card);
     border: 3px solid var(--border);
@@ -156,7 +156,7 @@
     color: #f59e0b;
 }
 
-/* ACTIONS (Stacked on right matching Screenshot 1) */
+/* ACTIONS */
 .pixel-course-actions {
     display: grid;
     gap: 6px;
@@ -214,7 +214,7 @@
 
 <div class="pixel-admin-container py-6">
 
-    <!-- HEADER (Matching Screenshot 1) -->
+    <!-- HEADER -->
     <div class="pixel-admin-header">
         <div class="pixel-admin-title">
             <h1>MODULE MANAGER</h1>
@@ -320,7 +320,7 @@
                     </div>
                 </div>
 
-                <!-- ACTIONS (Stacked on Right matching Screenshot 1) -->
+                <!-- ACTIONS -->
                 <div class="pixel-course-actions">
                     <a href="{{ route('modules.module.show', $module->slug) }}" target="_blank" class="pixel-action-btn">
                         VIEW

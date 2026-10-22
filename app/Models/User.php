@@ -24,12 +24,22 @@ class User extends Authenticatable
         'phone',
         'password',
         'role_id',
+        'google_id',
         'email_verified_at',
         'email_verification_code',
         'reset_code',
         'reset_code_expired_at',
         'avatar',
         'balance',
+    ];
+
+    /**
+     * The accessors to append to the model's array form.
+     *
+     * @var list<string>
+     */
+    protected $appends = [
+        'avatar_url',
     ];
 
     /**
@@ -127,4 +137,22 @@ class User extends Authenticatable
     {
         return $this->hasMany(Prototype::class);
     }
+
+    /**
+     * Get avatar URL safely supporting Google OAuth URLs, local storage, and fallback Gravatar.
+     */
+    public function getAvatarUrlAttribute(): string
+    {
+        if (empty($this->avatar)) {
+            $hash = md5(strtolower(trim($this->email ?? 'user@talentgroup.id')));
+            return 'https://www.gravatar.com/avatar/' . $hash . '?d=mp&s=150';
+        }
+
+        if (str_starts_with($this->avatar, 'http://') || str_starts_with($this->avatar, 'https://')) {
+            return $this->avatar;
+        }
+
+        return asset('storage/' . $this->avatar);
+    }
 }
+

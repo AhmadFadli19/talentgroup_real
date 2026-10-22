@@ -161,10 +161,66 @@
                 </div>
             @endif
 
-            <!-- Parsed Markdown / Framed Content -->
-            <div class="module-body text-[15px] leading-relaxed text-slate-300">
-                {!! $module->rendered_content !!}
-            </div>
+            <!-- Document / File Attachment Box (PDF or Word or Attached Document) -->
+            @if(!empty($module->file_path))
+                <div class="mb-8 p-5 rounded-2xl border border-slate-800 bg-gradient-to-r from-slate-900/90 to-[#0e1628] shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0 {{ $module->isPdf() ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30' : ($module->isWord() ? 'bg-sky-500/15 text-sky-400 border border-sky-500/30' : 'bg-purple-500/15 text-purple-400 border border-purple-500/30') }}">
+                            <i class="{{ $module->isPdf() ? 'fas fa-file-pdf' : ($module->isWord() ? 'fas fa-file-word' : 'fas fa-file-alt') }}"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs uppercase font-mono font-bold px-2 py-0.5 rounded {{ $module->isPdf() ? 'bg-rose-950 text-rose-300 border border-rose-800' : ($module->isWord() ? 'bg-sky-950 text-sky-300 border border-sky-800' : 'bg-purple-950 text-purple-300 border border-purple-800') }}">
+                                    {{ strtoupper($module->content_type ?: ($module->isPdf() ? 'PDF' : ($module->isWord() ? 'WORD' : 'DOKUMEN'))) }}
+                                </span>
+                                <span class="text-xs text-slate-400 font-mono">{{ $module->formatted_file_size }}</span>
+                            </div>
+                            <h4 class="text-white font-bold text-sm mt-1 truncate max-w-xs sm:max-w-md">
+                                {{ $module->file_name ?? basename($module->file_path) }}
+                            </h4>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2.5 w-full sm:w-auto">
+                        <a href="{{ $module->file_url }}" 
+                           target="_blank" 
+                           class="flex-1 sm:flex-initial px-4 py-2 rounded-xl border border-slate-700 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold flex items-center justify-center gap-2 transition">
+                            <i class="fas fa-external-link-alt text-[11px]"></i>
+                            <span>Buka di Tab Baru</span>
+                        </a>
+                        <a href="{{ $module->file_url }}" 
+                           download="{{ $module->file_name ?? basename($module->file_path) }}" 
+                           class="flex-1 sm:flex-initial cyber-btn text-xs flex items-center justify-center gap-2">
+                            <i class="fas fa-download"></i>
+                            <span>Unduh Berkas</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Embedded PDF Viewer -->
+                @if($module->isPdf())
+                    <div class="mb-10 rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 shadow-2xl">
+                        <div class="px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between text-xs font-mono text-slate-400">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-file-pdf text-rose-400"></i>
+                                <span class="text-white font-semibold truncate">{{ $module->file_name ?? $module->title }}</span>
+                            </div>
+                            <span class="text-[11px] text-slate-500 hidden sm:inline">PDF Document Reader</span>
+                        </div>
+                        <iframe src="{{ $module->file_url }}#toolbar=1&navpanes=0" 
+                                class="w-full h-[850px] border-0 bg-slate-950" 
+                                title="Pratinjau Dokumen PDF">
+                        </iframe>
+                    </div>
+                @endif
+            @endif
+
+            <!-- Parsed Markdown / Framed Content (if available) -->
+            @if(!empty($module->content))
+                <div class="module-body text-[15px] leading-relaxed text-slate-300">
+                    {!! $module->rendered_content !!}
+                </div>
+            @endif
 
         </article>
 
