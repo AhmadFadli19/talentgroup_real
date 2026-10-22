@@ -583,6 +583,18 @@
         reader.readAsText(file);
     }
 
+    // Encode content to Base64 on submit to prevent WAF / ModSecurity 403 Forbidden on HTML/JS code snippets
+    document.getElementById('moduleForm').addEventListener('submit', function() {
+        const textarea = document.getElementById('markdownInput');
+        if (textarea && textarea.value.trim() && !textarea.value.startsWith('base64:')) {
+            try {
+                textarea.value = 'base64:' + btoa(unescape(encodeURIComponent(textarea.value)));
+            } catch (e) {
+                console.error('Encoding error:', e);
+            }
+        }
+    });
+
     // Initialize content type selection on page load
     document.addEventListener('DOMContentLoaded', function() {
         const initialType = document.getElementById('contentTypeInput').value || 'markdown';

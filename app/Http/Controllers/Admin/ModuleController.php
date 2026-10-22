@@ -249,6 +249,12 @@ class ModuleController extends Controller
 
         $contentType = $request->input('content_type', 'markdown');
         $content = $request->input('content', '');
+        if (str_starts_with($content, 'base64:')) {
+            $decoded = base64_decode(substr($content, 7), true);
+            if ($decoded !== false) {
+                $content = $decoded;
+            }
+        }
         $filePath = null;
         $fileName = null;
         $fileSize = null;
@@ -354,6 +360,12 @@ class ModuleController extends Controller
 
         $contentType = $request->input('content_type', $lesson->content_type ?: 'markdown');
         $content = $request->input('content', $lesson->content);
+        if (str_starts_with($content, 'base64:')) {
+            $decoded = base64_decode(substr($content, 7), true);
+            if ($decoded !== false) {
+                $content = $decoded;
+            }
+        }
         $filePath = $lesson->file_path;
         $fileName = $lesson->file_name;
         $fileSize = $lesson->file_size;
