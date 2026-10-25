@@ -2201,38 +2201,34 @@ dialog .eyebrow {
     padding-inline:20px
   }
   .landing-brand {
-    width:50px
+    width:auto;
+    max-width:60%;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-shrink:0
   }
-  .site-header nav {
-    display:none;
-    position:absolute;
-    top:64px;
-    left:0;
-    right:0;
-    background:#fff;
-    box-shadow:0 8px 18px #0047b31a;
-    padding:22px;
-    flex-direction:column;
-    align-items:flex-start;
-    gap:20px
+  .landing-brand img {
+    width:32px;
+    height:32px;
+    flex-shrink:0
   }
-  .site-header nav.open {
-    display:flex
-  }
-  .menu-toggle {
-    display:block;
-    order:3;
-    font-size:22px;
-    padding:4px
+  .landing-brand .brand-text {
+    font-size:16px;
+    font-weight:800;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis
   }
   .header-actions {
     margin-left:auto;
-    margin-right:16px;
-    gap:8px
+    margin-right:8px;
+    gap:8px;
+    display:flex;
+    align-items:center
   }
-  .header-actions .btn {
-    font-size:11px;
-    padding-inline:12px
+  .header-actions .desktop-auth-btn {
+    display:none!important
   }
   .hero,.hero-inner {
     min-height:0

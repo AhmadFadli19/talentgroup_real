@@ -2133,33 +2133,334 @@
         width: 100% !important;
       }
     }
+
+    /* ==========================================================================
+       MOBILE RESPONSIVE & ANTI-SCROLL BLEEDING DRAWER STYLES
+       Mencegah background bergeser saat drawer dibuka & merapikan header mobile
+       ========================================================================== */
+    html.nav-open, body.nav-open {
+      overflow: hidden !important;
+      touch-action: none !important;
+      height: 100vh !important;
+      height: 100dvh !important;
+    }
+
+    .nav-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 9, 20, 0.72);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 998;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s;
+    }
+    .nav-backdrop.active {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+    }
+
+    .mobile-drawer-header,
+    .mobile-drawer-footer {
+      display: none;
+    }
+
+    @media (max-width: 991px) {
+      .site-header {
+        height: 64px !important;
+        padding-inline: 16px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 100 !important;
+        border-bottom: 1px solid rgba(226, 232, 240, 0.8) !important;
+      }
+      body.dark .site-header {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+      }
+      .landing-brand {
+        width: auto !important;
+        max-width: 60% !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex-shrink: 0 !important;
+      }
+      .landing-brand img {
+        width: 32px !important;
+        height: 32px !important;
+        flex-shrink: 0 !important;
+      }
+      .landing-brand .brand-text {
+        font-size: 16px !important;
+        font-weight: 800 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        letter-spacing: -0.3px !important;
+      }
+      .header-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+        margin: 0 !important;
+        flex-shrink: 0 !important;
+      }
+      .desktop-auth-btn {
+        display: none !important;
+      }
+      .menu-toggle {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 38px !important;
+        height: 38px !important;
+        border-radius: 9px !important;
+        background: #f1f5f9 !important;
+        color: #0b2447 !important;
+        border: 1px solid #cbd5e1 !important;
+        cursor: pointer !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        transition: all 0.2s ease !important;
+      }
+      body.dark .menu-toggle {
+        background: #112144 !important;
+        color: #38bdf8 !important;
+        border-color: #23457d !important;
+      }
+      .menu-toggle:active {
+        transform: scale(0.95);
+      }
+
+      /* Slidebar / Drawer Mobile Navigation */
+      #site-nav {
+        position: fixed !important;
+        top: 0 !important;
+        right: 0 !important;
+        left: auto !important;
+        bottom: 0 !important;
+        width: min(300px, 84vw) !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        background: #ffffff !important;
+        z-index: 1000 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: -10px 0 35px rgba(0, 0, 0, 0.35) !important;
+        transform: translateX(105%) !important;
+        transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain !important;
+        -webkit-overflow-scrolling: touch !important;
+        border-left: 1px solid #e2e8f0 !important;
+      }
+      body.dark #site-nav {
+        background: #09132b !important;
+        border-left: 1px solid rgba(56, 189, 248, 0.2) !important;
+        box-shadow: -10px 0 45px rgba(0, 0, 0, 0.8) !important;
+      }
+      #site-nav.open {
+        transform: translateX(0) !important;
+      }
+
+      .mobile-drawer-header {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 16px 20px !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        flex-shrink: 0 !important;
+      }
+      body.dark .mobile-drawer-header {
+        border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+      }
+      .mobile-drawer-close {
+        width: 34px !important;
+        height: 34px !important;
+        border-radius: 8px !important;
+        border: none !important;
+        background: #f1f5f9 !important;
+        color: #475569 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        cursor: pointer !important;
+        font-size: 15px !important;
+      }
+      body.dark .mobile-drawer-close {
+        background: #132247 !important;
+        color: #94a3b8 !important;
+      }
+
+      .mobile-drawer-body {
+        padding: 16px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 6px !important;
+        flex: 1 1 auto !important;
+        overflow-y: auto !important;
+      }
+      #site-nav a.nav-link-item {
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        padding: 12px 14px !important;
+        border-radius: 9px !important;
+        color: #1e293b !important;
+        font-size: 14px !important;
+        font-weight: 600 !important;
+        text-decoration: none !important;
+        transition: all 0.2s ease !important;
+      }
+      body.dark #site-nav a.nav-link-item {
+        color: #e2e8f0 !important;
+      }
+      #site-nav a.nav-link-item:hover, #site-nav a.nav-link-item.active {
+        background: #e6f0ff !important;
+        color: #0047b3 !important;
+      }
+      body.dark #site-nav a.nav-link-item:hover, body.dark #site-nav a.nav-link-item.active {
+        background: rgba(56, 189, 248, 0.12) !important;
+        color: #38bdf8 !important;
+      }
+      #site-nav a.nav-link-item i {
+        font-size: 14px;
+        width: 18px;
+        text-align: center;
+        color: var(--blue);
+      }
+      body.dark #site-nav a.nav-link-item i {
+        color: #38bdf8;
+      }
+
+      .mobile-drawer-footer {
+        padding: 16px 20px !important;
+        border-top: 1px solid #e2e8f0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        flex-shrink: 0 !important;
+      }
+      body.dark .mobile-drawer-footer {
+        border-top-color: rgba(255, 255, 255, 0.08) !important;
+      }
+      .mobile-drawer-footer .btn {
+        width: 100% !important;
+        justify-content: center !important;
+        min-height: 42px !important;
+        font-size: 13px !important;
+      }
+
+      /* Hero section mobile spacing fixes */
+      .hero {
+        overflow-x: hidden !important;
+      }
+      .hero-inner {
+        padding-top: 36px !important;
+        padding-bottom: 50px !important;
+      }
+      .hero-copy h1 {
+        font-size: clamp(32px, 8vw, 44px) !important;
+        line-height: 1.15 !important;
+      }
+      .hero-buttons {
+        flex-direction: column !important;
+        gap: 10px !important;
+      }
+      .hero-buttons .btn {
+        width: 100% !important;
+        justify-content: center !important;
+      }
+      .hero-stats {
+        gap: 16px !important;
+        justify-content: space-between !important;
+      }
+    }
+
+    @media (min-width: 992px) {
+      .mobile-drawer-header,
+      .mobile-drawer-footer {
+        display: none !important;
+      }
+      .mobile-drawer-body {
+        display: flex !important;
+        flex-direction: row !important;
+        gap: 24px !important;
+        padding: 0 !important;
+        align-items: center !important;
+      }
+      #site-nav {
+        display: flex !important;
+        position: static !important;
+        transform: none !important;
+        width: auto !important;
+        height: auto !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        overflow: visible !important;
+      }
+    }
   </style>
 </head>
 <body>
   <a href="#main-content" class="skip-link">Lewati ke konten</a>
 
   <div id="landing-view">
+    <!-- Backdrop Overlay untuk Drawer Mobile (Mencegah Scroll Bleeding) -->
+    <div id="nav-backdrop" class="nav-backdrop" aria-hidden="true"></div>
+
     <header class="site-header">
       <a class="landing-brand" href="{{ route('home') }}" aria-label="TalentGroup.id, beranda">
-        <img src="{{ asset('tg/assets/logo-talentgroup-clean.png') }}" alt="Logo TalentGroup" width="40" height="40">
+        <img src="{{ asset('tg/assets/logo-talentgroup-clean.png') }}" alt="Logo TalentGroup" width="36" height="36">
         <span class="brand-text">Talent<span class="brand-accent">Group</span><span class="brand-tld">.id</span></span>
       </a>
 
       <nav id="site-nav" aria-label="Navigasi utama">
-        <a class="active" href="#home">Home</a>
-        <a href="#our-works">Our Works</a>
-        <a href="#game-edu">Game Edu</a>
-        <a href="#courses">Kelas</a>
-        <a href="#about">About</a>
-        <a href="{{ route('modules.index') }}">Dokumentasi Modul</a>
-        @guest
-          <div class="mobile-nav-auth" style="display: none; padding-top: 12px; margin-top: 8px; border-top: 1px solid rgba(0, 71, 179, 0.15); width: 100%;">
-            <div style="display: flex; gap: 8px;">
-              <a href="{{ route('login') }}" class="btn btn-small btn-outline" style="flex: 1; text-align: center;">Masuk</a>
-              <a href="{{ route('register') }}" class="btn btn-small btn-gradient" style="flex: 1; text-align: center;">Daftar Gratis</a>
-            </div>
+        <!-- Mobile Drawer Header with Close Button -->
+        <div class="mobile-drawer-header">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <img src="{{ asset('tg/assets/logo-talentgroup-clean.png') }}" alt="Logo" width="28" height="28">
+            <span style="font-weight: 800; font-size: 15px;" class="brand-text">Talent<span class="brand-accent">Group</span><span class="brand-tld">.id</span></span>
           </div>
-        @endguest
+          <button type="button" id="mobile-nav-close" class="mobile-drawer-close" aria-label="Tutup menu navigasi">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <div class="mobile-drawer-body">
+          <a class="nav-link-item active" href="#home"><i class="fas fa-home"></i> Home</a>
+          <a class="nav-link-item" href="#our-works"><i class="fas fa-laptop-code"></i> Our Works</a>
+          <a class="nav-link-item" href="#game-edu"><i class="fas fa-gamepad"></i> Game Edu</a>
+          <a class="nav-link-item" href="#courses"><i class="fas fa-graduation-cap"></i> Kelas</a>
+          <a class="nav-link-item" href="#about"><i class="fas fa-info-circle"></i> About</a>
+          <a class="nav-link-item" href="{{ route('modules.index') }}"><i class="fas fa-book-open"></i> Dokumentasi Modul</a>
+        </div>
+
+        <div class="mobile-drawer-footer">
+          @guest
+            <a href="{{ route('login') }}" class="btn btn-outline" style="width: 100%; text-align: center;">Masuk</a>
+            <a href="{{ route('register') }}" class="btn btn-gradient" style="width: 100%; text-align: center;">Daftar Gratis</a>
+          @else
+            @if(auth()->user()->isAdmin())
+              <a href="{{ route('admin.dashboard') }}" class="btn btn-gradient" style="width: 100%; text-align: center;">
+                <i class="fas fa-user-shield"></i> Dasbor Admin
+              </a>
+            @else
+              <a href="{{ route('user.dashboard') }}" class="btn btn-gradient" style="width: 100%; text-align: center;">
+                <i class="fas fa-columns"></i> Ruang Belajar
+              </a>
+            @endif
+          @endguest
+        </div>
       </nav>
 
       <div class="header-actions">
@@ -2172,15 +2473,15 @@
         </button>
 
         @guest
-          <a href="{{ route('login') }}" class="btn btn-small btn-outline">Masuk</a>
-          <a href="{{ route('register') }}" class="btn btn-small btn-gradient">Daftar Gratis</a>
+          <a href="{{ route('login') }}" class="btn btn-small btn-outline desktop-auth-btn">Masuk</a>
+          <a href="{{ route('register') }}" class="btn btn-small btn-gradient desktop-auth-btn">Daftar Gratis</a>
         @else
           @if(auth()->user()->isAdmin())
-            <a href="{{ route('admin.dashboard') }}" class="btn btn-small btn-gradient">
+            <a href="{{ route('admin.dashboard') }}" class="btn btn-small btn-gradient desktop-auth-btn">
               <i class="fas fa-user-shield"></i> Dasbor Admin
             </a>
           @else
-            <a href="{{ route('user.dashboard') }}" class="btn btn-small btn-gradient">
+            <a href="{{ route('user.dashboard') }}" class="btn btn-small btn-gradient desktop-auth-btn">
               <i class="fas fa-columns"></i> Ruang Belajar
             </a>
           @endif
@@ -2662,15 +2963,84 @@
   </div>
 
   <script>
-    // Responsive Navbar Menu Toggle
+    // Responsive Navbar & Mobile Slidebar Drawer Controller (Anti-Scroll Bleeding)
     const menuToggle = document.getElementById('menu-toggle');
     const siteNav = document.getElementById('site-nav');
+    const navBackdrop = document.getElementById('nav-backdrop');
+    const mobileNavClose = document.getElementById('mobile-nav-close');
+
+    function openMobileNav() {
+      if (!siteNav) return;
+      siteNav.classList.add('open');
+      if (navBackdrop) navBackdrop.classList.add('active');
+      if (menuToggle) menuToggle.setAttribute('aria-expanded', 'true');
+      document.documentElement.classList.add('nav-open');
+      document.body.classList.add('nav-open');
+    }
+
+    function closeMobileNav() {
+      if (!siteNav) return;
+      siteNav.classList.remove('open');
+      if (navBackdrop) navBackdrop.classList.remove('active');
+      if (menuToggle) menuToggle.setAttribute('aria-expanded', 'false');
+      document.documentElement.classList.remove('nav-open');
+      document.body.classList.remove('nav-open');
+    }
+
     if (menuToggle && siteNav) {
-      menuToggle.addEventListener('click', () => {
-        const isOpen = siteNav.classList.toggle('open');
-        menuToggle.setAttribute('aria-expanded', String(isOpen));
+      menuToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (siteNav.classList.contains('open')) {
+          closeMobileNav();
+        } else {
+          openMobileNav();
+        }
       });
     }
+
+    if (mobileNavClose) {
+      mobileNavClose.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeMobileNav();
+      });
+    }
+
+    if (navBackdrop) {
+      navBackdrop.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeMobileNav();
+      });
+      // Mencegah scroll bleeding melalui touch gesture pada backdrop
+      navBackdrop.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+      }, { passive: false });
+    }
+
+    // Tutup drawer jika link di dalam drawer di-klik
+    if (siteNav) {
+      siteNav.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          if (window.innerWidth <= 991) {
+            closeMobileNav();
+          }
+        });
+      });
+    }
+
+    // Tutup drawer jika tombol ESC ditekan
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeMobileNav();
+      }
+    });
+
+    // Otomatis kembalikan scroll jika layar di-resize ke desktop
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 991 && siteNav && siteNav.classList.contains('open')) {
+        closeMobileNav();
+      }
+    });
 
     // Carousel Slider for Courses
     const track = document.getElementById('course-track');

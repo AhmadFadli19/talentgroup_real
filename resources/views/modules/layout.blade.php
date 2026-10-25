@@ -50,6 +50,12 @@
             max-width: 100vw;
             width: 100%;
         }
+        html.drawer-open, body.drawer-open {
+            overflow: hidden !important;
+            touch-action: none !important;
+            height: 100vh !important;
+            height: 100dvh !important;
+        }
         body {
             background-color: #0b1120;
             color: #cbd5e1;
@@ -709,7 +715,8 @@
             mobileSidebarDrawer.classList.remove('pointer-events-none');
             mobileSidebarBackdrop.classList.remove('opacity-0');
             mobileSidebarPanel.classList.remove('-translate-x-full');
-            document.body.style.overflow = 'hidden';
+            document.documentElement.classList.add('drawer-open');
+            document.body.classList.add('drawer-open');
         }
 
         function closeDrawer() {
@@ -718,13 +725,17 @@
             mobileSidebarBackdrop.classList.add('opacity-0');
             setTimeout(() => {
                 mobileSidebarDrawer.classList.add('pointer-events-none');
-                document.body.style.overflow = '';
+                document.documentElement.classList.remove('drawer-open');
+                document.body.classList.remove('drawer-open');
             }, 300);
         }
 
         if (openSidebarBtn) openSidebarBtn.addEventListener('click', openDrawer);
         if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeDrawer);
-        if (mobileSidebarBackdrop) mobileSidebarBackdrop.addEventListener('click', closeDrawer);
+        if (mobileSidebarBackdrop) {
+            mobileSidebarBackdrop.addEventListener('click', closeDrawer);
+            mobileSidebarBackdrop.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+        }
 
         // Close on Escape key
         document.addEventListener('keydown', (e) => {
