@@ -37,13 +37,15 @@ Route::get('/public/p/{slug}/{path?}', function ($slug, $path = null) {
     return redirect('/p/' . $slug . ($path ? '/' . $path : ''), 301);
 })->where('path', '.*');
 
-// Documentation / Separate Module Routes
-Route::get('/modules', [ModuleController::class, 'index'])->name('modules.index');
-Route::get('/modules/search', [ModuleController::class, 'search'])->name('modules.search');
-Route::post('/modules/unlock', [ModuleController::class, 'unlock'])->name('modules.unlock');
-Route::get('/modules/read/{slug}', [ModuleController::class, 'showLegacy'])->name('modules.show');
-Route::get('/modules/{moduleSlug}', [ModuleController::class, 'showModule'])->name('modules.module.show');
-Route::get('/modules/{moduleSlug}/{lessonSlug}', [ModuleController::class, 'showLesson'])->name('modules.lesson.show');
+// Documentation / Separate Module Routes (wajib login)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/modules', [ModuleController::class, 'index'])->name('modules.index');
+    Route::get('/modules/search', [ModuleController::class, 'search'])->name('modules.search');
+    Route::post('/modules/unlock', [ModuleController::class, 'unlock'])->name('modules.unlock');
+    Route::get('/modules/read/{slug}', [ModuleController::class, 'showLegacy'])->name('modules.show');
+    Route::get('/modules/{moduleSlug}', [ModuleController::class, 'showModule'])->name('modules.module.show');
+    Route::get('/modules/{moduleSlug}/{lessonSlug}', [ModuleController::class, 'showLesson'])->name('modules.lesson.show');
+});
 
 // ============================================
 // AUTH ROUTES (UNIFIED SYSTEM)
