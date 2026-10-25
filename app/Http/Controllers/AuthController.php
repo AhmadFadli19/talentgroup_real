@@ -322,13 +322,33 @@ class AuthController extends Controller
     // ==================== GOOGLE OAUTH ====================
     public function redirectToGoogle()
     {
-        return \Laravel\Socialite\Facades\Socialite::driver('google')->redirect();
+        try {
+            $clientId = config('services.google.client_id');
+            $clientSecret = config('services.google.client_secret');
+
+            if (empty($clientId) || empty($clientSecret)) {
+                return redirect()->route('login')->with('error', 'Google Client ID atau Client Secret belum diatur di file .env server. Silakan hubungi administrator.');
+            }
+
+            return \Laravel\Socialite\Facades\Socialite::driver('google')->redirect();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Google OAuth Redirect Error: ' . $e->getMessage(), [
+                'exception' => $e
+            ]);
+            return redirect()->route('login')->with('error', 'Gagal mengarahkan ke login Google: ' . $e->getMessage());
+        }
     }
 
     public function handleGoogleCallback()
     {
         try {
-            $googleUser = \Laravel\Socialite\Facades\Socialite::driver('google')->user();
+            // Coba ambil pengguna dengan stateful, jika sesi bermasalah di proxy/hosting coba stateless
+            try {
+                $googleUser = \Laravel\Socialite\Facades\Socialite::driver('google')->user();
+            } catch (\Exception $stateException) {
+                \Illuminate\Support\Facades\Log::warning('Google OAuth state verification failed, falling back to stateless: ' . $stateException->getMessage());
+                $googleUser = \Laravel\Socialite\Facades\Socialite::driver('google')->stateless()->user();
+            }
 
             if (!$googleUser || empty($googleUser->email)) {
                 return redirect()->route('login')->with('error', 'Gagal mendapatkan data akun dari Google.');
@@ -380,8 +400,10 @@ class AuthController extends Controller
             Auth::login($newUser, true);
             return $this->redirectBasedOnRole($newUser);
 
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Google OAuth Error: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Google OAuth Error: ' . $e->getMessage(), [
+                'exception' => $e
+            ]);
             return redirect()->route('login')->with('error', 'Terjadi kesalahan saat masuk dengan Google: ' . $e->getMessage());
         }
     }
