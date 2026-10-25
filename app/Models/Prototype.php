@@ -38,6 +38,20 @@ class Prototype extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function getStoragePathAttribute($value)
+    {
+        if ($value && \Illuminate\Support\Facades\File::exists($value)) {
+            return $value;
+        }
+
+        $fallback = storage_path('app/hosted_prototypes/' . $this->slug);
+        if (\Illuminate\Support\Facades\File::exists($fallback)) {
+            return $fallback;
+        }
+
+        return $value;
+    }
+
     public function getUrlAttribute(): string
     {
         return url('/p/' . $this->slug);

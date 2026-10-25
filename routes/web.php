@@ -33,6 +33,9 @@ Route::get('/storage-file/{path}', [HomeController::class, 'streamFile'])->where
 
 // Virtual Subdomain / Free Hosting Prototype Route
 Route::get('/p/{slug}/{path?}', [PrototypeHostController::class, 'serve'])->where('path', '.*')->name('prototype.serve');
+Route::get('/public/p/{slug}/{path?}', function ($slug, $path = null) {
+    return redirect('/p/' . $slug . ($path ? '/' . $path : ''), 301);
+})->where('path', '.*');
 
 // Documentation / Separate Module Routes
 Route::get('/modules', [ModuleController::class, 'index'])->name('modules.index');

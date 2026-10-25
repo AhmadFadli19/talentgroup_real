@@ -72,26 +72,32 @@ class PrototypeHostController extends Controller
 
         $baseDir = $prototype->storage_path;
         if (!File::exists($baseDir)) {
-            return response()->view('errors.prototype_not_found', [
-                'slug' => $slug,
-                'message' => 'Berkas direktori prototype tidak ditemukan di server penyimpanan.'
-            ], 404);
+            $fallbackDir = storage_path('app/hosted_prototypes/' . $slug);
+            if (File::exists($fallbackDir)) {
+                $baseDir = $fallbackDir;
+            } else {
+                return response()->view('errors.prototype_not_found', [
+                    'slug' => $slug,
+                    'message' => 'Berkas direktori prototype tidak ditemukan di server penyimpanan.'
+                ], 404);
+            }
         }
 
         // Clean requested path to prevent Directory Traversal
         $cleanPath = trim(str_replace(['../', '..\\'], '', (string)$path), '/');
-
-        // Redirect root prototype URL without trailing slash to trailing slash (guarantees relative links resolve natively)
-        if (($path === null || $cleanPath === '') && !str_ends_with(strtok($request->getRequestUri(), '?'), '/')) {
-            $qs = $request->getQueryString();
-            return redirect(rtrim($request->url(), '/') . '/' . ($qs ? '?' . $qs : ''), 301);
-        }
 
         // If root request or index.html
         if ($cleanPath === '' || $cleanPath === 'index.html' || $cleanPath === 'index.htm') {
             $indexPath = rtrim($baseDir, '/\\') . DIRECTORY_SEPARATOR . 'index.html';
             if (!File::exists($indexPath)) {
                 $indexPath = rtrim($baseDir, '/\\') . DIRECTORY_SEPARATOR . 'index.htm';
+            }
+
+            if (!File::exists($indexPath)) {
+                $anyHtml = File::glob(rtrim($baseDir, '/\\') . DIRECTORY_SEPARATOR . '*.html');
+                if (!empty($anyHtml)) {
+                    $indexPath = $anyHtml[0];
+                }
             }
 
             if (!File::exists($indexPath)) {
@@ -103,9 +109,9 @@ class PrototypeHostController extends Controller
 
             $content = File::get($indexPath);
 
-            // Dynamically ensure base tag so relative links (style.css, slide2.html, images/...) resolve to /p/{slug}/
+            // Dynamically ensure base tag and rewrite links so relative assets resolve seamlessly
             $baseHref = url('/p/' . $slug) . '/';
-            $content = $this->ensureBaseTag($content, $baseHref);
+            $content = $this->prepareHtmlContent($content, $baseHref, $slug);
 
             return response($content, 200, [
                 'Content-Type' => 'text/html; charset=utf-8',
@@ -117,7 +123,15 @@ class PrototypeHostController extends Controller
         // Requested asset or subpage file
         $filePath = rtrim($baseDir, '/\\') . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $cleanPath);
 
-        // Fallback for extensionless HTML navigation (e.g. href="slide2" -> "slide2.html")
+        // Fallback if requested path is a sub-directory containing an index.html
+        if (File::exists($filePath) && is_dir($filePath)) {
+            $subIndex = rtrim($filePath, '/\\') . DIRECTORY_SEPARATOR . 'index.html';
+            if (File::exists($subIndex)) {
+                $filePath = $subIndex;
+            }
+        }
+
+        // Fallback for extensionless HTML navigation (e.g. href="slide2" -> "slide2.html", href="about" -> "about.html")
         if (!File::exists($filePath) && File::exists($filePath . '.html')) {
             $filePath .= '.html';
         }
@@ -132,11 +146,11 @@ class PrototypeHostController extends Controller
 
         $ext = strtolower(pathinfo($realFile, PATHINFO_EXTENSION));
 
-        // If serving another HTML file inside prototype (e.g. slide2.html, about.html)
+        // If serving another HTML file inside prototype (e.g. slide2.html, about.html, page2.html)
         if ($ext === 'html' || $ext === 'htm') {
             $content = File::get($realFile);
             $baseHref = url('/p/' . $slug) . '/';
-            $content = $this->ensureBaseTag($content, $baseHref);
+            $content = $this->prepareHtmlContent($content, $baseHref, $slug);
             return response($content, 200, [
                 'Content-Type' => 'text/html; charset=utf-8',
                 'X-Frame-Options' => 'SAMEORIGIN',
@@ -151,6 +165,29 @@ class PrototypeHostController extends Controller
             'Cache-Control' => 'public, max-age=86400',
             'X-Content-Type-Options' => 'nosniff',
         ]);
+    }
+
+    /**
+     * Prepare HTML content by injecting <base href="..."> and rewriting root-relative links
+     */
+    protected function prepareHtmlContent(string $html, string $baseHref, string $slug): string
+    {
+        $html = $this->ensureBaseTag($html, $baseHref);
+
+        // Convert root-relative links like href="/page2.html" or src="/images/pic.png" to relative
+        // so that the browser will resolve them against <base href> instead of hitting the domain root
+        $html = preg_replace_callback(
+            '/\b(href|src)=(["\'])\/([^"\'\/][^"\']*)(\2)/i',
+            function ($matches) use ($slug) {
+                if (str_starts_with($matches[3], 'p/' . $slug)) {
+                    return $matches[0];
+                }
+                return $matches[1] . '=' . $matches[2] . $matches[3] . $matches[4];
+            },
+            $html
+        );
+
+        return $html;
     }
 
     /**
