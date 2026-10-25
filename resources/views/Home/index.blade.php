@@ -2440,7 +2440,7 @@
           <a class="nav-link-item active" href="#home"><i class="fas fa-home"></i> Home</a>
           <a class="nav-link-item" href="#our-works"><i class="fas fa-laptop-code"></i> Our Works</a>
           <a class="nav-link-item" href="#game-edu"><i class="fas fa-gamepad"></i> Game Edu</a>
-          <a class="nav-link-item" href="#courses"><i class="fas fa-graduation-cap"></i> Kelas</a>
+          <a class="nav-link-item" href="{{ auth()->check() ? route('user.courses.index') : route('login') }}"><i class="fas fa-graduation-cap"></i> Kelas</a>
           <a class="nav-link-item" href="#about"><i class="fas fa-info-circle"></i> About</a>
           <a class="nav-link-item" href="{{ route('modules.index') }}"><i class="fas fa-book-open"></i> Dokumentasi Modul</a>
         </div>
@@ -2506,7 +2506,7 @@
               @else
                 <a class="btn btn-gradient" href="{{ auth()->user()->isAdmin() ? route('admin.dashboard') : route('user.dashboard') }}">Buka Ruang Belajar</a>
               @endguest
-              <a class="btn btn-glass" href="#courses">▷ Lihat Kelas</a>
+              <a class="btn btn-glass" href="{{ route('modules.index') }}">▷ Dokumentasi Modul</a>
             </div>
             <div class="hero-stats">
               <div><strong>10K+</strong><span>Pelajar Aktif</span></div>
@@ -2647,27 +2647,27 @@
           </div>
           <div class="works-grid">
             <div class="technology-grid" aria-label="Bahasa pemrograman yang tersedia">
-              <a href="#courses" class="technology php">
+              <a href="{{ route('modules.index') }}" class="technology php">
                 <div class="technology-symbol"><img src="{{ asset('tg/assets/60-2-img-vector15.svg') }}" alt="" width="52" height="32"><b>php</b></div>
                 <span>PHP</span>
               </a>
-              <a href="#courses" class="technology javascript">
+              <a href="{{ route('modules.index') }}" class="technology javascript">
                 <div class="technology-symbol"><img src="{{ asset('tg/assets/60-2-img-svg.svg') }}" alt="" width="54" height="54"></div>
                 <span>JavaScript</span>
               </a>
-              <a href="#courses" class="technology python">
+              <a href="{{ route('modules.index') }}" class="technology python">
                 <div class="technology-symbol"><img src="{{ asset('tg/assets/60-2-img-vector16.svg') }}" alt="" width="50" height="50"><b>Python</b></div>
                 <span>Python</span>
               </a>
-              <a href="#courses" class="technology java">
+              <a href="{{ route('modules.index') }}" class="technology java">
                 <div class="technology-symbol"><img src="{{ asset('tg/assets/60-2-img-vector17.svg') }}" alt="" width="48" height="48"><b>Java</b></div>
                 <span>Java</span>
               </a>
-              <a href="#courses" class="technology css">
+              <a href="{{ route('modules.index') }}" class="technology css">
                 <div class="technology-symbol"><img src="{{ asset('tg/assets/60-2-img-svg1.svg') }}" alt="" width="54" height="54"></div>
                 <span>CSS</span>
               </a>
-              <a href="#courses" class="technology sql">
+              <a href="{{ route('modules.index') }}" class="technology sql">
                 <div class="technology-symbol"><img src="{{ asset('tg/assets/60-2-img-vector18.svg') }}" alt="" width="50" height="50"><b>SQL</b></div>
                 <span>SQL</span>
               </a>
@@ -2778,7 +2778,13 @@
         </div>
       </section>
 
-      <!-- COURSES SECTION -->
+      {{-- =========================================================================
+           ARSIP: COURSES SECTION ("Kursus Pilihan Terbaik")
+           Diarsipkan agar tidak tampil di halaman depan / landing page sesuai permintaan.
+           Kode tetap tersimpan dengan rapi dan dapat diaktifkan kembali jika diperlukan.
+           ========================================================================= --}}
+      @if(false)
+      <!-- COURSES SECTION (DIARSIPKAN) -->
       <section class="courses section" id="courses">
         <div class="container">
           <div class="course-heading">
@@ -2876,6 +2882,7 @@
           </div>
         </div>
       </section>
+      @endif
 
       <!-- ABOUT SECTION -->
       <section class="about section" id="about">
@@ -2950,7 +2957,7 @@
         </div>
         <div class="footer-links">
           <h3>LAYANAN</h3>
-          <a href="#courses">Kelas Coding</a>
+          <a href="{{ auth()->check() ? route('user.courses.index') : route('login') }}">Kelas Coding</a>
           <a href="#game-edu">Game Edu</a>
           <a href="{{ route('user.prototypes.create') }}">Upload Prototype AI</a>
           <a href="{{ route('modules.index') }}">Modul Interaktif</a>
