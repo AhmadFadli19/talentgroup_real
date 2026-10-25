@@ -137,10 +137,10 @@
       color: #f0f6ff !important;
     }
     body.dark .brand-accent {
-      color: #38bdf8 !important;
+      color: #fb923c !important;
     }
     body.dark .brand-tld {
-      color: #7dd3fc !important;
+      color: #f0f6ff !important;
     }
     body.dark .site-header nav {
       background: rgba(18, 33, 68, 0.85) !important;
@@ -1185,10 +1185,10 @@
       color: #0b2447 !important;
     }
     .brand-accent {
-      color: #0047b3 !important;
+      color: #f97316 !important;
     }
     .brand-tld {
-      color: #0284c7 !important;
+      color: #0b2447 !important;
       font-size: 16px !important;
       font-weight: 700 !important;
     }
