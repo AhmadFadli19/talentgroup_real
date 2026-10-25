@@ -8,3 +8,9 @@
     RewriteRule ^$ public/ [L]
     RewriteRule ^((?!public/).*)$ public/$1 [L]
 </IfModule>
+
+# Keamanan: Blokir akses langsung ke file .env dan file konfigurasi sensitif
+<Files .env>
+    Order allow,deny
+    Deny from all
+</Files>

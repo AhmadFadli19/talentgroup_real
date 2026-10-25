@@ -23,9 +23,12 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $name = function_exists('fake') ? fake()->name() : 'Admin User';
+        $email = function_exists('fake') ? fake()->unique()->safeEmail() : Str::random(8) . '@talentgroup.cloud';
+
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'name' => $name,
+            'email' => $email,
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
