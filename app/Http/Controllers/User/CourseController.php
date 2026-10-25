@@ -80,16 +80,18 @@ class CourseController extends Controller
             $questionIds = $course->questions()->pluck('id');
             $storyIds = $course->stories()->pluck('id');
             $videoIds = $course->videos()->pluck('id');
+            $htmlIds = $course->htmls()->pluck('id');
 
             UserAnswer::where('user_id', $user->id)
-                ->where(function($query) use ($questionIds, $storyIds, $videoIds) {
+                ->where(function($query) use ($questionIds, $storyIds, $videoIds, $htmlIds) {
                     $query->where(fn($q) => $q->where('content_type', 'question')->whereIn('content_id', $questionIds))
                         ->orWhere(fn($q) => $q->where('content_type', 'story')->whereIn('content_id', $storyIds))
-                        ->orWhere(fn($q) => $q->where('content_type', 'video')->whereIn('content_id', $videoIds));
+                        ->orWhere(fn($q) => $q->where('content_type', 'video')->whereIn('content_id', $videoIds))
+                        ->orWhere(fn($q) => $q->where('content_type', 'html')->whereIn('content_id', $htmlIds));
                 })
                 ->delete();
 
-            $firstContent = $course->allContents()->first();
+            $firstContent = $course->allContents($user)->first();
             $firstContentId = null;
 
             if ($firstContent) {
@@ -232,7 +234,7 @@ class CourseController extends Controller
                 ]);
             }
 
-            $firstContent = $course->allContents()->first();
+            $firstContent = $course->allContents($user)->first();
             $firstContentId = null;
 
             if ($firstContent) {
@@ -312,7 +314,7 @@ class CourseController extends Controller
             ->pluck('content_reference')
             ->toArray();
 
-        $contents = $course->allContents();
+        $contents = $course->allContents($user);
 
         return view('user.course_learn', compact('course', 'userCourse', 'userAnswers', 'contents'));
     }
@@ -406,7 +408,7 @@ class CourseController extends Controller
             ->where('content_id', $content->id)
             ->first();
 
-        $allContents = $course->allContents();
+        $allContents = $course->allContents($user);
         $currentIndex = $allContents->search(function ($item) use ($content) {
             return $item->type === $content->type && $item->id === $content->id;
         });
@@ -489,17 +491,38 @@ class CourseController extends Controller
             // Update progress
             $this->updateProgress($user, $course, $content);
 
+            $showFeedback = $course->isInstantQuizFeedback();
+            if ($showFeedback) {
+                $codeMsg = $isCorrect ? 'Jawaban benar! Kode kamu sesuai!' : 'Jawaban masih belum tepat.';
+            } elseif ($course->isNoneQuizFeedback()) {
+                $codeMsg = 'Kode Anda berhasil dikirim dan tersimpan!';
+            } else {
+                $codeMsg = 'Kode Anda berhasil dikirim dan tersimpan! Hasil evaluasi lengkap akan tersedia setelah Anda menyelesaikan seluruh materi kursus.';
+            }
+
             if ($request->ajax()) {
+                $userCourse = UserCourse::where('user_id', $user->id)->where('course_id', $course->id)->first();
+                $isCompleted = $userCourse ? (bool)$userCourse->is_completed : false;
+
+                $allContents = $course->allContents($user);
+                $currentIndex = $allContents->search(fn($c) => $c->type === $content->type && $c->id === $content->id);
+                $nextContent = ($currentIndex !== false && $currentIndex < $allContents->count() - 1) ? $allContents[$currentIndex + 1] : null;
+
+                $nextUrl = ($isCompleted || !$nextContent)
+                    ? route('user.courses.results', $course->id)
+                    : route('user.courses.content', [$course->id, $nextContent->type . ':' . $nextContent->id]);
+
                 return response()->json([
                     'success' => true,
                     'is_correct' => $isCorrect,
-                    'message' => $isCorrect ? 'Jawaban benar! Kode kamu sesuai!' : 'Jawaban masih belum tepat.',
+                    'is_completed' => $isCompleted,
+                    'message' => $codeMsg,
+                    'next_url' => $nextUrl,
                 ]);
             }
 
-            $message = $isCorrect ? 'Jawaban benar! Kode kamu sesuai!' : 'Jawaban masih belum tepat.';
             return redirect()->route('user.courses.content', [$course->id, $contentId])
-                ->with($isCorrect ? 'success' : 'error', $message);
+                ->with($showFeedback ? ($isCorrect ? 'success' : 'error') : 'info', $codeMsg);
         }
 
         // Handle multiple choice question
@@ -525,10 +548,20 @@ class CourseController extends Controller
 
         $this->updateProgress($user, $course, $content);
 
-        $message = $isCorrect ? 'Jawaban benar! Selamat!' : 'Jawaban salah. Coba lagi!';
+        if ($course->isInstantQuizFeedback()) {
+            $message = $isCorrect ? 'Jawaban benar! Selamat!' : 'Jawaban salah. Coba lagi!';
+            $flashType = $isCorrect ? 'success' : 'error';
+        } elseif ($course->isNoneQuizFeedback()) {
+            $message = 'Jawaban Anda berhasil disimpan!';
+            $flashType = 'info';
+        } else {
+            // Default: 'end'
+            $message = 'Jawaban Anda berhasil disimpan! Hasil evaluasi dan kunci jawaban akan ditampilkan setelah Anda menyelesaikan seluruh materi kursus.';
+            $flashType = 'info';
+        }
 
         return redirect()->route('user.courses.content', [$course->id, $contentId])
-            ->with($isCorrect ? 'success' : 'error', $message);
+            ->with($flashType, $message);
     }
 
     private function updateProgress($user, $course, $content)
@@ -538,17 +571,23 @@ class CourseController extends Controller
             ->first();
 
         if ($userCourse) {
-            $allContents = $course->allContents();
-            $currentIndex = $allContents->search(function ($item) use ($content) {
-                return $item->type === $content->type && $item->id === $content->id;
-            });
+            $allContents = $course->allContents($user);
+            $totalNodes = $allContents->count();
+            $allRefs = $allContents->map(fn($c) => $c->type . ':' . $c->id)->toArray();
 
-            if ($currentIndex !== false && $currentIndex < $allContents->count() - 1) {
-                $nextContent = $allContents[$currentIndex + 1];
-                $nextContentId = $nextContent->type . ':' . $nextContent->id;
-                $userCourse->update(['current_content_id' => $nextContentId]);
-            } else {
-                $userCourse->update(['is_completed' => true]);
+            $completedRefs = UserAnswer::where('user_id', $user->id)
+                ->whereIn('content_reference', $allRefs)
+                ->pluck('content_reference')
+                ->unique()
+                ->toArray();
+
+            $completedCount = count($completedRefs);
+            $isAllCompleted = ($totalNodes > 0 && $completedCount >= $totalNodes);
+
+            if ($isAllCompleted) {
+                $userCourse->update([
+                    'is_completed' => true,
+                ]);
 
                 // Auto issue certificate
                 \App\Models\Certificate::firstOrCreate(
@@ -562,6 +601,34 @@ class CourseController extends Controller
                         'issued_at' => now(),
                     ]
                 );
+            } else {
+                // Tentukan modul berikutnya yang belum selesai
+                $currentIndex = $allContents->search(function ($item) use ($content) {
+                    return $item->type === $content->type && $item->id === $content->id;
+                });
+
+                $nextUncompleted = null;
+                if ($currentIndex !== false) {
+                    for ($i = $currentIndex + 1; $i < $totalNodes; $i++) {
+                        $candidate = $allContents[$i];
+                        if (!in_array($candidate->type . ':' . $candidate->id, $completedRefs)) {
+                            $nextUncompleted = $candidate;
+                            break;
+                        }
+                    }
+                }
+
+                if (!$nextUncompleted) {
+                    $nextUncompleted = $allContents->first(function ($candidate) use ($completedRefs) {
+                        return !in_array($candidate->type . ':' . $candidate->id, $completedRefs);
+                    });
+                }
+
+                $nextContentId = $nextUncompleted ? ($nextUncompleted->type . ':' . $nextUncompleted->id) : null;
+                $userCourse->update([
+                    'current_content_id' => $nextContentId,
+                    'is_completed' => false,
+                ]);
             }
         }
     }
@@ -578,9 +645,29 @@ class CourseController extends Controller
             ->where('course_id', $course->id)
             ->first();
 
-        if (!$userCourse || !$userCourse->is_completed) {
+        if (!$userCourse) {
+            return redirect()->route('user.courses.show', $course->id)
+                ->with('error', 'Anda belum membeli kursus ini.');
+        }
+
+        // Cek apakah seluruh node sudah selesai
+        $allContents = $course->allContents($user);
+        $totalNodes = $allContents->count();
+        $allRefs = $allContents->map(fn($c) => $c->type . ':' . $c->id)->toArray();
+        $syncedNodes = UserAnswer::where('user_id', $user->id)
+            ->whereIn('content_reference', $allRefs)
+            ->distinct('content_reference')
+            ->count();
+
+        $isCompleted = $userCourse->is_completed || ($totalNodes > 0 && $syncedNodes >= $totalNodes);
+
+        if (!$isCompleted) {
             return redirect()->route('user.courses.results', $course->id)
-                ->with('error', 'Anda belum menyelesaikan kursus ini untuk mendapatkan sertifikat.');
+                ->with('error', 'Selesaikan seluruh materi kursus terlebih dahulu untuk mendapatkan sertifikat.');
+        }
+
+        if (!$userCourse->is_completed) {
+            $userCourse->update(['is_completed' => true]);
         }
 
         $certificate = \App\Models\Certificate::firstOrCreate(
@@ -616,30 +703,74 @@ class CourseController extends Controller
                 ->with('error', 'Anda belum membeli kursus ini.');
         }
 
-        $allContents = $course->allContents();
+        $allContents = $course->allContents($user);
         $totalNodes = $allContents->count();
+        $allRefs = $allContents->map(fn($c) => $c->type . ':' . $c->id)->toArray();
         
         $userAnswersAll = UserAnswer::where('user_id', $user->id)
-            ->whereIn('content_reference', $allContents->map(fn($c) => $c->type . ':' . $c->id))
+            ->whereIn('content_reference', $allRefs)
+            ->with(['courseQuestion', 'courseStory'])
             ->get();
             
-        $syncedNodes = $userAnswersAll->count();
+        $completedRefs = $userAnswersAll->pluck('content_reference')->unique()->toArray();
+        $syncedNodes = count($completedRefs);
 
-        $questionIds = $course->questions()->pluck('id');
-        $answers = $userAnswersAll->where('content_type', 'question');
-        
-        $totalQuestions = $questionIds->count();
-        $correctAnswers = $answers->where('is_correct', true)->count();
-        $score = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100, 1) : 0;
-        $totalPoints = $answers->sum('points');
+        // Jika seluruh materi sudah selesai, sinkronkan is_completed dan sertifikat
+        if ($totalNodes > 0 && $syncedNodes >= $totalNodes) {
+            if (!$userCourse->is_completed) {
+                $userCourse->update(['is_completed' => true]);
+            }
+
+            \App\Models\Certificate::firstOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'course_id' => $course->id,
+                ],
+                [
+                    'certificate_code' => 'TG-' . strtoupper(uniqid()),
+                    'type' => 'automatic',
+                    'issued_at' => now(),
+                ]
+            );
+        }
+
+        // Ambil seluruh pertanyaan (Kuis & Coding) sesuai urutan materi
+        $questions = $allContents->where('type', 'question')->values();
+        $totalQuestions = $questions->count();
+        $answersMap = $userAnswersAll->keyBy('content_reference');
+
+        $evaluatedQuestions = $questions->map(function ($q) use ($answersMap) {
+            $ref = 'question:' . $q->id;
+            $userAns = $answersMap->get($ref);
+            return [
+                'question' => $q,
+                'user_answer' => $userAns,
+                'is_answered' => $userAns !== null,
+                'is_correct' => $userAns ? (bool) $userAns->is_correct : false,
+                'points' => $userAns ? (int) $userAns->points : 0,
+            ];
+        });
+
+        $answeredCount = $evaluatedQuestions->where('is_answered', true)->count();
+        $correctAnswers = $evaluatedQuestions->where('is_correct', true)->count();
+
+        if ($totalQuestions > 0) {
+            $score = round(($correctAnswers / $totalQuestions) * 100, 1);
+        } else {
+            $score = $totalNodes > 0 ? round(($syncedNodes / $totalNodes) * 100, 1) : 100;
+        }
+
+        $totalPoints = $evaluatedQuestions->sum('points');
 
         return view('user.course_results', compact(
             'course',
             'userCourse',
-            'answers',
+            'allContents',
+            'evaluatedQuestions',
             'totalNodes',
             'syncedNodes',
             'totalQuestions',
+            'answeredCount',
             'correctAnswers',
             'score',
             'totalPoints'

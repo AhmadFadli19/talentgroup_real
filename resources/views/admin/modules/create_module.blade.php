@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Create New Module | Flow Academy')
+@section('title', 'Buat Modul Baru | TalentGroup.id')
 
 @section('content')
 <div class="max-w-4xl mx-auto px-4 py-8">
@@ -167,6 +167,40 @@
                                value="{{ old('badge', 'Populer') }}" 
                                placeholder="Pemula, Lanjutan, Eksklusif"
                                class="cyber-input text-xs">
+                    </div>
+                <!-- Security Settings (Default Anti-Screenshot & Anti-Copy) -->
+                <div class="p-5 rounded-2xl bg-slate-950 border border-slate-800">
+                    <label class="block text-xs font-bold uppercase tracking-wider text-white mb-2 flex items-center gap-2">
+                        <i class="fas fa-shield-alt text-cyan-400"></i> Pengaturan Keamanan Default Modul
+                    </label>
+                    <p class="text-[11px] text-slate-400 mb-4">
+                        Tentukan pengaturan keamanan default untuk seluruh materi di dalam modul pembelajaran ini.
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Anti-Screenshot -->
+                        <label class="flex items-start gap-3 p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-950/20 hover:bg-emerald-950/30 cursor-pointer transition select-none">
+                            <input type="hidden" name="enable_anti_screenshot" value="0">
+                            <input type="checkbox" name="enable_anti_screenshot" value="1" {{ old('enable_anti_screenshot', true) ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded text-emerald-500 bg-slate-800 border-slate-700 focus:ring-0">
+                            <div>
+                                <span class="block text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                                    <i class="fas fa-camera"></i> Proteksi Anti-Screenshot
+                                </span>
+                                <span class="text-[11px] text-emerald-300/70">Blackout otomatis saat PrtScn, Win+Shift+S, Snipping Tool, atau gesture HP. (Default: Nyala)</span>
+                            </div>
+                        </label>
+
+                        <!-- Anti-Copy -->
+                        <label class="flex items-start gap-3 p-3.5 rounded-xl border border-cyan-500/30 bg-cyan-950/20 hover:bg-cyan-950/30 cursor-pointer transition select-none">
+                            <input type="hidden" name="enable_anti_copy" value="0">
+                            <input type="checkbox" name="enable_anti_copy" value="1" {{ old('enable_anti_copy', true) ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded text-cyan-500 bg-slate-800 border-slate-700 focus:ring-0">
+                            <div>
+                                <span class="block text-xs font-bold text-cyan-300 flex items-center gap-1.5">
+                                    <i class="fas fa-copy"></i> Proteksi Anti-Salin Teks
+                                </span>
+                                <span class="text-[11px] text-cyan-400/70">Cegah seleksi teks, blokir klik kanan, dan cegah copy/cut materi (salin kode tetap bisa). (Default: Nyala)</span>
+                            </div>
+                        </label>
                     </div>
                 </div>
 

@@ -1,286 +1,162 @@
 @extends('layouts.app')
 
-@section('title', $course->title)
+@section('title', $course->title . ' | Admin TalentGroup')
 
 @section('content')
+<div class="max-w-6xl mx-auto px-4 py-8">
 
-<style>
-/* ================= PIXEL COURSE SHOW ================= */
-.pixel-show-container {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-/* HEADER */
-.pixel-show-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 22px;
-}
-
-.pixel-back-btn {
-    border: 3px solid var(--border);
-    background: var(--bg);
-    padding: 6px 8px;
-    box-shadow: 3px 3px 0 var(--shadow);
-}
-
-.pixel-back-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-}
-
-.pixel-show-title h1 {
-    font-size: 16px;
-    color: var(--accent);
-}
-
-.pixel-show-meta {
-    font-size: 9px;
-    color: var(--muted);
-    margin-top: 4px;
-}
-
-.pixel-badge {
-    border: 2px solid;
-    padding: 2px 6px;
-    font-size: 8px;
-    margin-right: 6px;
-}
-
-.pixel-active {
-    border-color: #22c55e;
-    color: #22c55e;
-}
-
-.pixel-inactive {
-    border-color: #ff5555;
-    color: #ff5555;
-}
-
-/* GRID */
-.pixel-show-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 18px;
-}
-
-/* CARD */
-.pixel-card {
-    background: var(--card);
-    border: 3px solid var(--border);
-    box-shadow: 4px 4px 0 var(--shadow);
-    padding: 16px;
-}
-
-/* COURSE IMAGE */
-.pixel-course-image img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border: 3px solid var(--border);
-    margin-bottom: 14px;
-}
-
-/* INFO */
-.pixel-section-title {
-    font-size: 11px;
-    margin-bottom: 8px;
-    color: var(--accent);
-}
-
-.pixel-text {
-    font-size: 9px;
-    color: var(--muted);
-    line-height: 1.6;
-}
-
-.pixel-info-grid {
-    display: grid;
-    grid-template-columns: repeat(2,1fr);
-    gap: 14px;
-    margin-top: 14px;
-}
-
-/* CONTENT LIST */
-.pixel-content-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--bg);
-    border: 2px solid var(--border);
-    padding: 10px;
-    font-size: 9px;
-}
-
-.pixel-content-type {
-    font-size: 8px;
-    color: var(--muted);
-}
-
-/* ACTIONS */
-.pixel-action-btn {
-    display: block;
-    border: 3px solid var(--border);
-    background: var(--bg);
-    padding: 10px;
-    font-size: 9px;
-    margin-bottom: 8px;
-}
-
-.pixel-action-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-}
-
-/* ENROLLMENT */
-.pixel-user-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 8px;
-    margin-bottom: 6px;
-}
-
-.pixel-avatar {
-    width: 26px;
-    height: 26px;
-    border: 2px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-    .pixel-show-grid {
-        grid-template-columns: 1fr;
-    }
-}
-</style>
-
-<div class="pixel-show-container">
-
-    <!-- HEADER -->
-    <div class="pixel-show-header">
-        <a href="{{ route('admin.courses.index') }}" class="pixel-back-btn">◀</a>
-        <div class="pixel-show-title">
-            <h1>{{ $course->title }}</h1>
-            <div class="pixel-show-meta">
-                <span class="pixel-badge {{ $course->is_active ? 'pixel-active' : 'pixel-inactive' }}">
-                    {{ $course->is_active ? 'ACTIVE' : 'INACTIVE' }}
-                </span>
-                Created {{ $course->created_at->format('M d, Y') }}
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-4 border-b border-[var(--border)]">
+        <div class="flex items-center gap-4">
+            <a href="{{ route('admin.courses.index') }}" class="btn-outline px-3.5 py-2 rounded-xl text-xs font-bold inline-flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <div class="flex items-center gap-2 text-xs font-mono text-[var(--blue)] uppercase tracking-wider mb-1">
+                    <a href="{{ route('admin.courses.index') }}" class="hover:underline">COURSES</a>
+                    <i class="fas fa-chevron-right text-[9px]"></i>
+                    <span>DETAIL</span>
+                </div>
+                <h1 class="text-2xl font-extrabold text-[var(--ink)] tracking-tight">{{ $course->title }}</h1>
+                <div class="flex items-center gap-2 mt-1 text-xs text-[var(--muted)]">
+                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider {{ $course->is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200' }}">
+                        {{ $course->is_active ? 'Aktif' : 'Non-aktif' }}
+                    </span>
+                    <span>•</span>
+                    <span>Dibuat {{ $course->created_at->format('d M Y') }}</span>
+                </div>
             </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <a href="{{ route('admin.courses.edit', $course) }}" class="btn-outline px-4 py-2.5 rounded-xl text-xs font-bold inline-flex items-center gap-2">
+                <i class="fas fa-edit"></i> Edit Kursus
+            </a>
+            <a href="{{ route('admin.courses.contents.index', $course) }}" class="btn-gradient px-4 py-2.5 rounded-xl text-white text-xs font-bold shadow-sm inline-flex items-center gap-2">
+                <i class="fas fa-layer-group"></i> Kelola Materi
+            </a>
         </div>
     </div>
 
-    <div class="pixel-show-grid">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <!-- LEFT -->
-        <div>
+        <!-- LEFT (2 cols) -->
+        <div class="lg:col-span-2 space-y-6">
 
             <!-- COURSE INFO -->
-            <div class="pixel-card">
+            <div class="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm">
                 @if($course->image)
-                    <div class="pixel-course-image">
-                         <img src="{{ $course->image_url }}" alt="{{ $course->title }}">
+                    <div class="h-56 rounded-xl overflow-hidden border border-[var(--border)] mb-5">
+                        <img src="{{ $course->image_url }}" alt="{{ $course->title }}" class="w-full h-full object-cover">
                     </div>
                 @endif
 
-                <h3 class="pixel-section-title">DESCRIPTION</h3>
-                <p class="pixel-text">{{ $course->description }}</p>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--muted)] mb-2">Deskripsi Kursus</h3>
+                <p class="text-xs sm:text-sm text-[var(--body)] leading-relaxed mb-6">{{ $course->description }}</p>
 
-                <div class="pixel-info-grid">
+                <div class="grid grid-cols-3 gap-4 p-4 rounded-xl bg-slate-50 border border-[var(--border)]">
                     <div>
-                        <h3 class="pixel-section-title">PRICE</h3>
-                        <p>Rp {{ number_format($course->price) }}</p>
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">Harga</div>
+                        <div class="text-base font-extrabold text-[var(--ink)] mt-0.5">
+                            {{ $course->price > 0 ? 'Rp ' . number_format($course->price, 0, ',', '.') : 'Gratis' }}
+                        </div>
                     </div>
                     <div>
-                        <h3 class="pixel-section-title">ENROLLMENTS</h3>
-                        <p>{{ $course->userCourses->count() }}</p>
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">Peserta</div>
+                        <div class="text-base font-extrabold text-[var(--blue)] font-mono mt-0.5">{{ $course->userCourses->count() }} Orang</div>
                     </div>
-                </div>
-
-                <div style="margin-top:14px">
-                    <h3 class="pixel-section-title">CREATOR</h3>
-                    <p>{{ $course->creator->name }}</p>
+                    <div>
+                        <div class="text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">Instruktur / Pembuat</div>
+                        <div class="text-xs font-bold text-[var(--ink)] mt-1 truncate">{{ $course->creator->name ?? 'Admin' }}</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- CONTENT -->
-            <div class="pixel-card" style="margin-top:18px">
-                <div style="display:flex;justify-content:space-between;align-items:center">
-                    <h3 class="pixel-section-title">COURSE CONTENT</h3>
-                    <a href="{{ route('admin.courses.contents.index', $course) }}">MANAGE →</a>
+            <!-- CONTENT LIST -->
+            <div class="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm">
+                <div class="flex justify-between items-center mb-4 pb-3 border-b border-[var(--border)]">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--ink)]">Daftar Bab & Materi Kursus</h3>
+                    <a href="{{ route('admin.courses.contents.index', $course) }}" class="text-xs font-bold text-[var(--blue)] hover:underline">
+                        Kelola Semua ({{ $course->contents->count() }}) →
+                    </a>
                 </div>
 
                 @if($course->contents->count())
-                    @foreach($course->contents as $content)
-                        <div class="pixel-content-item">
-                            <div>
-                                <strong>{{ $content->title }}</strong><br>
-                                <span class="pixel-content-type">
-                                    {{ strtoupper($content->type) }} • ORDER {{ $content->order }}
-                                </span>
+                    <div class="space-y-2.5">
+                        @foreach($course->contents as $content)
+                            <div class="p-3.5 rounded-xl bg-slate-50 border border-[var(--border)] flex items-center justify-between gap-3 hover:bg-slate-100/60 transition">
+                                <div class="min-w-0">
+                                    <div class="font-bold text-xs text-[var(--ink)] truncate">{{ $content->title }}</div>
+                                    <div class="text-[10px] text-[var(--muted)] font-mono uppercase mt-0.5">
+                                        Tipe: {{ strtoupper($content->type) }} • Urutan #{{ $content->order }}
+                                    </div>
+                                </div>
+                                <a href="{{ route('admin.courses.contents.show', [$course, $content]) }}" class="px-3 py-1.5 rounded-lg bg-white hover:bg-blue-50 text-[var(--blue)] border border-[var(--border)] text-xs font-bold transition">
+                                    Detail
+                                </a>
                             </div>
-                            <a href="{{ route('admin.courses.contents.show', [$course, $content]) }}">▶</a>
-                        </div>
-                    @endforeach
+                        @endforeach
+                    </div>
                 @else
-                    <p class="pixel-text">No content yet</p>
-                    <a href="{{ route('admin.courses.contents.create', $course) }}" class="pixel-action-btn">
-                        ADD CONTENT
-                    </a>
+                    <div class="text-center py-8 text-[var(--muted)] text-xs">
+                        <i class="fas fa-file-circle-plus text-2xl mb-2 text-slate-300 block"></i>
+                        Belum ada materi pembelajaran dalam kursus ini.
+                        <div class="mt-3">
+                            <a href="{{ route('admin.courses.contents.create', $course) }}" class="btn-gradient px-4 py-2 rounded-xl text-white text-xs font-bold shadow-sm inline-flex items-center gap-1.5">
+                                <i class="fas fa-plus"></i> Tambah Materi Pertama
+                            </a>
+                        </div>
+                    </div>
                 @endif
             </div>
 
         </div>
 
-        <!-- RIGHT -->
-        <div>
+        <!-- RIGHT (1 col) -->
+        <div class="space-y-6">
 
             <!-- ACTIONS -->
-            <div class="pixel-card">
-                <h3 class="pixel-section-title">QUICK ACTIONS</h3>
+            <div class="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--ink)] mb-4">Aksi Cepat</h3>
 
-                <a href="{{ route('admin.courses.edit', $course) }}" class="pixel-action-btn">
-                    ✏ EDIT COURSE
-                </a>
+                <div class="space-y-2.5">
+                    <a href="{{ route('admin.courses.edit', $course) }}" class="w-full btn-outline py-2.5 px-4 rounded-xl text-xs font-bold flex items-center gap-2">
+                        <i class="fas fa-edit text-[var(--blue)]"></i> Edit Info Kursus
+                    </a>
 
-                <a href="{{ route('admin.courses.contents.index', $course) }}" class="pixel-action-btn">
-                    📚 MANAGE CONTENT
-                </a>
+                    <a href="{{ route('admin.courses.contents.index', $course) }}" class="w-full btn-outline py-2.5 px-4 rounded-xl text-xs font-bold flex items-center gap-2">
+                        <i class="fas fa-book-open text-indigo-600"></i> Kelola Materi ({{ $course->contents->count() }})
+                    </a>
 
-                <a href="{{ route('admin.courses.results', $course) }}" class="pixel-action-btn">
-                    📊 VIEW RESULTS
-                </a>
+                    <a href="{{ route('admin.courses.results', $course) }}" class="w-full btn-outline py-2.5 px-4 rounded-xl text-xs font-bold flex items-center gap-2">
+                        <i class="fas fa-poll text-emerald-600"></i> Hasil Ujian & Peserta
+                    </a>
+                </div>
             </div>
 
             <!-- ENROLLMENT -->
-            <div class="pixel-card" style="margin-top:18px">
-                <h3 class="pixel-section-title">RECENT ENROLLMENTS</h3>
+            <div class="bg-white border border-[var(--border)] rounded-2xl p-6 shadow-sm">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-[var(--ink)] mb-4 pb-2 border-b border-[var(--border)]">Pendaftar Terbaru</h3>
 
                 @forelse($course->userCourses->take(5) as $userCourse)
-                    <div class="pixel-user-row">
-                        <div style="display:flex;align-items:center;gap:6px">
-                            <div class="pixel-avatar">
-                                {{ strtoupper(substr($userCourse->user->name,0,1)) }}
+                    <div class="flex items-center justify-between py-2.5 border-b border-slate-100 last:border-0">
+                        <div class="flex items-center gap-2.5 min-w-0">
+                            <div class="w-7 h-7 rounded-full bg-blue-50 text-[var(--blue)] font-bold text-xs flex items-center justify-center flex-shrink-0 border border-blue-100">
+                                {{ strtoupper(substr($userCourse->user->name ?? 'U', 0, 1)) }}
                             </div>
-                            {{ $userCourse->user->name }}
+                            <span class="text-xs font-semibold text-[var(--ink)] truncate">{{ $userCourse->user->name ?? 'User #' . $userCourse->user_id }}</span>
                         </div>
-                        <span>
-                            {{ $userCourse->is_completed ? 'DONE' : 'PROGRESS' }}
+                        <span class="text-[9px] font-bold uppercase font-mono px-2 py-0.5 rounded-full {{ $userCourse->is_completed ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-[var(--blue)]' }}">
+                            {{ $userCourse->is_completed ? 'Selesai' : 'Aktif' }}
                         </span>
                     </div>
                 @empty
-                    <p class="pixel-text">No enrollments yet</p>
+                    <p class="text-xs text-[var(--muted)] text-center py-4">Belum ada peserta yang mendaftar.</p>
                 @endforelse
 
                 @if($course->userCourses->count() > 5)
-                    <a href="{{ route('admin.courses.results', $course) }}" class="pixel-action-btn">
-                        VIEW ALL →
+                    <a href="{{ route('admin.courses.results', $course) }}" class="mt-4 block text-center text-xs font-bold text-[var(--blue)] hover:underline">
+                        Lihat Semua Peserta ({{ $course->userCourses->count() }}) →
                     </a>
                 @endif
             </div>
@@ -290,5 +166,4 @@
     </div>
 
 </div>
-
 @endsection

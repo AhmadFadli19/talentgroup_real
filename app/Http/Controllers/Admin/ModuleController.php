@@ -71,6 +71,8 @@ class ModuleController extends Controller
             'badge' => 'nullable|string|max:50',
             'order' => 'nullable|integer',
             'is_active' => 'nullable|boolean',
+            'enable_anti_screenshot' => 'nullable|boolean',
+            'enable_anti_copy' => 'nullable|boolean',
         ]);
 
         $slug = $request->slug ? Str::slug($request->slug) : Str::slug($request->name);
@@ -99,6 +101,8 @@ class ModuleController extends Controller
             'badge' => $request->badge,
             'order' => $request->order ?? (ModuleCategory::max('order') + 1),
             'is_active' => $request->has('is_active') ? $request->boolean('is_active') : true,
+            'enable_anti_screenshot' => $request->has('enable_anti_screenshot') ? $request->boolean('enable_anti_screenshot') : true,
+            'enable_anti_copy' => $request->has('enable_anti_copy') ? $request->boolean('enable_anti_copy') : true,
         ]);
 
         return redirect()->route('admin.modules.index')
@@ -133,6 +137,8 @@ class ModuleController extends Controller
             'badge' => 'nullable|string|max:50',
             'order' => 'nullable|integer',
             'is_active' => 'nullable|boolean',
+            'enable_anti_screenshot' => 'nullable|boolean',
+            'enable_anti_copy' => 'nullable|boolean',
         ]);
 
         $isPublic = $request->has('is_public') ? $request->boolean('is_public') : $module->is_public;
@@ -155,6 +161,8 @@ class ModuleController extends Controller
             'badge' => $request->badge,
             'order' => $request->order ?? $module->order,
             'is_active' => $request->has('is_active') ? $request->boolean('is_active') : false,
+            'enable_anti_screenshot' => $request->has('enable_anti_screenshot') ? $request->boolean('enable_anti_screenshot') : false,
+            'enable_anti_copy' => $request->has('enable_anti_copy') ? $request->boolean('enable_anti_copy') : false,
         ]);
 
         return redirect()->route('admin.modules.index')
@@ -245,6 +253,8 @@ class ModuleController extends Controller
             'order' => 'nullable|integer',
             'is_published' => 'nullable|boolean',
             'enable_protection' => 'nullable|boolean',
+            'enable_anti_screenshot' => 'nullable|boolean',
+            'enable_anti_copy' => 'nullable|boolean',
         ]);
 
         $contentType = $request->input('content_type', 'markdown');
@@ -304,6 +314,9 @@ class ModuleController extends Controller
 
         $section = $request->section ? strtoupper(trim($request->section)) : 'GETTING STARTED';
 
+        $enableAntiScreenshot = $request->has('enable_anti_screenshot') ? $request->boolean('enable_anti_screenshot') : true;
+        $enableAntiCopy = $request->has('enable_anti_copy') ? $request->boolean('enable_anti_copy') : true;
+
         $lesson = Module::create([
             'category_id' => $module->id,
             'section' => $section,
@@ -317,7 +330,9 @@ class ModuleController extends Controller
             'file_size' => $fileSize,
             'order' => $request->order ?? (Module::where('category_id', $module->id)->max('order') + 1),
             'is_published' => $request->has('is_published') ? $request->boolean('is_published') : true,
-            'enable_protection' => $request->has('enable_protection') ? $request->boolean('enable_protection') : true,
+            'enable_protection' => $enableAntiScreenshot || $enableAntiCopy,
+            'enable_anti_screenshot' => $enableAntiScreenshot,
+            'enable_anti_copy' => $enableAntiCopy,
         ]);
 
         return redirect()->route('admin.modules.contents.index', $module->id)
@@ -360,6 +375,8 @@ class ModuleController extends Controller
             'order' => 'nullable|integer',
             'is_published' => 'nullable|boolean',
             'enable_protection' => 'nullable|boolean',
+            'enable_anti_screenshot' => 'nullable|boolean',
+            'enable_anti_copy' => 'nullable|boolean',
         ]);
 
         $contentType = $request->input('content_type', $lesson->content_type ?: 'markdown');
@@ -412,6 +429,9 @@ class ModuleController extends Controller
 
         $section = $request->section ? strtoupper(trim($request->section)) : ($lesson->section ?: 'GETTING STARTED');
 
+        $enableAntiScreenshot = $request->has('enable_anti_screenshot') ? $request->boolean('enable_anti_screenshot') : false;
+        $enableAntiCopy = $request->has('enable_anti_copy') ? $request->boolean('enable_anti_copy') : false;
+
         $lesson->update([
             'section' => $section,
             'title' => $request->title,
@@ -424,7 +444,9 @@ class ModuleController extends Controller
             'file_size' => $fileSize,
             'order' => $request->order ?? $lesson->order,
             'is_published' => $request->has('is_published') ? $request->boolean('is_published') : false,
-            'enable_protection' => $request->has('enable_protection') ? $request->boolean('enable_protection') : false,
+            'enable_protection' => $enableAntiScreenshot || $enableAntiCopy,
+            'enable_anti_screenshot' => $enableAntiScreenshot,
+            'enable_anti_copy' => $enableAntiCopy,
         ]);
 
         return redirect()->route('admin.modules.contents.index', $module->id)

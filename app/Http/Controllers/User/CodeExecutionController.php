@@ -62,11 +62,11 @@ class CodeExecutionController extends Controller
     public function runTests(Request $request)
     {
         $request->validate([
-            'code'                       => 'required|string',
-            'test_cases'                 => 'required|array',
-            'test_cases.*.input'         => 'required|string',
-            'test_cases.*.expected_output' => 'required|string',
-            'language'                   => 'nullable|string',
+            'code'                         => 'required|string',
+            'test_cases'                   => 'required|array',
+            'test_cases.*.input'           => 'nullable|string',
+            'test_cases.*.expected_output' => 'nullable|string',
+            'language'                     => 'nullable|string',
         ]);
 
         $result = $this->codeService->runTestCases(
@@ -84,12 +84,14 @@ class CodeExecutionController extends Controller
     public function check(Request $request)
     {
         $request->validate([
-            'code'            => 'required|string',
-            'rules'           => 'required|array',
-            'expected_output' => 'nullable|string',
-            'test_cases'      => 'nullable|array',
-            'input'           => 'nullable|string',
-            'language'        => 'nullable|string',
+            'code'                         => 'required|string',
+            'rules'                        => 'nullable|array',
+            'expected_output'              => 'nullable|string',
+            'test_cases'                   => 'nullable|array',
+            'test_cases.*.input'           => 'nullable|string',
+            'test_cases.*.expected_output' => 'nullable|string',
+            'input'                        => 'nullable|string',
+            'language'                     => 'nullable|string',
         ]);
 
         $result = $this->codeService->fullValidation(

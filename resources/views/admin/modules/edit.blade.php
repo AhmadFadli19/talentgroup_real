@@ -169,11 +169,19 @@
                         <span class="text-xs font-bold text-white uppercase tracking-wider">Publikasikan Modul (Tampil di Website)</span>
                     </label>
 
-                    <!-- Anti-Screenshot & Inspect Toggle -->
+                    <!-- Anti-Screenshot Toggle (Default NYALA) -->
                     <label class="flex items-center gap-3 cursor-pointer">
-                        <input type="checkbox" name="enable_protection" value="1" {{ old('enable_protection', $module->enable_protection) ? 'checked' : '' }} class="w-4 h-4 rounded text-cyan-500 bg-slate-800 border-slate-700">
+                        <input type="checkbox" name="enable_anti_screenshot" value="1" {{ old('enable_anti_screenshot', $module->isAntiScreenshotEnabled()) ? 'checked' : '' }} class="w-4 h-4 rounded text-emerald-500 bg-slate-800 border-slate-700">
                         <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="fas fa-shield-alt"></i> Proteksi Anti-Screenshot & Anti-Inspect
+                            <i class="fas fa-camera"></i> Proteksi Anti-Screenshot
+                        </span>
+                    </label>
+
+                    <!-- Anti-Copy Toggle (Default NYALA) -->
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" name="enable_anti_copy" value="1" {{ old('enable_anti_copy', $module->isAntiCopyEnabled()) ? 'checked' : '' }} class="w-4 h-4 rounded text-cyan-500 bg-slate-800 border-slate-700">
+                        <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fas fa-copy"></i> Proteksi Anti-Salin (Copy)
                         </span>
                     </label>
                 </div>

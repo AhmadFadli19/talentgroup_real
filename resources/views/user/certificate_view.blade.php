@@ -406,7 +406,6 @@
                         <img src="{{ asset('assets/images/logo.png') }}" alt="Logo">
                         <div class="logo-text">
                             <span class="logo-title">talentgroup.id</span>
-                            <span class="logo-subtitle">Academy</span>
                         </div>
                     </div>
                 </div>

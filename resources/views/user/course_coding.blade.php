@@ -22,33 +22,30 @@
 <div id="coding-root" x-data="codingChallenge()" class="flex flex-col h-[calc(100vh-64px)] overflow-hidden bg-[#05070a]">
 
     {{-- Full Screen Loading Overlay --}}
-    <div x-show="isRunning || isTesting || isChecking || isSubmitting" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
-        <div class="cyber-card flex flex-col items-center justify-center p-8 max-w-sm text-center" style="border-color: var(--accent);">
-            <div class="w-16 h-16 border-4 rounded-full border-t-[var(--accent)] border-r-[var(--accent)] border-b-transparent border-l-transparent animate-spin mb-6"></div>
-            <h3 class="text-lg font-bold mb-2 uppercase tracking-widest" style="color: var(--accent);">Processing Code...</h3>
-            <p class="text-xs font-mono" style="color: var(--text2);">Please wait while the server compiles and executes your instructions.</p>
+    <div x-show="isRunning || isTesting || isChecking || isSubmitting" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm transition-all">
+        <div class="cyber-card flex flex-col items-center justify-center p-6 max-w-xs text-center border border-cyan-500/40 bg-slate-900/95 shadow-2xl rounded-2xl">
+            <div class="w-12 h-12 border-3 rounded-full border-t-cyan-400 border-r-cyan-400 border-b-transparent border-l-transparent animate-spin mb-4"></div>
+            <h3 class="text-sm font-extrabold uppercase tracking-widest text-cyan-400 mb-1">Mengeksekusi Kode...</h3>
+            <p class="text-[11px] font-mono text-slate-400">Compiler sedang memvalidasi sintaks & kasus uji...</p>
         </div>
     </div>
 
     {{-- Top Bar --}}
-    <div class="flex-shrink-0 flex items-center justify-between px-6 py-4 border-b relative" style="background: rgba(0,0,0,0.5); border-color: var(--accent);">
-        <div class="absolute inset-0 opacity-10" style="background: repeating-linear-gradient(45deg, transparent, transparent 10px, var(--accent) 10px, var(--accent) 20px);"></div>
-        <div class="flex items-center gap-4 relative z-10">
-            <a href="{{ route('user.courses.learn', $course->id) }}" class="cyber-btn flex items-center justify-center w-10 h-10 p-0" style="border-color: var(--accent); color: var(--accent);">
-                <i class="fas fa-arrow-left"></i>
+    <div class="flex-shrink-0 flex items-center justify-between px-6 py-3.5 border-b bg-slate-900 border-slate-800 relative z-10">
+        <div class="flex items-center gap-4">
+            <a href="{{ route('user.courses.learn', $course->id) }}" class="w-9 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition border border-slate-700">
+                <i class="fas fa-arrow-left text-xs"></i>
             </a>
             <div>
-                <h1 class="text-lg font-bold" style="color: var(--text); font-family: 'Outfit', sans-serif;">{{ $content->title }}</h1>
-                <p class="text-[10px] uppercase tracking-widest font-mono" style="color: var(--text3);">{{ $course->title }} — Node {{ $currentIndex + 1 }} / {{ $allContents->count() }}</p>
+                <h1 class="text-base font-bold text-white font-sans">{{ $content->title }}</h1>
+                <p class="text-[10px] uppercase tracking-wider font-mono text-slate-400">{{ $course->title }} — Materi {{ $currentIndex + 1 }} / {{ $allContents->count() }}</p>
             </div>
         </div>
-        <div class="flex items-center gap-4 relative z-10 w-48">
-            <div class="flex-1 h-2 rounded overflow-hidden" style="background: var(--bg);">
-                <div class="h-full relative" style="width: {{ $progress }}%; background: var(--accent); box-shadow: 0 0 10px var(--accent);">
-                    <div class="absolute inset-0 opacity-30" style="background: repeating-linear-gradient(45deg, transparent, transparent 5px, #fff 5px, #fff 10px);"></div>
-                </div>
+        <div class="flex items-center gap-4 w-48">
+            <div class="flex-1 h-2 rounded-full overflow-hidden bg-slate-800">
+                <div class="h-full rounded-full bg-[var(--blue)] transition-all duration-300" style="width: {{ $progress }}%;"></div>
             </div>
-            <span class="text-[10px] font-bold font-mono" style="color: var(--accent);">{{ $progress }}%</span>
+            <span class="text-xs font-bold font-mono text-cyan-400">{{ $progress }}%</span>
         </div>
     </div>
 
@@ -177,23 +174,23 @@
                         </span>
                     </div>
                     <div class="flex gap-2 flex-wrap">
-                        <button @click="validateRulesNow()" class="cyber-btn text-[9px] px-3 py-1" style="border-color: var(--cyan); color: var(--cyan);" :disabled="isValidating">
+                        <button @click="validateRulesNow()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-400 border border-cyan-500/30 text-xs font-semibold transition" :disabled="isValidating">
                             <i :class="isValidating ? 'fas fa-spinner fa-spin' : 'fas fa-clipboard-check'"></i>
-                            <span class="ml-1 hidden sm:inline">Check Syntax</span>
+                            <span class="ml-1 hidden sm:inline">Cek Sintaks</span>
                         </button>
-                        <button @click="runCode()" class="cyber-btn text-[9px] px-3 py-1" style="border-color: var(--green); color: var(--green);" :disabled="isRunning">
+                        <button @click="runCode()" class="px-3 py-1.5 rounded-lg bg-emerald-950/60 hover:bg-emerald-900 text-emerald-400 border border-emerald-500/30 text-xs font-semibold transition" :disabled="isRunning">
                             <i :class="isRunning ? 'fas fa-spinner fa-spin' : 'fas fa-play'"></i>
-                            <span class="ml-1 hidden sm:inline" x-text="isRunning ? 'Compiling...' : 'Run Output'"></span>
+                            <span class="ml-1 hidden sm:inline" x-text="isRunning ? 'Compiling...' : 'Jalankan Kode'"></span>
                         </button>
                         @if($hasTestCases)
-                        <button @click="runAllTests()" class="cyber-btn text-[9px] px-3 py-1" style="border-color: var(--yellow); color: var(--yellow);" :disabled="isTesting">
+                        <button @click="runAllTests()" class="px-3 py-1.5 rounded-lg bg-amber-950/60 hover:bg-amber-900 text-amber-400 border border-amber-500/30 text-xs font-semibold transition" :disabled="isTesting">
                             <i :class="isTesting ? 'fas fa-spinner fa-spin' : 'fas fa-flask'"></i>
-                            <span class="ml-1 hidden sm:inline" x-text="isTesting ? 'Testing...' : 'Run Tests'"></span>
+                            <span class="ml-1 hidden sm:inline" x-text="isTesting ? 'Testing...' : 'Tes Kasus'"></span>
                         </button>
                         @endif
-                        <button @click="checkAll()" class="btn-primary text-[9px] px-3 py-1" :disabled="isChecking">
+                        <button @click="checkAll()" class="btn-gradient px-3.5 py-1.5 rounded-lg text-white text-xs font-bold shadow-sm" :disabled="isChecking">
                             <i :class="isChecking ? 'fas fa-spinner fa-spin' : 'fas fa-check-double'"></i>
-                            <span class="ml-1 hidden sm:inline" x-text="isChecking ? 'Verifying...' : 'Full Verification'"></span>
+                            <span class="ml-1 hidden sm:inline" x-text="isChecking ? 'Memverifikasi...' : 'Verifikasi Lengkap'"></span>
                         </button>
                     </div>
                 </div>
@@ -321,7 +318,7 @@
     {{-- Bottom Action Bar --}}
     <div class="flex-shrink-0 flex items-center justify-between px-6 py-3 border-t" style="background: rgba(0,0,0,0.5); border-color: var(--accent);">
         <div class="flex gap-2">
-            @if($previousContent)
+            @if($previousContent && !$course->isNextOnlyNavigation())
                 <a href="{{ route('user.courses.content', [$course->id, $previousContent->type . ':' . $previousContent->id]) }}" class="cyber-btn flex items-center gap-2 px-3 py-1 text-[10px]" style="border-color: var(--text3); color: var(--text3);">
                     <i class="fas fa-chevron-left"></i> Prev Node
                 </a>
@@ -343,9 +340,15 @@
                 <input type="hidden" name="language" :value="language">
                 
                 @if($userAnswer && $userAnswer->is_correct)
-                    <a href="{{ route('user.courses.learn', $course->id) }}" class="cyber-btn px-4 py-1.5 text-[10px] flex items-center gap-2 border-green-500 bg-green-500/20 text-[var(--green)] hover:bg-green-500/30 hover:shadow-[0_0_15px_rgba(0,255,136,0.3)]">
-                        <i class="fas fa-check-circle"></i> Selesai
-                    </a>
+                    @if($nextContent)
+                        <a href="{{ route('user.courses.content', [$course->id, $nextContent->type . ':' . $nextContent->id]) }}" class="cyber-btn px-4 py-1.5 text-[10px] flex items-center gap-2 border-green-500 bg-green-500/20 text-[var(--green)] hover:bg-green-500/30 hover:shadow-[0_0_15px_rgba(0,255,136,0.3)]">
+                            <i class="fas fa-arrow-right"></i> Materi Berikutnya
+                        </a>
+                    @else
+                        <a href="{{ route('user.courses.results', $course->id) }}" class="cyber-btn px-4 py-1.5 text-[10px] flex items-center gap-2 border-green-500 bg-green-500/20 text-[var(--green)] hover:bg-green-500/30 hover:shadow-[0_0_15px_rgba(0,255,136,0.3)]">
+                            <i class="fas fa-trophy"></i> Lihat Evaluasi & Hasil
+                        </a>
+                    @endif
                 @else
                     <button type="submit" class="cyber-btn px-4 py-1.5 text-[10px] flex items-center gap-2 transition-all" :class="canSubmit ? 'border-green-500 bg-green-500/20 text-[var(--green)] hover:bg-green-500/30 hover:shadow-[0_0_15px_rgba(0,255,136,0.3)]' : 'opacity-50 cursor-not-allowed border-[var(--border)] text-[var(--text3)]'" :disabled="!canSubmit" @click.prevent="submitAnswer()">
                         <i class="fas fa-paper-plane"></i> Transmit Source
@@ -355,6 +358,10 @@
             @if($nextContent)
                 <a href="{{ route('user.courses.content', [$course->id, $nextContent->type . ':' . $nextContent->id]) }}" class="cyber-btn flex items-center gap-2 px-3 py-1 text-[10px]" style="border-color: var(--text3); color: var(--text3);">
                     Next Node <i class="fas fa-chevron-right"></i>
+                </a>
+            @else
+                <a href="{{ route('user.courses.results', $course->id) }}" class="cyber-btn flex items-center gap-2 px-3 py-1 text-[10px] border-emerald-500/60 bg-emerald-500/10 text-[var(--green)] hover:bg-emerald-500/20">
+                    <i class="fas fa-poll"></i> Hasil Kursus
                 </a>
             @endif
         </div>
@@ -775,19 +782,29 @@ function codingChallenge() {
             this.isSubmitting = true;
             this.addTerminalLine('Initiating secure transmission...', 'system');
             try {
+                if (this.editor) {
+                    this.currentCode = this.editor.getValue();
+                }
                 const form = document.getElementById('submitForm');
                 const formData = new FormData(form);
+                formData.set('code', this.currentCode);
+                formData.set('output', this.lastOutput || '');
+                formData.set('language', this.language || 'go');
                 const response = await fetch(form.action, { method: 'POST', body: formData, headers: { 'X-Requested-With': 'XMLHttpRequest' } });
                 const data = await response.json();
-                if (data.success && data.is_correct) {
+                if (data.success) {
                     this.addTerminalLine('🎉 ' + data.message, 'system');
                     setTimeout(() => {
-                        @if($nextContent)
-                            window.location.href = '{{ route("user.courses.content", [$course->id, $nextContent->type . ":" . $nextContent->id]) }}';
-                        @else
-                            window.location.href = '{{ route("user.courses.learn", $course->id) }}';
-                        @endif
-                    }, 1500);
+                        if (data.next_url) {
+                            window.location.href = data.next_url;
+                        } else {
+                            @if($nextContent)
+                                window.location.href = '{{ route("user.courses.content", [$course->id, $nextContent->type . ":" . $nextContent->id]) }}';
+                            @else
+                                window.location.href = '{{ route("user.courses.results", $course->id) }}';
+                            @endif
+                        }
+                    }, 1200);
                 } else {
                     this.addTerminalLine('⚠ ' + (data.message || 'Transmission failed'), 'error');
                 }

@@ -21,8 +21,8 @@ class RoleMiddleware
 
         $user = auth()->user();
         
-        // Allow admin by role_id == 1 or role name == 'admin'
-        if ($role === 'admin' && ($user->isAdmin() || ($user->role && strtolower($user->role->name) === 'admin'))) {
+        // Allow admin by role_id == 1 or role name == 'admin' to access any section
+        if ($user->isAdmin() || ($user->role && strtolower($user->role->name) === 'admin')) {
             return $next($request);
         }
 

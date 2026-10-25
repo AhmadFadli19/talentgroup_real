@@ -41,11 +41,19 @@ class CourseController extends Controller
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_active' => 'boolean',
+            'quiz_answer_visibility' => 'nullable|in:end,instant,none',
+            'quiz_navigation_mode' => 'nullable|in:free,next_only',
+            'shuffle_questions' => 'nullable|boolean',
+            'shuffle_options' => 'nullable|boolean',
         ]);
 
         $data = $request->all();
         $data['created_by'] = Auth::id();
         $data['is_active'] = $request->has('is_active');
+        $data['quiz_answer_visibility'] = $request->input('quiz_answer_visibility', 'end');
+        $data['quiz_navigation_mode'] = $request->input('quiz_navigation_mode', 'free');
+        $data['shuffle_questions'] = $request->has('shuffle_questions');
+        $data['shuffle_options'] = $request->has('shuffle_options');
 
         if ($request->hasFile('image')) {
             $file = $request->file('image');
@@ -87,10 +95,18 @@ class CourseController extends Controller
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'is_active' => 'boolean',
+            'quiz_answer_visibility' => 'nullable|in:end,instant,none',
+            'quiz_navigation_mode' => 'nullable|in:free,next_only',
+            'shuffle_questions' => 'nullable|boolean',
+            'shuffle_options' => 'nullable|boolean',
         ]);
 
         $data = $request->all();
         $data['is_active'] = $request->has('is_active');
+        $data['quiz_answer_visibility'] = $request->input('quiz_answer_visibility', 'end');
+        $data['quiz_navigation_mode'] = $request->input('quiz_navigation_mode', 'free');
+        $data['shuffle_questions'] = $request->has('shuffle_questions');
+        $data['shuffle_options'] = $request->has('shuffle_options');
 
         if ($request->hasFile('image')) {
             // Delete old image
@@ -139,10 +155,25 @@ class CourseController extends Controller
             ->with('courseQuestion')
             ->get();
 
-        // Fix: Use questions() instead of contents()
         $totalQuestions = $course->questions()->count();
         $correctAnswers = $answers->where('is_correct', true)->count();
-        $score = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100, 2) : 0;
+        
+        if ($totalQuestions > 0) {
+            $score = round(($correctAnswers / $totalQuestions) * 100, 2);
+        } else {
+            $totalNodes = $course->stories()->count() + $course->videos()->count() + $course->htmls()->count();
+            $storyRefs = $course->stories()->pluck('id')->map(fn($id) => "story:{$id}")->toArray();
+            $videoRefs = $course->videos()->pluck('id')->map(fn($id) => "video:{$id}")->toArray();
+            $htmlRefs = $course->htmls()->pluck('id')->map(fn($id) => "html:{$id}")->toArray();
+            $allRefs = array_merge($storyRefs, $videoRefs, $htmlRefs);
+
+            $syncedNodes = UserAnswer::where('user_id', $user->id)
+                ->whereIn('content_reference', $allRefs)
+                ->distinct('content_reference')
+                ->count();
+
+            $score = $totalNodes > 0 ? round(($syncedNodes / $totalNodes) * 100, 2) : 100;
+        }
 
         return view('admin.courses.user-results', compact('user', 'course', 'userCourse', 'answers', 'score', 'totalQuestions', 'correctAnswers'));
     }
@@ -154,11 +185,13 @@ class CourseController extends Controller
             ->get();
 
         foreach ($enrolledUsers as $enrolledUser) {
-            $totalNodes = $course->stories()->count() + $course->questions()->count();
+            $totalNodes = $course->stories()->count() + $course->questions()->count() + $course->videos()->count() + $course->htmls()->count();
             
             $storyRefs = $course->stories()->pluck('id')->map(fn($id) => "story:{$id}")->toArray();
             $questionRefs = $course->questions()->pluck('id')->map(fn($id) => "question:{$id}")->toArray();
-            $allRefs = array_merge($storyRefs, $questionRefs);
+            $videoRefs = $course->videos()->pluck('id')->map(fn($id) => "video:{$id}")->toArray();
+            $htmlRefs = $course->htmls()->pluck('id')->map(fn($id) => "html:{$id}")->toArray();
+            $allRefs = array_merge($storyRefs, $questionRefs, $videoRefs, $htmlRefs);
 
             $syncedNodes = UserAnswer::where('user_id', $enrolledUser->user_id)
                 ->whereIn('content_reference', $allRefs)

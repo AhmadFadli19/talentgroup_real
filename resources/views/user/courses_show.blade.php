@@ -3,101 +3,104 @@
 @section('title', $course->title)
 
 @section('content')
-<div class="max-w-4xl mx-auto px-4 sm:px-6 py-8">
+<div class="max-w-4xl mx-auto px-4 sm:px-6 py-6">
 
     <!-- Back Button -->
     <div class="mb-6">
-        <a href="{{ route('user.courses.index') }}" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 text-xs font-bold transition">
-            <i class="fas fa-arrow-left text-cyan-400"></i>
-            <span>Kembali ke Daftar Kursus</span>
+        <a href="{{ route('user.courses.index') }}" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-50 text-[var(--ink)] border border-[var(--border)] text-xs font-bold transition shadow-sm">
+            <i class="fas fa-arrow-left text-[var(--blue)]"></i>
+            <span>Kembali ke Katalog Kursus</span>
         </a>
     </div>
 
     @if(session('success'))
-        <div class="mb-6 p-4 rounded-xl border border-emerald-500/40 bg-emerald-950/30 text-emerald-300 text-sm flex items-center gap-3 shadow-xl">
-            <i class="fas fa-check-circle text-lg text-emerald-400"></i>
-            <span>{{ session('success') }}</span>
+        <div class="mb-6 p-4 rounded-xl border border-emerald-500/30 bg-emerald-50 text-emerald-800 text-sm flex items-center gap-3 shadow-sm">
+            <i class="fas fa-check-circle text-lg text-emerald-600"></i>
+            <span class="font-medium">{{ session('success') }}</span>
         </div>
     @endif
 
     @if(session('error'))
-        <div class="mb-6 p-4 rounded-xl border border-rose-500/40 bg-rose-950/30 text-rose-300 text-sm flex items-center gap-3 shadow-xl">
-            <i class="fas fa-exclamation-triangle text-lg text-rose-400"></i>
-            <span>{{ session('error') }}</span>
+        <div class="mb-6 p-4 rounded-xl border border-rose-500/30 bg-rose-50 text-rose-800 text-sm flex items-center gap-3 shadow-sm">
+            <i class="fas fa-exclamation-triangle text-lg text-rose-600"></i>
+            <span class="font-medium">{{ session('error') }}</span>
         </div>
     @endif
 
-    <div class="cyber-card flex flex-col p-6 sm:p-8 relative overflow-hidden" style="border-color: var(--accent);">
-        
-        <div class="absolute inset-0 opacity-10" style="background: repeating-linear-gradient(45deg, transparent, transparent 10px, var(--accent) 10px, var(--accent) 20px);"></div>
+    <div class="cyber-card flex flex-col p-6 sm:p-8 bg-white border border-[var(--border)] shadow-sm">
         
         <!-- Header -->
-        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-8 relative z-10">
-            <div class="flex items-start gap-4 flex-1">
-                <div class="w-20 h-20 rounded-xl border overflow-hidden flex-shrink-0" style="border-color: var(--border); background: var(--bg);">
+        <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-8">
+            <div class="flex items-start gap-5 flex-1">
+                <div class="w-24 h-24 rounded-2xl border border-[var(--border)] overflow-hidden flex-shrink-0 bg-slate-100 shadow-sm flex items-center justify-center">
                     @if($course->image)
-                        <img src="{{ $course->image_url }}" class="w-full h-full object-cover" alt="{{ $course->title }}">
+                        <img src="{{ $course->image_url }}" class="w-full h-full object-cover" alt="{{ $course->title }}" onerror="this.src='{{ asset('tg/assets/60-2-img-ssda.png') }}'">
                     @else
-                        <div class="w-full h-full flex items-center justify-center text-4xl">🎓</div>
+                        <img src="{{ asset('tg/assets/60-2-img-ssda.png') }}" class="w-full h-full object-cover" alt="{{ $course->title }}">
                     @endif
                 </div>
                 <div>
-                    <h1 class="text-2xl font-bold mb-2 text-white" style="font-family: 'Outfit', sans-serif;">
+                    <span class="pill blue-soft text-[10px] mb-2 uppercase tracking-wider">
+                        Course Detail
+                    </span>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold text-[var(--ink)] tracking-tight mb-2">
                         {{ $course->title }}
                     </h1>
-                    <p class="text-xs sm:text-sm text-slate-400 font-mono leading-relaxed">
+                    <p class="text-xs sm:text-sm text-[var(--text2)] leading-relaxed max-w-xl">
                         {{ $course->description }}
                     </p>
 
-                    <div class="flex flex-wrap items-center gap-3 mt-4 text-[11px] font-mono text-slate-400">
-                        <span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
-                            <i class="fas fa-book-open text-cyan-400 mr-1"></i> {{ $totalContents }} Materi
+                    <div class="flex flex-wrap items-center gap-3 mt-4 text-xs font-semibold text-[var(--muted)]">
+                        <span class="px-2.5 py-1 rounded-lg bg-[var(--bg3)] border border-[var(--border)] inline-flex items-center gap-1.5">
+                            <i class="fas fa-book-open text-[var(--blue)]"></i> {{ $totalContents }} Materi
                         </span>
-                        <span class="px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
-                            <i class="fas fa-users text-cyan-400 mr-1"></i> {{ $enrolledCount }} Peserta Terdaftar
+                        <span class="px-2.5 py-1 rounded-lg bg-[var(--bg3)] border border-[var(--border)] inline-flex items-center gap-1.5">
+                            <i class="fas fa-users text-[var(--blue)]"></i> {{ $enrolledCount }} Peserta Terdaftar
+                        </span>
+                        <span class="px-2.5 py-1 rounded-lg bg-[var(--bg3)] border border-[var(--border)] inline-flex items-center gap-1.5">
+                            <i class="fas fa-layer-group text-[var(--blue)]"></i> {{ ucfirst($course->level ?? 'Semua Level') }}
                         </span>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-black/30 p-4 rounded-xl border text-right min-w-[170px]" style="border-color: var(--border);">
-                <p class="text-[10px] uppercase tracking-widest mb-1 text-slate-400">Biaya Kursus</p>
-                <p id="displayPrice" class="text-2xl font-extrabold font-mono" style="color: {{ $course->price > 0 ? 'var(--yellow)' : 'var(--green)' }};">
-                    {{ $course->price > 0 ? 'Rp ' . number_format($course->price,0,',','.') : 'FREE' }}
+            <!-- Price Card Box -->
+            <div class="bg-[var(--bg3)] p-5 rounded-2xl border border-[var(--border)] text-left md:text-right min-w-[200px]">
+                <p class="text-[11px] uppercase tracking-wider font-bold text-[var(--muted)] mb-1">Biaya Akses</p>
+                <p id="displayPrice" class="text-2xl font-black font-mono {{ $course->price > 0 ? 'text-[var(--blue-dark)]' : 'text-emerald-600' }}">
+                    {{ $course->price > 0 ? 'Rp ' . number_format($course->price,0,',','.') : 'GRATIS' }}
                 </p>
                 @if($course->price > 0 && !$isEnrolled)
-                    <p class="text-[10px] text-cyan-400 mt-1">Saldo Anda: Rp {{ number_format(auth()->user()->balance, 0, ',', '.') }}</p>
+                    <p class="text-xs text-[var(--muted)] mt-1">Saldo Anda: <strong class="text-[var(--ink)]">Rp {{ number_format(auth()->user()->balance, 0, ',', '.') }}</strong></p>
                 @endif
             </div>
         </div>
 
         @if (!$isEnrolled && $course->price > 0)
-            <!-- ============================================== -->
-            <!-- REFERRAL CODE & DISCOUNT PROMO SECTION        -->
-            <!-- ============================================== -->
-            <div class="mb-8 p-5 rounded-2xl bg-slate-950/90 border border-slate-800 relative z-10 shadow-inner">
-                <div class="flex items-center gap-2 mb-3">
-                    <i class="fas fa-ticket-alt text-amber-400 text-sm"></i>
-                    <span class="text-xs font-bold uppercase tracking-wider text-white">Punya Kode Referral / Voucher Diskon?</span>
+            <!-- REFERRAL CODE & DISCOUNT PROMO SECTION -->
+            <div class="mb-8 p-6 rounded-2xl bg-[var(--blue-light)]/40 border border-[#bfdbfe]">
+                <div class="flex items-center gap-2 mb-2">
+                    <i class="fas fa-ticket-alt text-[var(--blue)] text-base"></i>
+                    <h2 class="text-xs font-bold uppercase tracking-wider text-[var(--blue-dark)]">Punya Kode Referral / Kupon Diskon?</h2>
                 </div>
 
-                <p class="text-xs text-slate-400 mb-4 leading-relaxed">
-                    Gunakan kode referral untuk mendapatkan potongan harga spesial atau membuka kursus secara <strong class="text-emerald-400 font-bold">100% GRATIS</strong>.
+                <p class="text-xs text-[var(--text2)] mb-4 leading-relaxed">
+                    Masukkan kode voucher untuk mendapatkan diskon khusus atau membuka akses materi secara <strong class="text-emerald-700 font-bold">100% GRATIS</strong>.
                 </p>
 
                 <div class="flex flex-col sm:flex-row gap-3">
                     <div class="relative flex-1">
                         <input type="text" 
                                id="referralInput" 
-                               placeholder="Masukkan kode (contoh: GRATIS100, DISKON50, dll)"
-                               class="cyber-input uppercase font-mono tracking-wider text-xs pl-9">
-                        <i class="fas fa-tag absolute left-3 top-3 text-slate-500 text-xs"></i>
+                               placeholder="Contoh: DISKON50, GRATIS100"
+                               class="cyber-input uppercase font-mono tracking-wider text-xs pl-9 bg-white">
+                        <i class="fas fa-tag absolute left-3 top-3.5 text-slate-400 text-xs"></i>
                     </div>
 
                     <button type="button" 
                             id="btnApplyReferral"
                             onclick="applyReferralCode()" 
-                            class="px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition flex items-center justify-center gap-2 shadow">
+                            class="btn btn-gradient text-xs">
                         <i class="fas fa-check"></i>
                         <span>Terapkan Kode</span>
                     </button>
@@ -107,27 +110,27 @@
                 <div id="referralFeedback" class="hidden mt-3 p-3 rounded-xl text-xs font-semibold"></div>
 
                 <!-- Price Breakdown Details (Hidden by default until code applied) -->
-                <div id="priceBreakdown" class="hidden mt-4 pt-4 border-t border-slate-800 space-y-1.5 text-xs font-mono">
-                    <div class="flex justify-between text-slate-400">
-                        <span>Harga Asli:</span>
+                <div id="priceBreakdown" class="hidden mt-4 pt-4 border-t border-[#bfdbfe] space-y-1.5 text-xs font-mono">
+                    <div class="flex justify-between text-[var(--muted)]">
+                        <span>Harga Normal:</span>
                         <span>Rp {{ number_format($course->price, 0, ',', '.') }}</span>
                     </div>
-                    <div class="flex justify-between text-emerald-400 font-semibold">
-                        <span>Potongan Kode Referral:</span>
+                    <div class="flex justify-between text-emerald-700 font-bold">
+                        <span>Potongan Kode:</span>
                         <span id="summaryDiscount">-Rp 0</span>
                     </div>
-                    <div class="flex justify-between text-white font-bold pt-2 border-t border-slate-800 text-sm">
+                    <div class="flex justify-between text-[var(--ink)] font-bold pt-2 border-t border-[#bfdbfe] text-sm">
                         <span>Total Pembayaran:</span>
-                        <span id="summaryFinalPrice" class="text-cyan-400">Rp 0</span>
+                        <span id="summaryFinalPrice" class="text-[var(--blue)]">Rp 0</span>
                     </div>
                 </div>
             </div>
         @endif
 
         <!-- Action Bottom Bar -->
-        <div class="border-t pt-6 flex flex-col sm:flex-row gap-4 items-center justify-between relative z-10" style="border-color: var(--border);">
+        <div class="border-t border-[var(--border)] pt-6 flex flex-col sm:flex-row gap-4 items-center justify-between">
             <div>
-                <a href="{{ route('user.courses.index') }}" class="text-xs text-slate-400 hover:text-white transition flex items-center gap-1.5 font-mono">
+                <a href="{{ route('user.courses.index') }}" class="text-xs font-bold text-[var(--muted)] hover:text-[var(--blue)] transition flex items-center gap-1.5">
                     <i class="fas fa-chevron-left text-[10px]"></i>
                     <span>Kembali ke Katalog</span>
                 </a>
@@ -135,7 +138,7 @@
             
             <div class="flex items-center gap-3 w-full sm:w-auto">
                 @if ($isEnrolled)
-                    <a href="{{ route('user.courses.learn', $course->id) }}" class="btn-primary w-full sm:w-auto text-center">
+                    <a href="{{ route('user.courses.learn', $course->id) }}" class="btn btn-gradient w-full sm:w-auto text-center">
                         <i class="fas fa-play mr-2"></i> Lanjutkan Belajar
                     </a>
                 @else
@@ -145,11 +148,10 @@
                         
                         <button type="submit" 
                                 id="purchaseSubmitBtn"
-                                class="cyber-btn w-full sm:w-auto flex items-center justify-center gap-2" 
-                                style="border-color: {{ $course->price > 0 ? 'var(--yellow)' : 'var(--green)' }}; color: {{ $course->price > 0 ? 'var(--yellow)' : 'var(--green)' }};">
+                                class="btn btn-gradient w-full sm:w-auto flex items-center justify-center gap-2">
                             <i class="fas fa-unlock mr-1" id="purchaseBtnIcon"></i> 
                             <span id="purchaseBtnText">
-                                {{ $course->price > 0 ? 'Beli & Dapatkan Akses (Rp ' . number_format($course->price,0,',','.') . ')' : 'Mulai Belajar Sekarang (Gratis)' }}
+                                {{ $course->price > 0 ? 'Beli & Akses Kursus (Rp ' . number_format($course->price,0,',','.') . ')' : 'Mulai Belajar Sekarang (Gratis)' }}
                             </span>
                         </button>
                     </form>
@@ -173,8 +175,8 @@
         const purchaseBtnIcon = document.getElementById('purchaseBtnIcon');
 
         if (!code) {
-            feedback.className = 'mt-3 p-3 rounded-xl text-xs font-semibold bg-rose-950/40 text-rose-400 border border-rose-500/40 flex items-center gap-2';
-            feedback.innerHTML = '<i class="fas fa-exclamation-circle"></i> <span>Silakan ketikkan kode referral terlebih dahulu.</span>';
+            feedback.className = 'mt-3 p-3 rounded-xl text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200 flex items-center gap-2';
+            feedback.innerHTML = '<i class="fas fa-exclamation-circle text-rose-600"></i> <span>Silakan ketikkan kode referral terlebih dahulu.</span>';
             feedback.classList.remove('hidden');
             return;
         }
@@ -199,8 +201,8 @@
             feedback.classList.remove('hidden');
 
             if (data.valid) {
-                feedback.className = 'mt-3 p-3 rounded-xl text-xs font-semibold bg-emerald-950/40 text-emerald-300 border border-emerald-500/40 flex items-center gap-2';
-                feedback.innerHTML = `<i class="fas fa-check-circle text-emerald-400"></i> <span>${data.message}</span>`;
+                feedback.className = 'mt-3 p-3 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-2';
+                feedback.innerHTML = `<i class="fas fa-check-circle text-emerald-600"></i> <span>${data.message}</span>`;
                 
                 // Show breakdown
                 breakdown.classList.remove('hidden');
@@ -212,25 +214,19 @@
 
                 // Update purchase button text & style
                 if (data.is_free) {
-                    purchaseBtn.style.borderColor = 'var(--green)';
-                    purchaseBtn.style.color = 'var(--green)';
-                    purchaseBtnIcon.className = 'fas fa-gift mr-1 text-emerald-400';
+                    purchaseBtnIcon.className = 'fas fa-gift mr-1 text-emerald-300';
                     purchaseBtnText.innerText = 'Klaim Akses GRATIS Sekarang!';
                 } else {
-                    purchaseBtn.style.borderColor = 'var(--yellow)';
-                    purchaseBtn.style.color = 'var(--yellow)';
                     purchaseBtnIcon.className = 'fas fa-shopping-cart mr-1';
                     purchaseBtnText.innerText = `Bayar & Buka Kursus (${data.formatted_final_price})`;
                 }
             } else {
-                feedback.className = 'mt-3 p-3 rounded-xl text-xs font-semibold bg-rose-950/40 text-rose-400 border border-rose-500/40 flex items-center gap-2';
-                feedback.innerHTML = `<i class="fas fa-times-circle text-rose-400"></i> <span>${data.message}</span>`;
+                feedback.className = 'mt-3 p-3 rounded-xl text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200 flex items-center gap-2';
+                feedback.innerHTML = `<i class="fas fa-times-circle text-rose-600"></i> <span>${data.message}</span>`;
                 breakdown.classList.add('hidden');
                 formRef.value = '';
 
                 // Reset purchase button
-                purchaseBtn.style.borderColor = 'var(--yellow)';
-                purchaseBtn.style.color = 'var(--yellow)';
                 purchaseBtnIcon.className = 'fas fa-unlock mr-1';
                 purchaseBtnText.innerText = 'Beli & Dapatkan Akses (Rp {{ number_format($course->price,0,',','.') }})';
             }
@@ -238,7 +234,7 @@
         .catch(err => {
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-check"></i> <span>Terapkan Kode</span>';
-            feedback.className = 'mt-3 p-3 rounded-xl text-xs font-semibold bg-rose-950/40 text-rose-400 border border-rose-500/40';
+            feedback.className = 'mt-3 p-3 rounded-xl text-xs font-semibold bg-rose-50 text-rose-800 border border-rose-200';
             feedback.innerHTML = 'Terjadi kesalahan saat memeriksa kode referral. Silakan coba lagi.';
             feedback.classList.remove('hidden');
         });

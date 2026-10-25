@@ -9,6 +9,7 @@ use App\Models\UserAnswer;
 use App\Models\Transaction;
 use App\Models\CourseQuestion;
 use App\Models\CourseVideo;
+use App\Models\Prototype;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -169,6 +170,11 @@ class DashboardController extends Controller
 
         $overallScore = $totalQuestions > 0 ? round(($correctAnswers / $totalQuestions) * 100, 1) : 0;
 
+        // Get user's hosted web prototypes with AI scan reports
+        $userPrototypes = Prototype::where('user_id', $user->id)
+            ->latest()
+            ->get();
+
         return view('user.dashboard', compact(
             'enrolledCourses',
             'totalCourses',
@@ -179,7 +185,8 @@ class DashboardController extends Controller
             'recentCourses',
             'inProgressCourses',
             'recentTransactions',
-            'overallScore'
+            'overallScore',
+            'userPrototypes'
         ));
     }
 
@@ -197,15 +204,48 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+        $rules = [
+            'name' => 'sometimes|required|string|max:255',
+            'username' => 'sometimes|required|string|alpha_dash|max:255|unique:users,username,' . $user->id,
+            'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $user->id,
+            'phone' => 'sometimes|required|string|max:20|unique:users,phone,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+        ];
 
-        $user->name = $request->name;
-        $user->email = $request->email;
+        $messages = [
+            'name.required' => 'Nama lengkap wajib diisi.',
+            'username.required' => 'Username wajib diisi.',
+            'username.alpha_dash' => 'Username hanya boleh berisi huruf, angka, tanda hubung (-), dan garis bawah (_).',
+            'username.unique' => 'Username ini sudah digunakan oleh akun lain.',
+            'email.required' => 'Alamat email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email ini sudah terdaftar pada akun lain.',
+            'phone.required' => 'Nomor WhatsApp / telepon wajib diisi.',
+            'phone.unique' => 'Nomor telepon ini sudah digunakan oleh akun lain.',
+            'password.min' => 'Kata sandi minimal 8 karakter.',
+            'password.confirmed' => 'Konfirmasi kata sandi tidak cocok.',
+            'avatar.image' => 'File avatar harus berupa gambar.',
+            'avatar.max' => 'Ukuran file avatar maksimal 2MB.',
+        ];
+
+        $request->validate($rules, $messages);
+
+        if ($request->has('name')) {
+            $user->name = $request->name;
+        }
+
+        if ($request->has('username')) {
+            $user->username = $request->username;
+        }
+
+        if ($request->has('email')) {
+            $user->email = $request->email;
+        }
+
+        if ($request->has('phone')) {
+            $user->phone = $request->phone;
+        }
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);

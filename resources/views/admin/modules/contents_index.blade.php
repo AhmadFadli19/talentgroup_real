@@ -64,7 +64,7 @@
                         <th class="px-5 py-4 font-bold">Section Sidebar</th>
                         <th class="px-5 py-4 font-bold">Judul Bab Materi</th>
                         <th class="px-5 py-4 font-bold">Status</th>
-                        <th class="px-5 py-4 font-bold">Anti-SS</th>
+                        <th class="px-5 py-4 font-bold">Proteksi</th>
                         <th class="px-5 py-4 font-bold">Dilihat</th>
                         <th class="px-5 py-4 font-bold text-right">Aksi</th>
                     </tr>
@@ -112,15 +112,16 @@
                                 </form>
                             </td>
 
-                            <!-- Anti-SS Protection -->
+                            <!-- Security Protections (Anti-SS & Anti-Copy) -->
                             <td class="px-5 py-4">
-                                @if($lesson->enable_protection)
-                                    <span class="text-xs font-semibold text-emerald-400 flex items-center gap-1">
-                                        <i class="fas fa-shield-alt text-[10px]"></i> Aktif
+                                <div class="flex flex-col gap-1 text-[11px] font-mono">
+                                    <span class="inline-flex items-center gap-1.5 {{ $lesson->isAntiScreenshotEnabled() ? 'text-emerald-400 font-semibold' : 'text-slate-500' }}">
+                                        <i class="fas fa-camera text-[10px]"></i> SS: {{ $lesson->isAntiScreenshotEnabled() ? 'Aktif' : 'Mati' }}
                                     </span>
-                                @else
-                                    <span class="text-xs text-slate-500">Nonaktif</span>
-                                @endif
+                                    <span class="inline-flex items-center gap-1.5 {{ $lesson->isAntiCopyEnabled() ? 'text-cyan-400 font-semibold' : 'text-slate-500' }}">
+                                        <i class="fas fa-copy text-[10px]"></i> Salin: {{ $lesson->isAntiCopyEnabled() ? 'Aktif' : 'Mati' }}
+                                    </span>
+                                </div>
                             </td>
 
                             <!-- Views -->

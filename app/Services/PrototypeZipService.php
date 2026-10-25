@@ -176,9 +176,22 @@ class PrototypeZipService
     }
 
     /**
-     * Process manual 3-file uploads (HTML required, CSS optional, JS optional).
+     * Process manual file uploads (HTML required, CSS/JS/Slides/Assets optional).
+     *
+     * @param UploadedFile|null $htmlFile Primary HTML file (saved as index.html)
+     * @param UploadedFile|null $cssFile Optional single CSS file (saved as style.css)
+     * @param UploadedFile|null $jsFile Optional single JS file (saved as script.js)
+     * @param string $destinationDir
+     * @param array $additionalFiles Optional array of UploadedFile (e.g. slide1.html, slide2.html, images, etc.)
+     * @return array
      */
-    public function createFromManualFiles(?UploadedFile $htmlFile, ?UploadedFile $cssFile, ?UploadedFile $jsFile, string $destinationDir): array
+    public function createFromManualFiles(
+        ?UploadedFile $htmlFile,
+        ?UploadedFile $cssFile,
+        ?UploadedFile $jsFile,
+        string $destinationDir,
+        array $additionalFiles = []
+    ): array
     {
         if (!File::exists($destinationDir)) {
             File::makeDirectory($destinationDir, 0755, true);
@@ -187,7 +200,7 @@ class PrototypeZipService
         if (!$htmlFile) {
             return [
                 'success' => false,
-                'error' => 'File HTML (.html) wajib diunggah sebagai kerangka utama prototype.',
+                'error' => 'File HTML (.html) wajib diunggah sebagai halaman utama (index.html) prototype.',
             ];
         }
 
@@ -230,13 +243,44 @@ class PrototypeZipService
         $indexPath = $destinationDir . DIRECTORY_SEPARATOR . 'index.html';
         file_put_contents($indexPath, $htmlContent);
 
+        // Process any additional files (slides, secondary HTML, CSS, JS, images, etc.)
+        foreach ($additionalFiles as $file) {
+            if (!$file || !($file instanceof UploadedFile) || !$file->isValid()) {
+                continue;
+            }
+
+            $originalName = $file->getClientOriginalName();
+            $cleanRelativePath = $this->sanitizeEntryPath($originalName);
+            if (empty($cleanRelativePath)) {
+                continue;
+            }
+
+            $ext = strtolower(pathinfo($cleanRelativePath, PATHINFO_EXTENSION));
+            if (in_array($ext, $this->blacklistedExtensions, true)) {
+                continue;
+            }
+
+            $targetPath = rtrim($destinationDir, '/\\') . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $cleanRelativePath);
+            $parentDir = dirname($targetPath);
+            if (!File::exists($parentDir)) {
+                File::makeDirectory($parentDir, 0755, true);
+            }
+
+            file_put_contents($targetPath, file_get_contents($file->getRealPath()));
+        }
+
+        $allFiles = File::allFiles($destinationDir);
+        $fileCount = count($allFiles);
+
+        $codePayload = $this->gatherCodePayload($destinationDir, $indexPath);
+
         return [
             'success' => true,
             'index_path' => $indexPath,
-            'html_code' => $htmlContent,
-            'css_code' => $cssContent,
-            'js_code' => $jsContent,
-            'file_count' => 1 + ($cssFile ? 1 : 0) + ($jsFile ? 1 : 0),
+            'html_code' => $codePayload['html'],
+            'css_code' => $codePayload['css'],
+            'js_code' => $codePayload['js'],
+            'file_count' => $fileCount,
             'error' => null,
         ];
     }
@@ -364,6 +408,18 @@ class PrototypeZipService
     protected function gatherCodePayload(string $dir, string $indexPath): array
     {
         $htmlCode = File::exists($indexPath) ? File::get($indexPath) : '';
+
+        // Check for other HTML files (slides, subpages)
+        $allHtmlFiles = File::glob(rtrim($dir, '/\\') . '/**/*.html');
+        foreach ($allHtmlFiles as $otherHtml) {
+            if (realpath($otherHtml) === realpath($indexPath)) {
+                continue;
+            }
+            $filename = basename($otherHtml);
+            if (strlen($htmlCode) < 45000) {
+                $htmlCode .= "\n\n<!-- [Subpage / Slide: {$filename}] -->\n" . substr(File::get($otherHtml), 0, 5000);
+            }
+        }
 
         // Limit HTML length (first 50,000 chars)
         if (strlen($htmlCode) > 50000) {

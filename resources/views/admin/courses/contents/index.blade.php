@@ -167,11 +167,6 @@
         </a>
     </div>
 
-    @if(session('success'))
-        <div class="pixel-card" style="border-color:#22c55e;color:#22c55e">
-            {{ session('success') }}
-        </div>
-    @endif
 
     @if($contents->count())
 
@@ -195,15 +190,15 @@
 
                     <span class="pixel-type {{ $displayType }}">
                         @if($isCodingQ)
-                            💻 CODING
+                            <i class="fas fa-terminal mr-1"></i> CODING
                         @elseif($content->type === 'question')
-                            ❓ QUESTION
+                            <i class="fas fa-question-circle mr-1"></i> QUESTION
                         @elseif($content->type === 'video')
-                            📹 VIDEO
+                            <i class="fas fa-play-circle mr-1"></i> VIDEO
                         @elseif($content->type === 'html')
-                            🌐 HTML PREVIEW
+                            <i class="fas fa-globe mr-1"></i> HTML PREVIEW
                         @else
-                            📘 STORY
+                            <i class="fas fa-book-open mr-1"></i> STORY
                         @endif
                     </span>
 

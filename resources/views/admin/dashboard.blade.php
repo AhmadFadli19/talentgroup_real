@@ -1,317 +1,234 @@
 @extends('layouts.app')
 
-@section('title', 'Admin Command Center')
+@section('title', 'Dashboard Admin | TalentGroup')
 
 @section('content')
 
-<style>
-/* ================= CYBER ADMIN OVERRIDES ================= */
-/* Use theme accent variables dynamically */
-:root {
-    --admin-accent: var(--accent);
-    --admin-accent2: var(--accent2);
-}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 py-6">
 
-.admin-dashboard {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.admin-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    position: relative;
-    transition: all 0.3s;
-    overflow: hidden;
-}
-
-body.light .admin-card {
-    background: #ffffff;
-    box-shadow: 0 4px 20px rgba(15, 23, 42, 0.03);
-}
-
-.admin-card::after {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 2px;
-    background: linear-gradient(90deg, var(--php), var(--cyan));
-}
-
-.admin-stat-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20px;
-    background: rgba(124, 92, 191, 0.1);
-    border: 1px solid rgba(124, 92, 191, 0.2);
-    color: var(--accent);
-}
-
-body.light .admin-stat-icon {
-    background: rgba(0, 86, 210, 0.05) !important;
-    border-color: rgba(0, 86, 210, 0.1) !important;
-    color: #0056d2 !important;
-}
-
-.admin-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: rgba(124, 92, 191, 0.05);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 10px 16px;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    font-weight: bold;
-    transition: all 0.3s;
-}
-
-body.light .admin-btn {
-    background: #ffffff;
-    border-color: #cbd5e1;
-    color: #4a5b78;
-}
-
-.admin-btn:hover {
-    border-color: var(--accent);
-    background: rgba(124, 92, 191, 0.1);
-    color: var(--accent);
-}
-
-body.light .admin-btn:hover {
-    border-color: var(--php);
-    color: var(--php);
-    background: rgba(0, 86, 210, 0.04);
-}
-
-.admin-btn.primary {
-    background: rgba(124, 92, 191, 0.1);
-    border-color: var(--accent);
-    color: var(--accent);
-}
-
-body.light .admin-btn.primary {
-    background: rgba(0, 86, 210, 0.05);
-    border-color: var(--php);
-    color: var(--php);
-}
-
-.admin-btn.primary:hover {
-    background: rgba(124, 92, 191, 0.2);
-    box-shadow: 0 0 20px rgba(124, 92, 191, 0.2);
-}
-
-body.light .admin-btn.primary:hover {
-    background: rgba(0, 86, 210, 0.1);
-    box-shadow: 0 0 20px rgba(0, 86, 210, 0.15);
-}
-</style>
-
-<div class="admin-dashboard px-4 py-8">
-
-    <!-- HEADER -->
-    <div class="cyber-card p-6 md:p-8 mb-8 overflow-hidden relative" style="border-left-width: 4px; border-left-color: var(--accent);">
-        <div class="absolute inset-0 opacity-5" style="background: linear-gradient(135deg, var(--php), var(--cyan));"></div>
-        
-        <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div class="flex items-center gap-6">
-                <div class="text-5xl" style="color: var(--accent);">👁️‍🗨️</div>
+    <!-- HEADER BANNER -->
+    <div class="cyber-card p-4 sm:p-6 md:p-8 mb-5 sm:mb-8 admin-header-banner border border-[var(--border)] shadow-sm rounded-2xl">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
+            <div class="flex items-start sm:items-center gap-3.5 sm:gap-5">
+                <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-[var(--blue-light)] text-[var(--blue)] flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0 border border-[#bfdbfe] shadow-sm">
+                    <i class="fas fa-user-shield"></i>
+                </div>
                 <div>
-                    <h1 class="text-3xl font-bold mb-2 uppercase tracking-wider" style="color: var(--text); font-family: 'Outfit', sans-serif;">Command Center</h1>
-                    <p class="text-xs font-mono uppercase tracking-widest" style="color: var(--accent2);">Root Access Established // System Overview</p>
+                    <div class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-bold bg-[var(--blue-light)] text-[var(--blue)] border border-[#bfdbfe] mb-1.5 sm:mb-2">
+                        <span>● Panel Kendali Administrator</span>
+                    </div>
+                    <h1 class="text-xl sm:text-3xl font-extrabold text-[var(--ink)] tracking-tight">
+                        Dashboard Admin TalentGroup
+                    </h1>
+                    <p class="text-xs sm:text-sm text-[var(--text2)] mt-0.5 max-w-2xl leading-relaxed">
+                        Kelola kursus, modul dokumentasi, prototype peserta, dan pantau metrik platform secara real-time.
+                    </p>
                 </div>
             </div>
-            <div class="text-right">
-                <div class="text-[10px] font-mono uppercase tracking-widest" style="color: var(--text3);">System Status</div>
-                <div class="text-sm font-bold mt-1 flex items-center justify-end gap-2" style="color: var(--green);">
-                    <div class="w-2 h-2 rounded-full bg-[var(--green)] animate-pulse"></div>
-                    Online & Secure
+            
+            <div class="text-left md:text-right flex items-center justify-between md:block pt-2 md:pt-0 border-t md:border-t-0 border-[var(--border)]">
+                <div class="text-[10px] sm:text-[11px] uppercase tracking-wider font-bold text-[var(--muted)]">Status Server</div>
+                <div class="text-[11px] sm:text-xs font-bold mt-1 inline-flex items-center gap-2 text-emerald-700 bg-emerald-50 px-2.5 sm:px-3 py-1 rounded-full border border-emerald-200">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Sistem Online & Terproteksi
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- STATS -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div class="admin-card p-6 rounded-lg">
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <h3 class="text-[10px] font-mono uppercase tracking-widest mb-1" style="color: var(--text3);">Total Subjects</h3>
-                    <div class="text-3xl font-bold font-mono" style="color: var(--text);">{{ number_format($stats['total_users']) }}</div>
+    <!-- STATS METRICS -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+        <div class="cyber-card p-3.5 sm:p-5 bg-white border border-[var(--border)] shadow-sm rounded-2xl flex flex-col justify-between hover:border-[var(--blue)] transition-all">
+            <div class="flex justify-between items-start mb-2 sm:mb-3">
+                <div class="min-w-0 pr-1">
+                    <span class="text-[10px] sm:text-xs font-bold text-[var(--muted)] uppercase tracking-wider block mb-0.5 sm:mb-1 truncate">Total Siswa</span>
+                    <div class="text-xl sm:text-3xl font-black font-mono text-[var(--ink)] leading-none">{{ number_format($stats['total_users']) }}</div>
                 </div>
-                <div class="admin-stat-icon">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-blue-50 text-[var(--blue)] flex items-center justify-center text-xs sm:text-base border border-blue-100 flex-shrink-0">
                     <i class="fas fa-users"></i>
                 </div>
             </div>
-            <div class="text-[9px] font-mono uppercase tracking-widest mt-2" style="color: var(--green);">
-                <i class="fas fa-arrow-up mr-1"></i> Active Database
+            <div class="text-[10px] sm:text-[11px] font-bold text-emerald-700 flex items-center gap-1 mt-1 truncate">
+                <i class="fas fa-check-circle text-[10px]"></i> Terdaftar di database
             </div>
         </div>
 
-        <div class="admin-card p-6 rounded-lg">
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <h3 class="text-[10px] font-mono uppercase tracking-widest mb-1" style="color: var(--text3);">Data Matrices</h3>
-                    <div class="text-3xl font-bold font-mono" style="color: var(--text);">{{ number_format($stats['total_courses']) }}</div>
+        <div class="cyber-card p-3.5 sm:p-5 bg-white border border-[var(--border)] shadow-sm rounded-2xl flex flex-col justify-between hover:border-purple-400 transition-all">
+            <div class="flex justify-between items-start mb-2 sm:mb-3">
+                <div class="min-w-0 pr-1">
+                    <span class="text-[10px] sm:text-xs font-bold text-[var(--muted)] uppercase tracking-wider block mb-0.5 sm:mb-1 truncate">Total Kursus</span>
+                    <div class="text-xl sm:text-3xl font-black font-mono text-[var(--ink)] leading-none">{{ number_format($stats['total_courses']) }}</div>
                 </div>
-                <div class="admin-stat-icon" style="color: var(--admin-accent2); background: rgba(176, 38, 255, 0.1); border-color: rgba(176, 38, 255, 0.3);">
-                    <i class="fas fa-database"></i>
-                </div>
-            </div>
-            <div class="text-[9px] font-mono uppercase tracking-widest mt-2" style="color: var(--admin-accent2);">
-                {{ number_format($stats['active_courses']) }} Operational
-            </div>
-        </div>
-
-        <div class="admin-card p-6 rounded-lg">
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <h3 class="text-[10px] font-mono uppercase tracking-widest mb-1" style="color: var(--text3);">Total Links</h3>
-                    <div class="text-3xl font-bold font-mono" style="color: var(--text);">{{ number_format($stats['total_enrollments']) }}</div>
-                </div>
-                <div class="admin-stat-icon" style="color: var(--cyan); background: rgba(0, 217, 255, 0.1); border-color: rgba(0, 217, 255, 0.3);">
-                    <i class="fas fa-link"></i>
+                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-xs sm:text-base border border-purple-100 flex-shrink-0">
+                    <i class="fas fa-book-open"></i>
                 </div>
             </div>
-            <div class="text-[9px] font-mono uppercase tracking-widest mt-2" style="color: var(--text3);">
-                Cross-referenced
+            <div class="text-[10px] sm:text-[11px] font-bold text-[var(--blue)] mt-1 truncate">
+                {{ number_format($stats['active_courses']) }} Kursus Aktif
             </div>
         </div>
 
-        <div class="admin-card p-6 rounded-lg">
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <h3 class="text-[10px] font-mono uppercase tracking-widest mb-1" style="color: var(--text3);">Acquisitions</h3>
-                    <div class="text-xl font-bold font-mono mt-2" style="color: var(--admin-accent);">Rp {{ number_format($stats['total_revenue']) }}</div>
+        <div class="cyber-card p-3.5 sm:p-5 bg-white border border-[var(--border)] shadow-sm rounded-2xl flex flex-col justify-between hover:border-amber-400 transition-all">
+            <div class="flex justify-between items-start mb-2 sm:mb-3">
+                <div class="min-w-0 pr-1">
+                    <span class="text-[10px] sm:text-xs font-bold text-[var(--muted)] uppercase tracking-wider block mb-0.5 sm:mb-1 truncate">Pendaftaran Siswa</span>
+                    <div class="text-xl sm:text-3xl font-black font-mono text-[var(--ink)] leading-none">{{ number_format($stats['total_enrollments']) }}</div>
                 </div>
-                <div class="admin-stat-icon" style="color: var(--yellow); background: rgba(255, 215, 0, 0.1); border-color: rgba(255, 215, 0, 0.3);">
-                    <i class="fas fa-coins"></i>
+                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xs sm:text-base border border-amber-100 flex-shrink-0">
+                    <i class="fas fa-graduation-cap"></i>
                 </div>
             </div>
-            <div class="text-[9px] font-mono uppercase tracking-widest mt-2" style="color: var(--green);">
-                <i class="fas fa-shield-check mr-1"></i> Secured
+            <div class="text-[10px] sm:text-[11px] font-bold text-[var(--muted)] mt-1 truncate">
+                Akses Materi Aktif
+            </div>
+        </div>
+
+        <div class="cyber-card p-3.5 sm:p-5 bg-white border border-[var(--border)] shadow-sm rounded-2xl flex flex-col justify-between hover:border-emerald-400 transition-all">
+            <div class="flex justify-between items-start mb-2 sm:mb-3">
+                <div class="min-w-0 pr-1">
+                    <span class="text-[10px] sm:text-xs font-bold text-[var(--muted)] uppercase tracking-wider block mb-0.5 sm:mb-1 truncate">Total Transaksi</span>
+                    <div class="text-lg sm:text-2xl font-black font-mono text-emerald-700 leading-none truncate">Rp {{ number_format($stats['total_revenue']) }}</div>
+                </div>
+                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs sm:text-base border border-emerald-100 flex-shrink-0">
+                    <i class="fas fa-wallet"></i>
+                </div>
+            </div>
+            <div class="text-[10px] sm:text-[11px] font-bold text-emerald-700 flex items-center gap-1 mt-1 truncate">
+                <i class="fas fa-shield-alt text-[10px]"></i> Terverifikasi
             </div>
         </div>
     </div>
 
-    <!-- GRID -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+    <!-- MAIN GRID SECTION -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8 items-start">
 
-        <!-- ACTIONS -->
-        <div class="admin-card p-6 rounded-lg flex flex-col gap-4">
-            <h3 class="text-sm font-bold uppercase tracking-widest border-b pb-3 mb-2 flex items-center gap-2" style="color: var(--admin-accent); border-color: var(--border);">
-                <i class="fas fa-terminal"></i> Terminal Commands
-            </h3>
-            <a href="{{ route('admin.courses.create') }}" class="admin-btn primary">
-                <i class="fas fa-plus-square"></i> Initialize New Matrix
+        <!-- QUICK ACTION SHORTCUTS -->
+        <div class="cyber-card p-6 bg-white border border-[var(--border)] shadow-sm flex flex-col gap-3">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-[var(--muted)] pb-2 border-b border-[var(--border)] flex items-center gap-2">
+                <i class="fas fa-cogs text-[var(--blue)]"></i> Menu Manajemen
+            </h2>
+            <a href="{{ route('admin.courses.create') }}" class="btn btn-gradient text-xs justify-start py-3">
+                <i class="fas fa-plus mr-1"></i> Tambah Kursus Baru
             </a>
-            <a href="{{ route('admin.courses.index') }}" class="admin-btn">
-                <i class="fas fa-folder-open"></i> Access Matrix Records
+            <a href="{{ route('admin.courses.index') }}" class="btn btn-outline text-xs justify-start py-2.5">
+                <i class="fas fa-layer-group text-[var(--blue)] mr-1"></i> Kelola Daftar Kursus
+            </a>
+            <a href="{{ route('admin.modules.index') }}" class="btn btn-outline text-xs justify-start py-2.5">
+                <i class="fas fa-book-reader text-[var(--blue)] mr-1"></i> Kelola Modul (Docs)
+            </a>
+            <a href="{{ route('admin.prototypes.index') }}" class="btn btn-outline text-xs justify-start py-2.5">
+                <i class="fas fa-cube text-[var(--blue)] mr-1"></i> Kelola Prototype Siswa
+            </a>
+            <a href="{{ route('admin.referral-codes.index') }}" class="btn btn-outline text-xs justify-start py-2.5">
+                <i class="fas fa-ticket-alt text-[var(--blue)] mr-1"></i> Kelola Kode Referral
             </a>
         </div>
 
-        <!-- USERS -->
-        <div class="admin-card p-0 rounded-lg lg:col-span-1 flex flex-col">
-            <div class="p-6 pb-4 border-b" style="border-color: var(--border);">
-                <h3 class="text-sm font-bold uppercase tracking-widest flex items-center gap-2" style="color: var(--admin-accent2);">
-                    <i class="fas fa-user-shield"></i> Recent Subjects
-                </h3>
+        <!-- RECENT REGISTERED USERS -->
+        <div class="cyber-card p-0 bg-white border border-[var(--border)] shadow-sm overflow-hidden flex flex-col">
+            <div class="p-4 border-b border-[var(--border)] bg-[var(--bg3)] flex items-center justify-between">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-[var(--ink)] flex items-center gap-2">
+                    <i class="fas fa-users text-[var(--blue)]"></i> Siswa Terdaftar Baru
+                </h2>
+                <span class="text-[10px] text-[var(--muted)] font-mono font-bold">{{ count($stats['recent_users']) }} Data</span>
             </div>
-            <div class="p-4 flex-1 flex flex-col gap-2 overflow-y-auto max-h-[300px] custom-scrollbar">
+            <div class="p-4 flex-1 flex flex-col gap-2 overflow-y-auto max-h-[300px]">
                 @forelse($stats['recent_users'] as $user)
-                    <div class="flex items-center justify-between p-3 rounded bg-black/40 border border-transparent hover:border-[var(--border)] transition-colors">
-                        <div class="flex items-center gap-3">
-                            <div class="w-8 h-8 rounded border flex items-center justify-center font-bold text-[10px]" style="border-color: var(--admin-accent2); color: var(--admin-accent2); background: rgba(176, 38, 255, 0.1);">
-                                {{ strtoupper(substr($user->name,0,1)) }}
+                    <div class="flex items-center justify-between p-2.5 rounded-xl border border-[var(--border)] bg-slate-50/50 hover:bg-[var(--blue-light)]/40 transition">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <div class="w-8 h-8 rounded-full bg-[var(--blue-light)] text-[var(--blue)] border border-[#bfdbfe] flex items-center justify-center font-bold text-xs flex-shrink-0">
+                                {{ strtoupper(substr($user->name, 0, 1)) }}
                             </div>
-                            <div class="text-xs font-mono truncate max-w-[120px]" style="color: var(--text);">{{ $user->name }}</div>
+                            <div class="min-w-0">
+                                <div class="text-xs font-bold text-[var(--ink)] truncate">{{ $user->name }}</div>
+                                <div class="text-[10px] text-[var(--muted)] truncate font-mono">{{ $user->email }}</div>
+                            </div>
                         </div>
-                        <span class="text-[9px] font-mono uppercase tracking-widest" style="color: var(--muted);">
+                        <span class="text-[10px] font-mono text-[var(--muted)] ml-2 flex-shrink-0">
                             {{ $user->created_at->diffForHumans() }}
                         </span>
                     </div>
                 @empty
-                    <div class="text-center p-4 text-[10px] font-mono uppercase tracking-widest" style="color: var(--muted);">No new subjects detected</div>
+                    <div class="text-center py-8 text-xs text-[var(--muted)]">Belum ada siswa terdaftar baru.</div>
                 @endforelse
             </div>
         </div>
 
         <!-- POPULAR COURSES -->
-        <div class="admin-card p-0 rounded-lg lg:col-span-1 flex flex-col">
-            <div class="p-6 pb-4 border-b" style="border-color: var(--border);">
-                <h3 class="text-sm font-bold uppercase tracking-widest flex items-center gap-2" style="color: var(--cyan);">
-                    <i class="fas fa-fire"></i> High-Traffic Matrices
-                </h3>
+        <div class="cyber-card p-0 bg-white border border-[var(--border)] shadow-sm overflow-hidden flex flex-col">
+            <div class="p-4 border-b border-[var(--border)] bg-[var(--bg3)] flex items-center justify-between">
+                <h2 class="text-xs font-bold uppercase tracking-wider text-[var(--ink)] flex items-center gap-2">
+                    <i class="fas fa-fire text-amber-500"></i> Kursus Terpopuler
+                </h2>
+                <a href="{{ route('admin.courses.index') }}" class="text-[10px] font-bold text-[var(--blue)] hover:underline">Semua →</a>
             </div>
-            <div class="p-4 flex-1 flex flex-col gap-2 overflow-y-auto max-h-[300px] custom-scrollbar">
+            <div class="p-4 flex-1 flex flex-col gap-2 overflow-y-auto max-h-[300px]">
                 @forelse($stats['popular_courses'] as $course)
-                    <div class="flex items-center justify-between p-3 rounded bg-black/40 border border-transparent hover:border-[var(--border)] transition-colors">
-                        <div>
-                            <div class="text-xs font-mono font-bold mb-1" style="color: var(--text);">{{ Str::limit($course->title, 22) }}</div>
-                            <div class="text-[9px] font-mono uppercase tracking-widest" style="color: var(--muted);">
-                                <i class="fas fa-link mr-1" style="color: var(--cyan);"></i> {{ $course->user_courses_count }} Links
+                    <div class="flex items-center justify-between p-2.5 rounded-xl border border-[var(--border)] bg-slate-50/50 hover:bg-[var(--blue-light)]/40 transition">
+                        <div class="min-w-0 flex-1">
+                            <div class="text-xs font-bold text-[var(--ink)] truncate" title="{{ $course->title }}">{{ $course->title }}</div>
+                            <div class="text-[10px] text-[var(--muted)] font-mono mt-0.5">
+                                <i class="fas fa-users text-[var(--blue)] mr-1"></i> {{ $course->user_courses_count }} Siswa
                             </div>
                         </div>
-                        <a href="{{ route('admin.courses.show', $course) }}" class="w-8 h-8 flex items-center justify-center rounded border transition-colors hover:bg-[rgba(0,217,255,0.1)]" style="border-color: var(--border); color: var(--cyan);">
+                        <a href="{{ route('admin.courses.show', $course) }}" class="btn btn-small btn-outline text-xs ml-2 p-2">
                             <i class="fas fa-chevron-right text-[10px]"></i>
                         </a>
                     </div>
                 @empty
-                    <div class="text-center p-4 text-[10px] font-mono uppercase tracking-widest" style="color: var(--muted);">No data matrices found</div>
+                    <div class="text-center py-8 text-xs text-[var(--muted)]">Belum ada data kursus.</div>
                 @endforelse
             </div>
         </div>
 
     </div>
 
-    <!-- ENROLLMENTS -->
-    <div class="admin-card p-0 rounded-lg overflow-hidden">
-        <div class="p-6 border-b" style="border-color: var(--border); background: rgba(0,0,0,0.5);">
-            <h3 class="text-sm font-bold uppercase tracking-widest flex items-center gap-2" style="color: var(--text);">
-                <i class="fas fa-network-wired" style="color: var(--admin-accent);"></i> Recent Network Links (Enrollments)
-            </h3>
+    <!-- RECENT ENROLLMENTS TABLE -->
+    <div class="cyber-card p-0 bg-white border border-[var(--border)] shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-[var(--border)] bg-[var(--bg3)] flex items-center justify-between">
+            <h2 class="text-xs font-bold uppercase tracking-wider text-[var(--ink)] flex items-center gap-2">
+                <i class="fas fa-clipboard-list text-[var(--blue)]"></i> Pendaftaran Kursus Terkini
+            </h2>
         </div>
 
-        <div class="overflow-x-auto custom-scrollbar">
-            <table class="w-full text-left whitespace-nowrap text-[11px] font-mono">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
                 <thead>
-                    <tr style="background: rgba(255,255,255,0.02); border-bottom: 2px solid var(--border);">
-                        <th class="p-4 uppercase tracking-widest" style="color: var(--text3);">Subject</th>
-                        <th class="p-4 uppercase tracking-widest" style="color: var(--text3);">Matrix</th>
-                        <th class="p-4 uppercase tracking-widest" style="color: var(--text3);">Timestamp</th>
-                        <th class="p-4 uppercase tracking-widest" style="color: var(--text3);">Status</th>
+                    <tr>
+                        <th>Siswa</th>
+                        <th>Kursus</th>
+                        <th>Tanggal Terdaftar</th>
+                        <th class="text-right">Status Belajar</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($stats['recent_enrollments'] as $enrollment)
-                        <tr class="border-b transition-colors hover:bg-white/5" style="border-color: var(--border);">
-                            <td class="p-4" style="color: var(--text);">{{ $enrollment->user->name }}</td>
-                            <td class="p-4" style="color: var(--text2);">{{ Str::limit($enrollment->course->title, 30) }}</td>
-                            <td class="p-4" style="color: var(--muted);">{{ $enrollment->created_at->format('M d, Y H:i') }}</td>
-                            <td class="p-4">
+                        <tr>
+                            <td class="font-bold text-[var(--ink)]">
+                                {{ $enrollment->user->name ?? 'User #' . $enrollment->user_id }}
+                            </td>
+                            <td class="text-[var(--text2)]">
+                                {{ Str::limit($enrollment->course->title ?? '-', 35) }}
+                            </td>
+                            <td class="font-mono text-[var(--muted)]">
+                                {{ $enrollment->created_at->format('d M Y, H:i') }}
+                            </td>
+                            <td class="text-right">
                                 @if($enrollment->is_completed)
-                                    <span class="px-2 py-1 rounded border text-[9px] uppercase tracking-widest font-bold" style="border-color: var(--green); color: var(--green); background: rgba(0,255,136,0.1);">
-                                        Synchronized
+                                    <span class="pill success-outline text-[10px]">
+                                        <i class="fas fa-check mr-1"></i> Selesai
                                     </span>
                                 @else
-                                    <span class="px-2 py-1 rounded border text-[9px] uppercase tracking-widest font-bold" style="border-color: var(--yellow); color: var(--yellow); background: rgba(255,215,0,0.1);">
-                                        In Progress
+                                    <span class="pill blue-soft text-[10px]">
+                                        <i class="fas fa-spinner mr-1"></i> Sedang Belajar
                                     </span>
                                 @endif
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="p-12 text-center text-[10px] uppercase tracking-widest" style="color: var(--muted);">
-                                No recent link activity detected in the network.
+                            <td colspan="4" class="p-8 text-center text-xs text-[var(--muted)]">
+                                Belum ada riwayat pendaftaran kursus terbaru.
                             </td>
                         </tr>
                     @endforelse
@@ -323,4 +240,3 @@ body.light .admin-btn.primary:hover {
 </div>
 
 @endsection
-

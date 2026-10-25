@@ -194,7 +194,7 @@
             @if($content->type === 'question' && isset($content->question_type) && $content->question_type === 'coding')
                 {{-- CODING QUESTION DETAILS --}}
                 <div class="pixel-card" style="margin-top:16px; border-color: #22c55e;">
-                    <h3 style="color: #22c55e;">💻 CODING CHALLENGE DETAILS</h3>
+                    <h3 style="color: #22c55e;"><i class="fas fa-terminal mr-2"></i>CODING CHALLENGE DETAILS</h3>
 
                     <div class="pixel-info" style="margin-bottom: 16px;">
                         <strong>Coding Rules:</strong><br>

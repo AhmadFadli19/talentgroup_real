@@ -103,7 +103,7 @@ class AuthController extends Controller
             'email_verification_code' => null,
         ]);
 
-        Auth::login($user);
+        Auth::login($user, true);
         session()->forget('verify_user_id');
 
         return redirect()->route('user.dashboard')->with('success', 'Email berhasil diverifikasi!');
@@ -176,7 +176,9 @@ class AuthController extends Controller
             return redirect()->route('verify.show')->with('error', 'Silakan verifikasi email Anda terlebih dahulu.');
         }
 
-        Auth::login($user, $request->boolean('remember'));
+        // Default persistent login to 1 week unless explicitly turned off
+        $remember = $request->has('remember') ? $request->boolean('remember') : true;
+        Auth::login($user, $remember);
 
         return $this->redirectBasedOnRole($user);
     }
@@ -211,7 +213,7 @@ class AuthController extends Controller
             return back()->with('error', 'Anda tidak memiliki akses bank.');
         }
 
-        Auth::login($user);
+        Auth::login($user, true);
         return redirect()->route('bank.dashboard');
     }
 

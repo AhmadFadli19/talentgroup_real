@@ -322,31 +322,64 @@
                 <h4>{{ $answer->courseQuestion->title }}</h4>
                 <div class="pixel-row">{{ $answer->courseQuestion->content }}</div>
 
-                @if($answer->courseQuestion->options)
-                    @foreach($answer->courseQuestion->options as $option)
-                        <div class="pixel-option
-                            {{ $option === $answer->courseQuestion->correct_answer ? 'pixel-correct' : '' }}">
-                            {{ $option }}
-                        </div>
-                    @endforeach
+                @if($answer->courseQuestion->isCoding())
+                    <div style="margin: 10px 0; font-family: monospace; font-size: 9px; background: rgba(0,0,0,0.3); padding: 10px; border: 1px solid var(--border);">
+                        <div style="color: var(--accent); font-weight: bold; margin-bottom: 6px;">💻 CODING CHALLENGE ({{ strtoupper($answer->courseQuestion->language ?? 'GOLANG') }})</div>
+                        @if($answer->code_submitted || $answer->answer)
+                            <div style="margin-bottom: 8px;">
+                                <div style="color: var(--muted); margin-bottom: 3px;">Kode yang Dikirim Siswa:</div>
+                                <pre style="background: rgba(0,0,0,0.6); padding: 8px; border-radius: 4px; overflow-x: auto; color: #a5f3fc; border: 1px solid var(--border);">{{ $answer->code_submitted ?? $answer->answer }}</pre>
+                            </div>
+                        @endif
+                        @if($answer->code_output)
+                            <div style="margin-bottom: 8px;">
+                                <div style="color: var(--muted); margin-bottom: 3px;">Output Eksekusi Siswa:</div>
+                                <pre style="background: rgba(0,0,0,0.6); padding: 8px; border-radius: 4px; overflow-x: auto; color: #fef08a; border: 1px solid var(--border);">{{ $answer->code_output }}</pre>
+                            </div>
+                        @endif
+                        @if($answer->courseQuestion->expected_output)
+                            <div>
+                                <div style="color: #22c55e; margin-bottom: 3px;">Expected Output:</div>
+                                <pre style="background: rgba(34,197,94,0.1); padding: 8px; border-radius: 4px; overflow-x: auto; color: #86efac; border: 1px solid rgba(34,197,94,0.3);">{{ $answer->courseQuestion->expected_output }}</pre>
+                            </div>
+                        @endif
+                    </div>
+                @else
+                    @if($answer->courseQuestion->options)
+                        @foreach($answer->courseQuestion->options as $optIdx => $option)
+                            @php
+                                $optLetter = chr(65 + $optIdx);
+                                $isCorrectOpt = ($option === $answer->courseQuestion->correct_answer);
+                                $isChosen = ($option === $answer->answer);
+                            @endphp
+                            <div class="pixel-option {{ $isCorrectOpt ? 'pixel-correct' : ($isChosen ? 'pixel-wrong' : '') }}">
+                                <strong>{{ $optLetter }}.</strong> {{ $option }}
+                                @if($isCorrectOpt) <span style="font-weight: bold;">(Kunci Benar)</span> @endif
+                                @if($isChosen && !$isCorrectOpt) <span style="font-weight: bold;">(Dipilih Siswa)</span> @endif
+                            </div>
+                        @endforeach
+                    @endif
+
+                    <div class="pixel-row {{ $answer->is_correct ? 'pixel-good' : 'pixel-bad' }}">
+                        Jawaban Siswa: {{ $answer->answer }}
+                    </div>
+
+                    <div class="pixel-row pixel-good">
+                        Kunci Benar: {{ $answer->courseQuestion->correct_answer }}
+                    </div>
                 @endif
 
-                <div class="pixel-row {{ $answer->is_correct ? 'pixel-good' : 'pixel-bad' }}">
-                    Your Answer: {{ $answer->answer }}
-                </div>
-
-                <div class="pixel-row pixel-good">
-                    Correct Answer: {{ $answer->courseQuestion->correct_answer }}
-                </div>
-
                 <div class="pixel-row">
-                    {{ $answer->is_correct ? '✔ CORRECT' : '✖ WRONG' }}
+                    <span class="pixel-badge {{ $answer->is_correct ? 'pixel-good' : 'pixel-bad' }}">
+                        {{ $answer->is_correct ? '✔ BENAR' : '✖ BELUM TEPAT' }}
+                    </span>
                     • {{ $answer->created_at->format('M d, Y H:i') }}
+                    • Poin: {{ $answer->points }}
                 </div>
             </div>
 
         @empty
-            <p class="pixel-row">No answers submitted</p>
+            <p class="pixel-row">Belum ada jawaban soal yang tercatat pada kursus ini.</p>
         @endforelse
     </div>
 

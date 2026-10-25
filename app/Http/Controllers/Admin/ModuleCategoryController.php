@@ -46,6 +46,8 @@ class ModuleCategoryController extends Controller
             'color' => 'nullable|string|max:20',
             'badge' => 'nullable|string|max:50',
             'is_active' => 'nullable|boolean',
+            'enable_anti_screenshot' => 'nullable|boolean',
+            'enable_anti_copy' => 'nullable|boolean',
         ]);
 
         $slug = Str::slug($request->name);
@@ -68,6 +70,8 @@ class ModuleCategoryController extends Controller
             'badge' => $request->badge,
             'order' => $request->order ?? (ModuleCategory::max('order') + 1),
             'is_active' => $request->has('is_active') ? $request->boolean('is_active') : true,
+            'enable_anti_screenshot' => $request->has('enable_anti_screenshot') ? $request->boolean('enable_anti_screenshot') : true,
+            'enable_anti_copy' => $request->has('enable_anti_copy') ? $request->boolean('enable_anti_copy') : true,
         ]);
 
         if ($request->wantsJson()) {
@@ -99,6 +103,8 @@ class ModuleCategoryController extends Controller
             'color' => 'nullable|string|max:20',
             'badge' => 'nullable|string|max:50',
             'is_active' => 'nullable|boolean',
+            'enable_anti_screenshot' => 'nullable|boolean',
+            'enable_anti_copy' => 'nullable|boolean',
         ]);
 
         $isPublic = $request->has('is_public') ? $request->boolean('is_public') : $category->is_public;
@@ -113,6 +119,8 @@ class ModuleCategoryController extends Controller
             'badge' => $request->badge,
             'order' => $request->order ?? $category->order,
             'is_active' => $request->has('is_active') ? $request->boolean('is_active') : false,
+            'enable_anti_screenshot' => $request->has('enable_anti_screenshot') ? $request->boolean('enable_anti_screenshot') : false,
+            'enable_anti_copy' => $request->has('enable_anti_copy') ? $request->boolean('enable_anti_copy') : false,
         ]);
 
         if ($request->wantsJson()) {

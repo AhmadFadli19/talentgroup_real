@@ -83,7 +83,7 @@ Route::get('/auth/google', [AuthController::class, 'redirectToGoogle'])->name('a
 Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('auth.google.callback');
 
 // Logout
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::match(['get', 'post'], '/logout', [AuthController::class, 'logout'])->name('logout');
 
 // ============================================
 // ADMIN ROUTES
@@ -134,6 +134,11 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::post('modules/{module}/contents/{content}/toggle-publish', [AdminModuleController::class, 'contentsTogglePublish'])->name('admin.modules.contents.toggle-publish');
 
     Route::resource('modules', AdminModuleController::class)->names('admin.modules');
+
+    // Module Categories (Sidebar Groups & Private Access)
+    Route::post('module-categories/grant-access', [AdminModuleCategoryController::class, 'grantAccess'])->name('admin.module-categories.grant-access');
+    Route::delete('module-categories/access/{id}', [AdminModuleCategoryController::class, 'revokeAccess'])->name('admin.module-categories.revoke-access');
+    Route::resource('module-categories', AdminModuleCategoryController::class)->names('admin.module-categories');
 
     // Referral Code Management
     Route::post('referral-codes/{id}/toggle-active', [AdminReferralCodeController::class, 'toggleActive'])->name('admin.referral-codes.toggle-active');
@@ -221,6 +226,7 @@ Route::prefix('user')->middleware(['auth', 'role:user'])->group(function () {
     Route::get('/prototypes/check-slug', [UserPrototypeController::class, 'checkSlug'])->name('user.prototypes.check-slug');
     Route::post('/prototypes/deploy', [UserPrototypeController::class, 'deploy'])->name('user.prototypes.deploy');
     Route::get('/prototypes/{id}/report', [UserPrototypeController::class, 'showReport'])->name('user.prototypes.report');
+    Route::put('/prototypes/{id}', [UserPrototypeController::class, 'update'])->name('user.prototypes.update');
     Route::delete('/prototypes/{id}', [UserPrototypeController::class, 'destroy'])->name('user.prototypes.destroy');
 });
 

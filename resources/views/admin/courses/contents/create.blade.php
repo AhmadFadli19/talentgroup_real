@@ -67,11 +67,11 @@
                 <label class="pixel-label">CONTENT TYPE</label>
                 <select id="type" name="type" x-model="contentType" required class="pixel-select">
                     <option value="">-- SELECT TYPE --</option>
-                    <option value="story" {{ old('type') === 'story' ? 'selected' : '' }}>📘 STORY (Reading)</option>
-                    <option value="video" {{ old('type') === 'video' ? 'selected' : '' }}>📹 VIDEO (YouTube / Google Drive)</option>
-                    <option value="question" {{ old('type') === 'question' ? 'selected' : '' }}>❓ QUESTION (Multiple Choice)</option>
-                    <option value="coding" {{ old('type') === 'coding' ? 'selected' : '' }}>💻 CODING (Golang Challenge)</option>
-                    <option value="html" {{ old('type') === 'html' ? 'selected' : '' }}>🌐 HTML PREVIEW (Live Render)</option>
+                    <option value="story" {{ old('type') === 'story' ? 'selected' : '' }}>[STORY] Reading / Artikel</option>
+                    <option value="video" {{ old('type') === 'video' ? 'selected' : '' }}>[VIDEO] YouTube / Google Drive</option>
+                    <option value="question" {{ old('type') === 'question' ? 'selected' : '' }}>[QUESTION] Kuis Pilihan Ganda</option>
+                    <option value="coding" {{ old('type') === 'coding' ? 'selected' : '' }}>[CODING] Interactive Code Lab</option>
+                    <option value="html" {{ old('type') === 'html' ? 'selected' : '' }}>[HTML] Live Preview Render</option>
                 </select>
                 <div class="pixel-help">Story = reading • Video = YT/Drive Embed • Question = MC • Coding = Golang • HTML = live preview layout</div>
             </div>
@@ -170,41 +170,91 @@
             </div>
 
             {{-- QUESTION FIELDS (Multiple Choice) --}}
-            <div x-show="contentType === 'question'" class="pixel-question">
-                <strong style="font-size:10px;">❓ MULTIPLE CHOICE OPTIONS</strong>
-
-                <div id="options-container" class="mt-3">
-                    @if(old('options'))
-                        @foreach(old('options') as $option)
-                            <div class="pixel-option">
-                                <input type="text" name="options[]" value="{{ $option }}" class="pixel-input">
-                                <button type="button" onclick="removeOption(this)" class="pixel-btn pixel-danger">✖</button>
-                            </div>
-                        @endforeach
-                    @else
-                        <div class="pixel-option">
-                            <input type="text" name="options[]" class="pixel-input" placeholder="Option 1">
-                            <button type="button" onclick="removeOption(this)" class="pixel-btn pixel-danger">✖</button>
+            <div x-show="contentType === 'question'" class="pixel-question" style="border-color: #f59e0b; background: rgba(245, 158, 11, 0.03);">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px dashed var(--border); padding-bottom: 10px; margin-bottom: 14px;">
+                    <div>
+                        <strong style="font-size:11px; color: #f59e0b; display: inline-flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-list-ul"></i> PILIHAN JAWABAN (A, B, C, D, E...)
+                        </strong>
+                        <div class="pixel-help" style="margin-top: 3px;">
+                            Huruf <strong>A, B, C, D, E</strong> otomatis terpasang. Anda cukup ketik teks jawabannya saja (contoh: <code>golang</code>).
                         </div>
-                        <div class="pixel-option">
-                            <input type="text" name="options[]" class="pixel-input" placeholder="Option 2">
-                            <button type="button" onclick="removeOption(this)" class="pixel-btn pixel-danger">✖</button>
-                        </div>
-                    @endif
+                    </div>
+                    <button type="button" @click="addMcOption()" class="pixel-btn" style="border-color: #f59e0b; color: #f59e0b; display: inline-flex; align-items: center; gap: 4px;">
+                        ➕ TAMBAH PILIHAN (<span x-text="getLetter(mcOptions.length)"></span>)
+                    </button>
                 </div>
 
-                <button type="button" onclick="addOption()" class="pixel-btn mt-2">➕ ADD OPTION</button>
+                <!-- DAFTAR BARIS PILIHAN GANDA -->
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <template x-for="(opt, idx) in mcOptions" :key="idx">
+                        <div class="pixel-option" style="display: flex; align-items: center; gap: 8px; margin-bottom: 0; padding: 6px 8px; border: 2px solid var(--border); background: var(--bg);"
+                             :style="correctOptionIndex === idx ? 'border-color: #22c55e; background: rgba(34, 197, 94, 0.05);' : ''">
+                            
+                            <!-- BADGE HURUF OTOMATIS (A, B, C, D, E) -->
+                            <div style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 13px; border: 2px solid var(--border); background: var(--surface2); flex-shrink: 0;"
+                                 :style="correctOptionIndex === idx ? 'border-color: #22c55e; background: #22c55e; color: #000;' : 'color: var(--text);'">
+                                <span x-text="getLetter(idx) + '.'"></span>
+                            </div>
 
-                <div class="pixel-group mt-4">
-                    <label class="pixel-label">CORRECT ANSWER</label>
-                    <input type="text" name="correct_answer" value="{{ old('correct_answer') }}" class="pixel-input">
-                    <div class="pixel-help">Must match one option exactly</div>
+                            <!-- INPUT TEKS PILIHAN -->
+                            <div style="flex: 1;">
+                                <input type="text" 
+                                       name="options[]" 
+                                       x-model="mcOptions[idx]" 
+                                       class="pixel-input" 
+                                       :placeholder="'Ketik jawaban untuk pilihan ' + getLetter(idx) + ' (contoh: golang)'" 
+                                       required 
+                                       style="padding: 9px; font-weight: bold; width: 100%;">
+                            </div>
+
+                            <!-- TOMBOL / RADIO PILIH SEBAGAI JAWABAN BENAR -->
+                            <button type="button" 
+                                    @click="setCorrectOption(idx)" 
+                                    class="pixel-btn" 
+                                    style="padding: 8px 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; flex-shrink: 0;"
+                                    :style="correctOptionIndex === idx ? 'background: #22c55e; color: #000; border-color: #22c55e; box-shadow: 0 0 8px rgba(34,197,94,0.4);' : 'background: var(--bg); color: var(--text2);'">
+                                <i :class="correctOptionIndex === idx ? 'fas fa-check-circle' : 'far fa-circle'"></i>
+                                <span x-text="correctOptionIndex === idx ? 'KUNCI BENAR' : 'SET BENAR'"></span>
+                            </button>
+
+                            <!-- TOMBOL HAPUS PILIHAN -->
+                            <button type="button" 
+                                    @click="removeMcOption(idx)" 
+                                    class="pixel-btn pixel-danger" 
+                                    style="padding: 8px 10px; flex-shrink: 0;" 
+                                    title="Hapus baris pilihan ini">
+                                ✖
+                            </button>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- PREVIEW KUNCI JAWABAN YANG TERPILIH -->
+                <div class="pixel-group mt-4" style="padding: 12px; border: 2px solid #22c55e; background: rgba(34, 197, 94, 0.08);">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                        <div>
+                            <span class="pixel-label" style="color: #22c55e; font-weight: 900; margin-bottom: 2px; font-size: 10px;">
+                                <i class="fas fa-key"></i> KUNCI JAWABAN BENAR (TERSIMPAN OTOMATIS)
+                            </span>
+                            <div style="font-size: 13px; font-weight: 800; color: var(--text);">
+                                <span style="background: #22c55e; color: #000; padding: 2px 8px; border-radius: 4px; margin-right: 6px;" x-text="getLetter(correctOptionIndex)"></span>
+                                <span x-text="currentCorrectAnswer || '(Pilihan ' + getLetter(correctOptionIndex) + ' masih kosong, silakan ketik teksnya)'" style="color: #22c55e;"></span>
+                            </div>
+                        </div>
+                        <span class="pixel-help" style="color: var(--muted); text-align: right; max-width: 250px;">
+                            Sistem akan mencocokkan teks jawaban di atas secara langsung.
+                        </span>
+                    </div>
+
+                    <!-- Hidden input correct_answer yang dikirim ke server -->
+                    <input type="hidden" name="correct_answer" :value="currentCorrectAnswer" required>
                 </div>
             </div>
 
             {{-- CODING FIELDS --}}
             <div x-show="contentType === 'coding'" class="pixel-coding">
-                <strong style="font-size:10px; color: #22c55e;">💻 CODING CHALLENGE SETTINGS</strong>
+                <strong style="font-size:11px; color: #22c55e; display: inline-flex; align-items: center; gap: 6px;"><i class="fas fa-terminal"></i> CODING CHALLENGE SETTINGS</strong>
 
                 {{-- Language Selector --}}
                 <div class="pixel-group mt-4">
@@ -351,11 +401,57 @@ function adminCoding() {
         useAudio: {{ old('use_audio') ? 'true' : 'false' }},
         useVideoStory: {{ old('use_video_story') ? 'true' : 'false' }},
 
+        // Multiple choice state (A, B, C, D, E...)
+        mcOptions: {!! json_encode(old('options', ['Golang', 'Python', 'Java', 'PHP'])) !!},
+        correctOptionIndex: 0,
+        letters: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
+
+        getLetter(index) {
+            return this.letters[index] || String.fromCharCode(65 + index);
+        },
+
+        get currentCorrectAnswer() {
+            return (this.mcOptions && this.mcOptions[this.correctOptionIndex]) ? this.mcOptions[this.correctOptionIndex] : '';
+        },
+
+        addMcOption() {
+            if (this.mcOptions.length < 10) {
+                this.mcOptions.push('');
+            }
+        },
+
+        removeMcOption(index) {
+            if (this.mcOptions.length <= 2) {
+                alert('Minimal harus ada 2 pilihan jawaban.');
+                return;
+            }
+            this.mcOptions.splice(index, 1);
+            if (this.correctOptionIndex >= this.mcOptions.length) {
+                this.correctOptionIndex = this.mcOptions.length - 1;
+            }
+        },
+
+        setCorrectOption(index) {
+            this.correctOptionIndex = index;
+        },
+
         get currentRules() {
             return this.allRules[this.selectedLanguage] || this.allRules['go'];
         },
 
         init() {
+            // Inisialisasi multiple choice options
+            if (!Array.isArray(this.mcOptions) || this.mcOptions.length < 2) {
+                this.mcOptions = ['Golang', 'Python', 'Java', 'PHP'];
+            }
+            const initialCorrect = '{{ addslashes(old('correct_answer', '')) }}';
+            if (initialCorrect) {
+                const foundIdx = this.mcOptions.findIndex(opt => opt && opt.trim() === initialCorrect.trim());
+                if (foundIdx !== -1) {
+                    this.correctOptionIndex = foundIdx;
+                }
+            }
+
             // Ensure testCases have result/passed fields
             this.testCases = this.testCases.map(tc => ({
                 ...tc,
@@ -460,19 +556,6 @@ function adminCoding() {
             }
         }
     };
-}
-
-function addOption() {
-    const c = document.getElementById('options-container');
-    const d = document.createElement('div');
-    d.className = 'pixel-option';
-    d.innerHTML = `<input type="text" name="options[]" class="pixel-input" required><button type="button" onclick="removeOption(this)" class="pixel-btn pixel-danger">✖</button>`;
-    c.appendChild(d);
-}
-
-function removeOption(btn) {
-    const c = document.getElementById('options-container');
-    if (c.children.length > 2) { btn.parentElement.remove(); }
 }
 </script>
 

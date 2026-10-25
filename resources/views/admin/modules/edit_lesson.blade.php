@@ -287,21 +287,49 @@
                            class="cyber-input">
                 </div>
 
-                <!-- Settings Toggles -->
-                <div class="md:col-span-12 flex flex-wrap items-center gap-8 pt-3 border-t border-[var(--border)]">
-                    <label class="flex items-center gap-3 cursor-pointer select-none">
-                        <input type="hidden" name="is_published" value="0">
-                        <input type="checkbox" name="is_published" value="1" {{ old('is_published', $lesson->is_published) ? 'checked' : '' }} class="w-4 h-4 rounded text-cyan-500 bg-slate-800 border-slate-700">
-                        <span class="text-xs font-bold text-white uppercase tracking-wider">Publikasikan Bab Ini</span>
-                    </label>
-
-                    <label class="flex items-center gap-3 cursor-pointer select-none">
-                        <input type="hidden" name="enable_protection" value="0">
-                        <input type="checkbox" name="enable_protection" value="1" {{ old('enable_protection', $lesson->enable_protection) ? 'checked' : '' }} class="w-4 h-4 rounded text-cyan-500 bg-slate-800 border-slate-700">
-                        <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
-                            <i class="fas fa-shield-alt"></i> Proteksi Anti-Screenshot & Anti-Inspect
+                <!-- Settings Section -->
+                <div class="md:col-span-12 pt-4 border-t border-slate-800">
+                    <div class="mb-3">
+                        <span class="text-[11px] font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 font-mono">
+                            <i class="fas fa-sliders-h text-cyan-400"></i> Pengaturan Publikasi & Keamanan Materi
                         </span>
-                    </label>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <!-- Published Toggle -->
+                        <label class="flex items-start gap-3 p-3.5 rounded-xl border border-slate-800 bg-slate-900/60 hover:bg-slate-900 cursor-pointer transition select-none">
+                            <input type="hidden" name="is_published" value="0">
+                            <input type="checkbox" name="is_published" value="1" {{ old('is_published', $lesson->is_published) ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded text-cyan-500 bg-slate-800 border-slate-700 focus:ring-0">
+                            <div>
+                                <span class="block text-xs font-bold text-white">Publikasikan Bab Ini</span>
+                                <span class="text-[11px] text-slate-400">Tampilkan materi di daftar pelajaran modul.</span>
+                            </div>
+                        </label>
+
+                        <!-- Anti-Screenshot Toggle (Default: Nyala) -->
+                        <label class="flex items-start gap-3 p-3.5 rounded-xl border border-emerald-500/30 bg-emerald-950/20 hover:bg-emerald-950/30 cursor-pointer transition select-none">
+                            <input type="hidden" name="enable_anti_screenshot" value="0">
+                            <input type="checkbox" name="enable_anti_screenshot" value="1" {{ old('enable_anti_screenshot', $lesson->isAntiScreenshotEnabled()) ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded text-emerald-500 bg-slate-800 border-slate-700 focus:ring-0">
+                            <div>
+                                <span class="block text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                                    <i class="fas fa-camera"></i> Proteksi Anti-Screenshot
+                                </span>
+                                <span class="text-[11px] text-emerald-300/70">Blackout otomatis saat PrtScn, Win+Shift+S, Snipping Tool, atau screenshot HP. (Default: Nyala)</span>
+                            </div>
+                        </label>
+
+                        <!-- Anti-Copy Toggle (Default: Nyala) -->
+                        <label class="flex items-start gap-3 p-3.5 rounded-xl border border-cyan-500/30 bg-cyan-950/20 hover:bg-cyan-950/30 cursor-pointer transition select-none">
+                            <input type="hidden" name="enable_anti_copy" value="0">
+                            <input type="checkbox" name="enable_anti_copy" value="1" {{ old('enable_anti_copy', $lesson->isAntiCopyEnabled()) ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded text-cyan-500 bg-slate-800 border-slate-700 focus:ring-0">
+                            <div>
+                                <span class="block text-xs font-bold text-cyan-300 flex items-center gap-1.5">
+                                    <i class="fas fa-copy"></i> Proteksi Anti-Salin Teks
+                                </span>
+                                <span class="text-[11px] text-cyan-400/70">Cegah seleksi teks, blokir klik kanan, dan cegah copy/cut materi (salin kode tetap bisa). (Default: Nyala)</span>
+                            </div>
+                        </label>
+                    </div>
                 </div>
             </div>
         </div>

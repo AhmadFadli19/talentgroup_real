@@ -115,8 +115,15 @@
                                     ->first();
                                 $isNavCompleted = $navAnswer !== null;
                                 
+                                // In next_only mode, previous modules cannot be navigated back to
+                                $isLockedPast = $course->isNextOnlyNavigation() && $index < $currentIndex;
+
                                 // Define clean icon and labels
-                                if ($isNavCompleted) {
+                                if ($isLockedPast) {
+                                    $icon = '<i class="fas fa-lock" style="color: var(--text3); font-size: 11px;"></i>';
+                                    $borderStyle = 'border-color: var(--border); opacity: 0.5; pointer-events: none; cursor: not-allowed;';
+                                    $bgStyle = 'background: rgba(0, 0, 0, 0.15);';
+                                } elseif ($isNavCompleted) {
                                     $icon = '<i class="fas fa-check-circle" style="color: var(--green); font-size: 13px;"></i>';
                                     $borderStyle = 'border-color: rgba(16, 185, 129, 0.25);';
                                     $bgStyle = 'background: rgba(16, 185, 129, 0.03);';
@@ -132,8 +139,8 @@
                                 }
                             @endphp
                             
-                            <a href="{{ route('user.courses.content', [$course->id, $navContent->type . ':' . $navContent->id]) }}" 
-                               class="flex items-center gap-3 p-3 border rounded-xl transition-all hover:translate-x-1 hover:shadow-sm"
+                            <a href="{{ $isLockedPast ? 'javascript:void(0)' : route('user.courses.content', [$course->id, $navContent->type . ':' . $navContent->id]) }}" 
+                               class="flex items-center gap-3 p-3 border rounded-xl transition-all {{ $isLockedPast ? '' : 'hover:translate-x-1 hover:shadow-sm' }}"
                                style="{{ $borderStyle }} {{ $bgStyle }}">
                                 
                                 <!-- Status Checkbox Icon -->
@@ -145,7 +152,9 @@
                                 <div class="flex-1 min-w-0">
                                     <div class="text-[11.5px] font-extrabold truncate" style="color: {{ $isCurrent ? 'var(--text)' : 'var(--text2)' }};">{{ $navContent->title }}</div>
                                     <div class="text-[8px] uppercase tracking-wider font-bold mt-0.5 flex items-center gap-1.5" style="font-family: 'Fira Code', monospace;">
-                                        @if($navContent->type === 'video')
+                                        @if($isLockedPast)
+                                            <span class="text-slate-400"><i class="fas fa-lock mr-0.5"></i> Selesai (Terkunci)</span>
+                                        @elseif($navContent->type === 'video')
                                             <span style="color: var(--cyan);"><i class="fas fa-play-circle mr-0.5"></i> Video</span>
                                         @elseif($navContent->type === 'question')
                                             <span style="color: var(--orange);"><i class="fas fa-question-circle mr-0.5"></i> Kuis</span>
@@ -298,8 +307,25 @@
                           class="flex flex-col gap-4">
                         @csrf
                         
+                        @php
+                            $revealAnswers = $course->isInstantQuizFeedback() || ($course->isEndQuizFeedback() && ($userCourse->is_completed ?? false));
+                            $displayOptions = $content->options ?? [];
+                            if ($course->isShuffleOptions() && is_array($displayOptions) && count($displayOptions) > 1) {
+                                $userId = auth()->id() ?? 0;
+                                $seededOptions = [];
+                                foreach ($displayOptions as $opt) {
+                                    $seededOptions[] = [
+                                        'val' => $opt,
+                                        'hash' => md5($course->id . '_' . $userId . '_' . $content->id . '_' . $opt)
+                                    ];
+                                }
+                                usort($seededOptions, fn($a, $b) => strcmp($a['hash'], $b['hash']));
+                                $displayOptions = array_column($seededOptions, 'val');
+                            }
+                        @endphp
+
                         <div class="flex flex-col gap-2.5">
-                            @foreach($content->options ?? [] as $index => $option)
+                            @foreach($displayOptions as $index => $option)
                                 @php
                                     $isCorrectAnswer = $option === $content->correct_answer;
                                     $isSelected = $userAnswer && $userAnswer->answer === $option;
@@ -311,14 +337,23 @@
                                     $iconClass = 'fa-circle text-transparent';
                                     
                                     if ($userAnswer) {
-                                        if ($isCorrectAnswer) {
-                                            $borderClass = 'border-[var(--green)]';
-                                            $bgClass = 'bg-green-500/5';
-                                            $iconClass = 'fa-check-circle text-[var(--green)]';
-                                        } elseif ($isWrongSelection) {
-                                            $borderClass = 'border-[var(--red)]';
-                                            $bgClass = 'bg-red-500/5';
-                                            $iconClass = 'fa-times-circle text-[var(--red)]';
+                                        if ($revealAnswers) {
+                                            if ($isCorrectAnswer) {
+                                                $borderClass = 'border-[var(--green)]';
+                                                $bgClass = 'bg-green-500/10';
+                                                $iconClass = 'fa-check-circle text-[var(--green)]';
+                                            } elseif ($isWrongSelection) {
+                                                $borderClass = 'border-[var(--red)]';
+                                                $bgClass = 'bg-red-500/10';
+                                                $iconClass = 'fa-times-circle text-[var(--red)]';
+                                            }
+                                        } else {
+                                            // When answers are hidden until end or none: show selected option neutrally without revealing correctness
+                                            if ($isSelected) {
+                                                $borderClass = 'border-[var(--cyan)] shadow-sm';
+                                                $bgClass = 'bg-cyan-500/10';
+                                                $iconClass = 'fa-dot-circle text-[var(--cyan)]';
+                                            }
                                         }
                                     }
                                 @endphp
@@ -344,20 +379,39 @@
                                         @endif
                                     </div>
 
-                                    <span class="text-xs text-[var(--text2)]">{{ chr(65 + $index) }}. {{ $option }}</span>
+                                    <div class="flex-1 flex items-center justify-between">
+                                        <span class="text-xs text-[var(--text2)]">{{ chr(65 + $index) }}. {{ $option }}</span>
+                                        @if($userAnswer && $isSelected && !$revealAnswers)
+                                            <span class="text-[10px] font-mono text-[var(--cyan)] bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20 font-bold">Pilihan Anda</span>
+                                        @endif
+                                    </div>
                                 </label>
                             @endforeach
                         </div>
 
                         <!-- Submit Button / Correction alert -->
                         @if($userAnswer)
-                            @if($userAnswer->is_correct)
-                                <div class="p-4 rounded-xl border border-[var(--green)] bg-green-500/10 text-[var(--green)] text-xs font-semibold flex items-center gap-2">
-                                    <i class="fas fa-check-circle text-base"></i> Jawaban Anda Benar! Kode data tersinkronisasi. (+10 Pts)
-                                </div>
+                            @if($revealAnswers)
+                                @if($userAnswer->is_correct)
+                                    <div class="p-4 rounded-xl border border-[var(--green)] bg-green-500/10 text-[var(--green)] text-xs font-semibold flex items-center gap-2">
+                                        <i class="fas fa-check-circle text-base"></i> Jawaban Anda Benar! (+10 Pts)
+                                    </div>
+                                @else
+                                    <div class="p-4 rounded-xl border border-[var(--red)] bg-red-500/10 text-[var(--red)] text-xs font-semibold flex items-center gap-2">
+                                        <i class="fas fa-times-circle text-base"></i> Jawaban masih salah. Silakan kaji materi kembali sebelum mencoba lagi!
+                                    </div>
+                                @endif
                             @else
-                                <div class="p-4 rounded-xl border border-[var(--red)] bg-red-500/10 text-[var(--red)] text-xs font-semibold flex items-center gap-2">
-                                    <i class="fas fa-times-circle text-base"></i> Jawaban masih salah. Silakan kaji materi kembali sebelum mencoba lagi!
+                                <div class="p-4 rounded-xl border border-blue-500/30 bg-blue-500/10 text-cyan-300 text-xs font-semibold flex items-start gap-3">
+                                    <i class="fas fa-info-circle text-base mt-0.5 text-[var(--cyan)]"></i>
+                                    <div>
+                                        <div class="font-bold text-white mb-0.5">Jawaban Anda Berhasil Disimpan</div>
+                                        @if($course->isNoneQuizFeedback())
+                                            <p class="text-[11px] text-slate-300 font-normal">Kunci jawaban untuk materi/kuis ini dirahasiakan.</p>
+                                        @else
+                                            <p class="text-[11px] text-slate-300 font-normal">Hasil evaluasi dan kunci jawaban akan ditampilkan secara lengkap setelah Anda menyelesaikan seluruh materi kursus.</p>
+                                        @endif
+                                    </div>
                                 </div>
                             @endif
                         @else
@@ -400,7 +454,7 @@
 
             <!-- Navigation buttons at bottom -->
             <div class="flex justify-between items-center p-4 rounded-xl border border-[var(--border)] bg-[var(--bg2)]">
-                @if($previousContent)
+                @if($previousContent && !$course->isNextOnlyNavigation())
                     <a href="{{ route('user.courses.content', [$course->id, $previousContent->type . ':' . $previousContent->id]) }}" 
                        class="cyber-btn text-[11px] px-4 py-2 outline">
                         <i class="fas fa-arrow-left mr-2"></i> Sebelumnya

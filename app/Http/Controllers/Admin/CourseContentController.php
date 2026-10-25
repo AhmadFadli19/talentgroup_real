@@ -63,7 +63,7 @@ class CourseContentController extends Controller
             $rules['hint'] = 'nullable|string';
             $rules['language'] = 'nullable|string|in:go,javascript,python,java,c,cpp,php,ruby,typescript';
             $rules['test_cases'] = 'nullable|array';
-            $rules['test_cases.*.input'] = 'required_with:test_cases|string';
+            $rules['test_cases.*.input'] = 'nullable|string';
             $rules['test_cases.*.expected_output'] = 'required_with:test_cases|string';
         }
 
@@ -230,7 +230,7 @@ class CourseContentController extends Controller
             $rules['hint'] = 'nullable|string';
             $rules['language'] = 'nullable|string|in:go,javascript,python,java,c,cpp,php,ruby,typescript';
             $rules['test_cases'] = 'nullable|array';
-            $rules['test_cases.*.input'] = 'required_with:test_cases|string';
+            $rules['test_cases.*.input'] = 'nullable|string';
             $rules['test_cases.*.expected_output'] = 'required_with:test_cases|string';
         }
 

@@ -1,217 +1,101 @@
-@extends('layouts/app')
+@extends('layouts.app')
 
-@section('title', 'Login Admin')
+@section('title', 'Login Admin | TalentGroup')
 
 @section('content')
-
-<style>
-/* ================= PIXEL ADMIN LOGIN ================= */
-.pixel-admin-wrapper {
-    max-width: 420px;
-    margin: 80px auto;
-}
-
-.pixel-admin-card {
-    background: var(--card);
-    border: 3px solid var(--border);
-    box-shadow: 6px 6px 0 var(--shadow);
-    padding: 28px 26px;
-}
-
-/* HEADER */
-.pixel-admin-header {
-    text-align: center;
-    margin-bottom: 22px;
-}
-
-.pixel-admin-icon {
-    width: 64px;
-    height: 64px;
-    margin: 0 auto 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--bg);
-    border: 3px solid #ff5555;
-    color: #ff5555;
-    box-shadow: 4px 4px 0 var(--shadow);
-}
-
-.pixel-admin-header h2 {
-    font-size: 14px;
-    color: #ff5555;
-    margin-bottom: 6px;
-}
-
-.pixel-admin-header p {
-    font-size: 9px;
-    color: var(--muted);
-}
-
-/* ALERT */
-.pixel-alert {
-    border: 2px solid;
-    padding: 12px;
-    font-size: 9px;
-    margin-bottom: 16px;
-}
-
-.pixel-alert.success {
-    background: #002a12;
-    border-color: #22c55e;
-    color: #86efac;
-}
-
-.pixel-alert.error {
-    background: #2a0000;
-    border-color: #ff5555;
-    color: #ffb3b3;
-}
-
-/* FIELD */
-.pixel-field {
-    margin-bottom: 14px;
-}
-
-.pixel-field label {
-    display: block;
-    font-size: 9px;
-    margin-bottom: 6px;
-    color: var(--muted);
-}
-
-.pixel-input {
-    width: 100%;
-    background: var(--bg);
-    border: 3px solid var(--border);
-    padding: 12px;
-    font-size: 10px;
-    color: var(--text);
-    outline: none;
-}
-
-.pixel-input:focus {
-    border-color: #ff5555;
-}
-
-/* BUTTON */
-.pixel-admin-btn {
-    width: 100%;
-    background: #ff5555;
-    border: 3px solid #ff5555;
-    color: #fff;
-    padding: 12px;
-    font-size: 10px;
-    box-shadow: 4px 4px 0 var(--shadow);
-    transition: .2s;
-}
-
-.pixel-admin-btn:hover {
-    transform: translate(-2px,-2px);
-    box-shadow: 6px 6px 0 var(--shadow);
-}
-
-/* SWITCH */
-.pixel-switch {
-    margin-top: 18px;
-    text-align: center;
-    font-size: 9px;
-}
-
-.pixel-switch a {
-    color: var(--accent);
-}
-
-/* RESPONSIVE */
-@media (max-width: 480px) {
-    .pixel-admin-wrapper {
-        margin: 40px 16px;
-    }
-}
-</style>
-
-<div class="pixel-admin-wrapper">
-
-    <div class="pixel-admin-card">
-
-        <!-- HEADER -->
-        <div class="pixel-admin-header">
-            <div class="pixel-admin-icon">
-                <!-- SHIELD ICON -->
-                <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                          d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-                </svg>
+<div class="min-h-[75vh] flex items-center justify-center px-4 py-12">
+    <div class="max-w-md w-full bg-white border border-[var(--border)] rounded-2xl p-8 shadow-sm">
+        
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-200 text-[var(--blue)] flex items-center justify-center mx-auto mb-4 text-2xl shadow-xs">
+                <i class="fas fa-shield-alt"></i>
             </div>
-
-            <h2>ADMIN ACCESS</h2>
-            <p>Masuk sebagai administrator sistem</p>
+            <div class="text-[10px] font-mono font-bold uppercase tracking-wider text-[var(--blue)] mb-1">
+                Security Gateway
+            </div>
+            <h2 class="text-2xl font-black text-[var(--ink)] tracking-tight">Admin Portal</h2>
+            <p class="text-xs text-[var(--muted)] mt-1">Masuk dengan kredensial administrator sistem</p>
         </div>
 
-        <!-- SUCCESS -->
+        <!-- Success & Error Alert -->
         @if(session('success'))
-            <div class="pixel-alert success">
-                {{ session('success') }}
+            <div class="mb-6 p-4 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-800 text-xs flex items-center gap-3">
+                <i class="fas fa-check-circle text-emerald-600 text-base"></i>
+                <span>{{ session('success') }}</span>
             </div>
         @endif
 
-        <!-- ERROR -->
         @if(session('error'))
-            <div class="pixel-alert error">
-                {{ session('error') }}
+            <div class="mb-6 p-4 rounded-xl border border-rose-200 bg-rose-50 text-rose-800 text-xs flex items-center gap-3">
+                <i class="fas fa-exclamation-triangle text-rose-600 text-base"></i>
+                <span>{{ session('error') }}</span>
             </div>
         @endif
 
-        <!-- FORM -->
-        <form action="{{ route('login.admin') }}" method="POST">
+        <!-- Form -->
+        <form action="{{ route('login.admin') }}" method="POST" class="space-y-5">
             @csrf
 
-            <div class="pixel-field">
-                <label>USERNAME / EMAIL</label>
-                <input
-                    type="text"
-                    name="login"
-                    value="{{ old('login') }}"
-                    required
-                    autofocus
-                    class="pixel-input
-                        @error('login') border-red-500 @enderror"
-                >
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-[var(--ink)] mb-2">Username / Email</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[var(--muted)] text-xs">
+                        <i class="fas fa-user-shield"></i>
+                    </span>
+                    <input type="text"
+                           name="login"
+                           value="{{ old('login') }}"
+                           required
+                           autofocus
+                           placeholder="admin@talentgroup.id"
+                           class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-[var(--border)] rounded-xl text-xs font-semibold text-[var(--ink)] focus:bg-white focus:border-[var(--blue)] focus:outline-none transition has-icon-left @error('login') border-rose-500 @enderror"
+                           style="padding-left: 42px !important;">
+                </div>
                 @error('login')
-                    <div class="pixel-alert error" style="margin-top:8px">
-                        {{ $message }}
-                    </div>
+                    <p class="text-xs text-rose-600 font-medium mt-1.5">{{ $message }}</p>
                 @enderror
             </div>
 
-            <div class="pixel-field">
-                <label>PASSWORD</label>
-                <input
-                    type="password"
-                    name="password"
-                    required
-                    class="pixel-input
-                        @error('password') border-red-500 @enderror"
-                >
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-[var(--ink)] mb-2">Password</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-[var(--muted)] text-xs">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                    <input type="password"
+                           name="password"
+                           required
+                           placeholder="••••••••"
+                           class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-[var(--border)] rounded-xl text-xs text-[var(--ink)] focus:bg-white focus:border-[var(--blue)] focus:outline-none transition has-icon-left @error('password') border-rose-500 @enderror"
+                           style="padding-left: 42px !important;">
+                </div>
                 @error('password')
-                    <div class="pixel-alert error" style="margin-top:8px">
-                        {{ $message }}
-                    </div>
+                    <p class="text-xs text-rose-600 font-medium mt-1.5">{{ $message }}</p>
                 @enderror
             </div>
 
-            <button type="submit" class="pixel-admin-btn">
-                ▶ LOGIN ADMIN
+            <div class="flex items-center justify-between pt-1 mb-2">
+                <label class="inline-flex items-center gap-2 text-xs text-slate-400 cursor-pointer">
+                    <input type="checkbox" name="remember" value="1" checked class="rounded text-[var(--blue)] accent-[var(--blue)]">
+                    <span>Ingat sesi admin (tetap login 1 minggu)</span>
+                </label>
+            </div>
+
+            <button type="submit" class="btn-gradient w-full py-3 rounded-xl text-white font-bold text-xs uppercase tracking-wider shadow-sm flex items-center justify-center gap-2">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>Masuk Administrator</span>
             </button>
         </form>
 
-        <!-- SWITCH -->
-        <div class="pixel-switch">
-            <a href="{{ route('login.user') }}">Login sebagai User</a>
+        <!-- Switch to User Login -->
+        <div class="mt-6 pt-5 border-t border-[var(--border)] text-center">
+            <a href="{{ route('login.user') }}" class="text-xs text-[var(--blue)] hover:underline font-bold inline-flex items-center gap-1.5">
+                <i class="fas fa-arrow-left text-[10px]"></i>
+                <span>Kembali ke Login User</span>
+            </a>
         </div>
 
     </div>
-
 </div>
-
 @endsection

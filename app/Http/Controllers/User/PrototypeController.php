@@ -68,16 +68,23 @@ class PrototypeController extends Controller
                 'html_file' => 'required|file|max:15360',
                 'css_file' => 'nullable|file|max:15360',
                 'js_file' => 'nullable|file|max:15360',
+                'additional_files.*' => 'nullable|file|max:15360',
             ], [
-                'html_file.required' => 'File HTML (.html) wajib diunggah.',
+                'html_file.required' => 'File HTML (.html) wajib diunggah sebagai halaman utama.',
                 'html_file.max' => 'Ukuran file HTML maksimal 15MB.',
             ]);
+
+            $additionalFiles = $request->file('additional_files') ?? [];
+            if (!is_array($additionalFiles)) {
+                $additionalFiles = [$additionalFiles];
+            }
 
             $extractResult = $zipService->createFromManualFiles(
                 $request->file('html_file'),
                 $request->file('css_file'),
                 $request->file('js_file'),
-                $tempDir
+                $tempDir,
+                $additionalFiles
             );
         }
 
@@ -136,6 +143,7 @@ class PrototypeController extends Controller
     public function checkSlug(Request $request)
     {
         $rawSlug = $request->query('slug', '');
+        $currentId = $request->query('current_id');
         $slug = Str::slug($rawSlug);
 
         if (empty($slug)) {
@@ -146,7 +154,11 @@ class PrototypeController extends Controller
             return response()->json(['available' => false, 'message' => 'Slug ini digunakan oleh sistem dan tidak dapat dipilih.']);
         }
 
-        $exists = Prototype::where('slug', $slug)->exists();
+        $query = Prototype::where('slug', $slug);
+        if ($currentId) {
+            $query->where('id', '!=', $currentId);
+        }
+        $exists = $query->exists();
 
         return response()->json([
             'available' => !$exists,
@@ -209,10 +221,11 @@ class PrototypeController extends Controller
         // Copy files from temp directory to permanent storage
         File::copyDirectory($tempData['temp_dir'], $permanentDir);
 
-        // Inject base tag into permanent index.html
-        $indexPath = $permanentDir . DIRECTORY_SEPARATOR . 'index.html';
-        if (File::exists($indexPath)) {
-            $zipService->injectBaseTag($indexPath, url('/p/' . $slug) . '/');
+        // Inject base tag into permanent index.html and all subpage HTML files
+        $htmlFiles = File::glob(rtrim($permanentDir, '/\\') . '/**/*.html') ?: [];
+        $htmFiles = File::glob(rtrim($permanentDir, '/\\') . '/**/*.htm') ?: [];
+        foreach (array_merge($htmlFiles, $htmFiles) as $hPath) {
+            $zipService->injectBaseTag($hPath, url('/p/' . $slug) . '/');
         }
 
         // Create Database Record
@@ -246,7 +259,146 @@ class PrototypeController extends Controller
     }
 
     /**
-     * View full AI Report as JSON or partial.
+     * Update user prototype (name, slug, or replacement code files).
+     */
+    public function update(Request $request, $id, PrototypeZipService $zipService, AiCodeAnalyzerService $aiService)
+    {
+        $prototype = Prototype::where('id', $id)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
+        $request->validate([
+            'project_name' => 'required|string|max:150',
+            'slug' => 'required|string|max:150',
+            'zip_file' => 'nullable|file|mimes:zip|max:40960',
+            'html_file' => 'nullable|file|max:15360',
+            'css_file' => 'nullable|file|max:15360',
+            'js_file' => 'nullable|file|max:15360',
+            'additional_files.*' => 'nullable|file|max:15360',
+        ]);
+
+        $newProjectName = trim($request->input('project_name'));
+        $newSlug = Str::slug($request->input('slug'));
+
+        if (empty($newSlug)) {
+            $newSlug = Str::slug($newProjectName);
+        }
+
+        if (in_array(strtolower($newSlug), $this->reservedSlugs, true)) {
+            return redirect()->back()->with('error', 'Slug ini digunakan oleh sistem dan tidak dapat dipilih.');
+        }
+
+        // Check if slug taken by another prototype
+        $slugTaken = Prototype::where('slug', $newSlug)->where('id', '!=', $prototype->id)->exists();
+        if ($slugTaken) {
+            return redirect()->back()->with('error', "Slug URL '{$newSlug}' sudah digunakan oleh prototype lain.");
+        }
+
+        $oldSlug = $prototype->slug;
+        $oldStoragePath = $prototype->storage_path;
+        $newStoragePath = storage_path('app/hosted_prototypes/' . $newSlug);
+
+        // Check if user uploaded new files
+        $hasNewFiles = $request->hasFile('zip_file') || $request->hasFile('html_file');
+
+        if ($hasNewFiles) {
+            $tempToken = (string) Str::uuid();
+            $tempDir = storage_path('app/temp_prototypes/' . $tempToken);
+
+            if ($request->hasFile('zip_file')) {
+                $extractResult = $zipService->extractZip($request->file('zip_file'), $tempDir);
+            } else {
+                $additionalFiles = $request->file('additional_files') ?? [];
+                if (!is_array($additionalFiles)) {
+                    $additionalFiles = [$additionalFiles];
+                }
+                $extractResult = $zipService->createFromManualFiles(
+                    $request->file('html_file'),
+                    $request->file('css_file'),
+                    $request->file('js_file'),
+                    $tempDir,
+                    $additionalFiles
+                );
+            }
+
+            if (!$extractResult['success']) {
+                if (File::exists($tempDir)) {
+                    File::deleteDirectory($tempDir);
+                }
+                return redirect()->back()->with('error', $extractResult['error'] ?? 'Gagal memproses file pembaruan.');
+            }
+
+            // Run AI analysis
+            $aiResult = $aiService->analyze(
+                $extractResult['html_code'],
+                $extractResult['css_code'],
+                $extractResult['js_code']
+            );
+
+            // Replace storage directory
+            if (File::exists($oldStoragePath)) {
+                File::deleteDirectory($oldStoragePath);
+            }
+            if (File::exists($newStoragePath)) {
+                File::deleteDirectory($newStoragePath);
+            }
+
+            File::makeDirectory($newStoragePath, 0755, true);
+            File::copyDirectory($tempDir, $newStoragePath);
+            if (File::exists($tempDir)) {
+                File::deleteDirectory($tempDir);
+            }
+
+            $prototype->ai_provider_used = $aiResult['provider'];
+            $prototype->ai_score = $aiResult['score'];
+            $prototype->ai_report_json = $aiResult['report'];
+            $prototype->storage_path = $newStoragePath;
+            if ($request->hasFile('zip_file')) {
+                $prototype->upload_type = 'zip_archive';
+            } elseif ($request->hasFile('html_file')) {
+                $prototype->upload_type = 'manual_files';
+            }
+        } elseif ($newSlug !== $oldSlug) {
+            // Only slug changed: move folder
+            if (File::exists($oldStoragePath)) {
+                if (File::exists($newStoragePath)) {
+                    File::deleteDirectory($newStoragePath);
+                }
+                File::move($oldStoragePath, $newStoragePath);
+            }
+            $prototype->storage_path = $newStoragePath;
+        }
+
+        // Re-inject base tag for all HTML files with current URL
+        $targetDir = $prototype->storage_path;
+        if (File::exists($targetDir)) {
+            $allHtml = array_merge(
+                File::glob(rtrim($targetDir, '/\\') . '/**/*.html') ?: [],
+                File::glob(rtrim($targetDir, '/\\') . '/**/*.htm') ?: []
+            );
+            foreach ($allHtml as $hPath) {
+                $zipService->injectBaseTag($hPath, url('/p/' . $newSlug) . '/');
+            }
+        }
+
+        $prototype->project_name = $newProjectName;
+        $prototype->slug = $newSlug;
+        $prototype->save();
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Website prototype berhasil diperbarui!',
+                'url' => $prototype->url,
+                'slug' => $prototype->slug,
+            ]);
+        }
+
+        return redirect()->back()->with('success', "Website prototype '{$prototype->project_name}' berhasil diperbarui.");
+    }
+
+    /**
+     * View full AI Report as JSON.
      */
     public function showReport($id)
     {
@@ -257,6 +409,13 @@ class PrototypeController extends Controller
         return response()->json([
             'success' => true,
             'prototype' => $prototype,
+            'project_name' => $prototype->project_name,
+            'slug' => $prototype->slug,
+            'url' => $prototype->url,
+            'score' => $prototype->ai_score,
+            'provider' => $prototype->ai_provider_used,
+            'report' => $prototype->ai_report_json,
+            'created_at' => $prototype->created_at->format('d M Y H:i'),
         ]);
     }
 
@@ -275,8 +434,8 @@ class PrototypeController extends Controller
 
         $prototype->delete();
 
-        return redirect()->route('user.prototypes.index')
-            ->with('success', "Prototype '{$prototype->project_name}' berhasil dihapus dari hosting.");
+        return redirect()->back()
+            ->with('success', "Website prototype '{$prototype->project_name}' berhasil dihapus secara permanen dari server hosting.");
     }
 
     protected function isSlugTaken(string $slug): bool

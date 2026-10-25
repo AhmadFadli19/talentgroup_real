@@ -81,6 +81,12 @@ class PrototypeHostController extends Controller
         // Clean requested path to prevent Directory Traversal
         $cleanPath = trim(str_replace(['../', '..\\'], '', (string)$path), '/');
 
+        // Redirect root prototype URL without trailing slash to trailing slash (guarantees relative links resolve natively)
+        if (($path === null || $cleanPath === '') && !str_ends_with(strtok($request->getRequestUri(), '?'), '/')) {
+            $qs = $request->getQueryString();
+            return redirect(rtrim($request->url(), '/') . '/' . ($qs ? '?' . $qs : ''), 301);
+        }
+
         // If root request or index.html
         if ($cleanPath === '' || $cleanPath === 'index.html' || $cleanPath === 'index.htm') {
             $indexPath = rtrim($baseDir, '/\\') . DIRECTORY_SEPARATOR . 'index.html';
@@ -97,7 +103,7 @@ class PrototypeHostController extends Controller
 
             $content = File::get($indexPath);
 
-            // Dynamically ensure base tag so relative links (style.css, images/...) resolve to /p/{slug}/
+            // Dynamically ensure base tag so relative links (style.css, slide2.html, images/...) resolve to /p/{slug}/
             $baseHref = url('/p/' . $slug) . '/';
             $content = $this->ensureBaseTag($content, $baseHref);
 
@@ -108,8 +114,13 @@ class PrototypeHostController extends Controller
             ]);
         }
 
-        // Requested asset file
+        // Requested asset or subpage file
         $filePath = rtrim($baseDir, '/\\') . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $cleanPath);
+
+        // Fallback for extensionless HTML navigation (e.g. href="slide2" -> "slide2.html")
+        if (!File::exists($filePath) && File::exists($filePath . '.html')) {
+            $filePath .= '.html';
+        }
 
         // Security check: must reside inside baseDir
         $realBase = realpath($baseDir);
@@ -121,12 +132,16 @@ class PrototypeHostController extends Controller
 
         $ext = strtolower(pathinfo($realFile, PATHINFO_EXTENSION));
 
-        // If serving another HTML file inside prototype
+        // If serving another HTML file inside prototype (e.g. slide2.html, about.html)
         if ($ext === 'html' || $ext === 'htm') {
             $content = File::get($realFile);
             $baseHref = url('/p/' . $slug) . '/';
             $content = $this->ensureBaseTag($content, $baseHref);
-            return response($content, 200, ['Content-Type' => 'text/html; charset=utf-8']);
+            return response($content, 200, [
+                'Content-Type' => 'text/html; charset=utf-8',
+                'X-Frame-Options' => 'SAMEORIGIN',
+                'X-Content-Type-Options' => 'nosniff',
+            ]);
         }
 
         $mimeType = $this->mimeTypes[$ext] ?? File::mimeType($realFile) ?? 'application/octet-stream';

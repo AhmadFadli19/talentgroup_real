@@ -11,7 +11,7 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
 
     <!-- Tailwind CSS & FontAwesome -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -28,7 +28,7 @@
                         docsidebar: '#080d1a'
                     },
                     fontFamily: {
-                        sans: ['Outfit', 'sans-serif'],
+                        sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
                         mono: ['"Fira Code"', 'monospace'],
                     }
                 }
@@ -38,12 +38,34 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
         /* Base Dark Layout Styles matching Tailwind Docs */
+        html, body {
+            overflow-x: hidden;
+            max-width: 100vw;
+            width: 100%;
+        }
         body {
             background-color: #0b1120;
             color: #cbd5e1;
-            font-family: 'Outfit', sans-serif;
-            overflow-x: hidden;
+            font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-rendering: optimizeLegibility;
+        }
+
+        /* Prevent content overflow on mobile */
+        pre, code, table, img, video, iframe {
+            max-width: 100%;
+        }
+        .module-body {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         /* Custom Scrollbar */
@@ -62,6 +84,28 @@
             background: #334155;
         }
 
+    @php
+        $antiScreenshot = true;
+        $antiCopy = true;
+
+        if (isset($module)) {
+            $antiScreenshot = isset($module->enable_anti_screenshot) && $module->enable_anti_screenshot !== null
+                ? (bool) $module->enable_anti_screenshot 
+                : (bool) ($module->enable_protection ?? true);
+            $antiCopy = isset($module->enable_anti_copy) && $module->enable_anti_copy !== null
+                ? (bool) $module->enable_anti_copy 
+                : (bool) ($module->enable_protection ?? true);
+        } elseif (isset($learningModule)) {
+            $antiScreenshot = isset($learningModule->enable_anti_screenshot) && $learningModule->enable_anti_screenshot !== null
+                ? (bool) $learningModule->enable_anti_screenshot 
+                : true;
+            $antiCopy = isset($learningModule->enable_anti_copy) && $learningModule->enable_anti_copy !== null
+                ? (bool) $learningModule->enable_anti_copy 
+                : true;
+        }
+    @endphp
+
+    @if($antiCopy)
         /* Anti-Copy and Text Selection */
         .protected-content {
             -webkit-user-select: none;
@@ -69,7 +113,9 @@
             -ms-user-select: none;
             user-select: none;
         }
+    @endif
 
+    @if($antiScreenshot)
         /* Anti-Print Protection */
         @media print {
             html, body {
@@ -130,6 +176,7 @@
             opacity: 0 !important;
             display: none !important;
         }
+    @endif
 
         /* Toast notification */
         #doc-toast {
@@ -196,8 +243,10 @@
 
 <body class="bg-[#0b1120] text-slate-300 min-h-screen flex flex-col antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
 
+    @if($antiScreenshot)
     <!-- Anti-Screenshot Blackout Overlay (Solid pure black to ensure captured screenshot is 100% black) -->
     <div id="blackout-shield" aria-hidden="true" title="Klik untuk melanjutkan membaca"></div>
+    @endif
 
     <!-- Security Toast -->
     <div id="doc-toast" class="bg-slate-900 border border-slate-700/80 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 text-sm">
@@ -206,63 +255,52 @@
     </div>
 
     <!-- Top Navigation Header -->
-    <header class="sticky top-0 z-40 w-full border-b border-slate-800/80 bg-[#0b1120]/80 backdrop-blur-xl transition">
-        <div class="max-w-[90rem] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+    <header class="sticky top-0 z-40 w-full border-b border-cyan-500/20 bg-[#070e1e]/95 backdrop-blur-xl transition shadow-md shadow-black/40">
+        <div class="max-w-[90rem] w-full mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4 min-w-0">
             
-            <!-- Left Branding & Mobile Hamburger -->
-            <div class="flex items-center gap-2 sm:gap-4">
-                <!-- Smart Back Navigation Button (Works from Google or browser history) -->
+            <!-- Left Branding & Mobile Actions -->
+            <div class="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-shrink">
+                <!-- Smart Back Navigation Button -->
                 <button type="button" 
                         onclick="handleSmartGoBack()" 
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 hover:border-cyan-500/50 text-xs font-semibold transition shadow"
+                        class="inline-flex items-center justify-center w-8 h-8 sm:w-auto sm:px-3 sm:py-1.5 rounded-lg bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 hover:border-cyan-500/50 text-xs font-semibold transition shadow flex-shrink-0"
                         title="Kembali ke halaman sebelumnya">
-                    <i class="fas fa-arrow-left text-cyan-400"></i>
-                    <span class="hidden sm:inline">Kembali</span>
+                    <i class="fas fa-arrow-left text-cyan-400 text-xs"></i>
+                    <span class="hidden sm:inline ml-1.5">Kembali</span>
                 </button>
 
-                <!-- Mobile Burger Toggle Button -->
+                <!-- Mobile Burger Toggle Button (Daftar Materi Modul) -->
                 <button type="button" 
                         id="openSidebarBtn"
-                        class="lg:hidden inline-flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 border border-slate-700/50 transition" 
-                        aria-label="Buka menu navigasi">
-                    <i class="fas fa-bars text-lg"></i>
+                        class="lg:hidden inline-flex items-center justify-center w-8 h-8 rounded-lg text-slate-300 hover:text-white bg-slate-900/90 hover:bg-slate-800 border border-slate-700/60 hover:border-cyan-500/50 transition flex-shrink-0" 
+                        aria-label="Buka daftar materi modul"
+                        title="Daftar Materi">
+                    <i class="fas fa-bars text-sm"></i>
                 </button>
 
-                <!-- Brand Logo (Tailwind doc style) -->
-                <a href="{{ route('modules.index') }}" class="flex items-center gap-2.5 group">
-                    <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-sky-400 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform">
-                        <i class="fas fa-code text-white text-sm"></i>
+                <!-- Brand Logo -->
+                <a href="{{ route('modules.index') }}" class="flex items-center gap-1.5 sm:gap-2 group min-w-0 flex-shrink">
+                    <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-tr from-cyan-500 to-sky-400 flex items-center justify-center shadow-lg shadow-cyan-500/20 group-hover:scale-105 transition-transform flex-shrink-0">
+                        <i class="fas fa-code text-white text-xs sm:text-sm"></i>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-base font-extrabold text-white tracking-tight">talentgroup.id</span>
-                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-slate-800 text-cyan-400 border border-slate-700">v4.3</span>
-                    </div>
+                    <span class="text-sm sm:text-base font-extrabold text-white tracking-tight truncate">talentgroup.id</span>
+                    <span class="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-slate-800 text-cyan-400 border border-slate-700">v4.3</span>
                 </a>
 
-                <!-- Module Title in Navbar -->
+                <!-- Module Title in Navbar (Desktop only) -->
                 @if(isset($learningModule))
-                    <div class="hidden sm:flex items-center gap-2.5 pl-3 ml-1 border-l border-slate-800">
+                    <div class="hidden lg:flex items-center gap-2.5 pl-3 ml-1 border-l border-slate-800">
                         <div class="flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-900/90 border border-slate-700/70 shadow-sm">
                             <i class="{{ $learningModule->icon ?: 'fas fa-book' }} text-cyan-400 text-xs"></i>
-                            <span class="font-bold text-white text-xs sm:text-sm tracking-tight truncate max-w-[170px] md:max-w-xs lg:max-w-sm">
+                            <span class="font-bold text-white text-xs tracking-tight truncate max-w-[220px]">
                                 {{ $learningModule->name }}
                             </span>
                         </div>
-
-                        @if(!$learningModule->is_public)
-                            <span class="hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30">
-                                <i class="fas fa-lock text-[8px]"></i> PRIVATE
-                            </span>
-                        @else
-                            <span class="hidden md:inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                                <i class="fas fa-globe text-[8px]"></i> FREE / PUBLIC
-                            </span>
-                        @endif
                     </div>
                 @endif
             </div>
 
-            <!-- Quick Search Bar (Ctrl+K) -->
+            <!-- Quick Search Bar (Ctrl+K) Desktop only -->
             <div class="flex-1 max-w-md hidden md:block">
                 <button type="button" 
                         id="searchTriggerBtn"
@@ -276,32 +314,37 @@
             </div>
 
             <!-- Right Nav Links & User Area -->
-            <div class="flex items-center gap-3 sm:gap-4 text-xs font-medium">
-                <!-- Search icon on mobile -->
-                <button type="button" id="searchTriggerBtnMobile" class="md:hidden p-2 text-slate-400 hover:text-white">
-                    <i class="fas fa-search text-base"></i>
+            <div class="flex items-center gap-2 sm:gap-3 text-xs font-medium flex-shrink-0">
+                <!-- Search Button Mobile -->
+                <button type="button" 
+                        id="searchTriggerBtnMobile" 
+                        class="md:hidden w-8 h-8 rounded-lg bg-slate-900/90 border border-slate-700/60 text-slate-300 hover:text-white flex items-center justify-center transition" 
+                        aria-label="Cari dokumentasi">
+                    <i class="fas fa-search text-xs"></i>
                 </button>
 
-                <a href="{{ route('modules.index') }}" class="text-cyan-400 hover:text-cyan-300 font-semibold transition flex items-center gap-1.5">
+                <!-- Katalog Modul (Desktop only) -->
+                <a href="{{ route('modules.index') }}" class="hidden sm:inline-flex text-cyan-400 hover:text-cyan-300 font-semibold transition items-center gap-1.5">
                     <i class="fas fa-layer-group text-[11px]"></i>
-                    <span class="hidden sm:inline">Katalog Modul</span>
+                    <span>Katalog Modul</span>
                 </a>
-                <a href="{{ route('home') }}" class="hidden sm:inline-block text-slate-400 hover:text-white transition">Beranda</a>
-                <a href="{{ route('user.courses.index') }}" class="hidden sm:inline-block text-slate-400 hover:text-white transition">Kursus</a>
+                <a href="{{ route('home') }}" class="hidden md:inline-block text-slate-400 hover:text-white transition">Beranda</a>
+                <a href="{{ route('user.courses.index') }}" class="hidden md:inline-block text-slate-400 hover:text-white transition">Kursus</a>
                 
                 @auth
                     @if(auth()->user()->isAdmin())
-                        <a href="{{ route('admin.modules.index') }}" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20 transition font-semibold">
-                            <i class="fas fa-cog"></i>
-                            <span>Admin CMS</span>
+                        <a href="{{ route('admin.modules.index') }}" 
+                           class="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 hover:bg-cyan-500/20 transition font-semibold"
+                           title="Admin Modul CMS">
+                            <i class="fas fa-cog text-xs"></i>
+                            <span class="hidden sm:inline">Admin CMS</span>
                         </a>
                     @else
-                        <a href="{{ route('user.dashboard') }}" class="text-slate-400 hover:text-white transition">Dashboard</a>
+                        <a href="{{ route('user.dashboard') }}" class="hidden sm:inline-block text-slate-400 hover:text-white transition">Dashboard</a>
                     @endif
-                    <div class="h-4 w-px bg-slate-800 hidden sm:block"></div>
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 flex-shrink-0">
                         <img src="{{ auth()->user()->avatar_url }}" 
-                             alt="Avatar" class="w-7 h-7 rounded-full object-cover border border-slate-700">
+                             alt="Avatar" class="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover border border-cyan-500/40 flex-shrink-0 shrink-0 aspect-square">
                     </div>
                 @else
                     <a href="{{ route('login') }}" class="px-3 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold transition">Masuk</a>
@@ -311,8 +354,8 @@
     </header>
 
     <!-- Main Docs Content Area (3-Column Layout on Desktop) -->
-    <div class="flex-1 max-w-[90rem] w-full mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex gap-8">
+    <div class="flex-1 max-w-[90rem] w-full mx-auto px-3 sm:px-6 lg:px-8 min-w-0">
+        <div class="flex gap-8 min-w-0">
 
             <!-- ============================================== -->
             <!-- DESKTOP LEFT SIDEBAR -->
@@ -551,7 +594,7 @@
                 $isDocumentMode = isset($module) && method_exists($module, 'isDocument') && $module->isDocument();
                 $hasToc = !$isDocumentMode && isset($tableOfContents) && count($tableOfContents) > 0;
             @endphp
-            <main id="mainArticleContainer" class="flex-1 min-w-0 py-8 lg:py-10 transition-all duration-300 {{ $isDocumentMode ? 'w-full max-w-none' : ($hasToc ? 'max-w-4xl mx-auto' : 'max-w-5xl mx-auto') }} @if(isset($module) && $module->enable_protection) protected-content @endif">
+            <main id="mainArticleContainer" class="flex-1 min-w-0 w-full py-6 sm:py-8 lg:py-10 transition-all duration-300 {{ $isDocumentMode ? 'w-full max-w-none' : ($hasToc ? 'max-w-4xl mx-auto' : 'max-w-5xl mx-auto') }} @if($antiCopy) protected-content @endif">
                 @yield('content')
             </main>
 
@@ -846,17 +889,9 @@
     </script>
 
     <!-- ================================================================= -->
-    <!-- BULLETPROOF ANTI-SCREENSHOT & ANTI-INSPECT ENGINE (DESKTOP & MOBILE) -->
+    <!-- 1. ANTI-SCREENSHOT & BLACKOUT ENGINE (DESKTOP & MOBILE)           -->
     <!-- ================================================================= -->
-    @php
-        $isProtectionEnabled = true;
-        if (isset($module) && isset($module->enable_protection)) {
-            $isProtectionEnabled = (bool) $module->enable_protection;
-        } elseif (isset($learningModule) && isset($learningModule->enable_protection)) {
-            $isProtectionEnabled = (bool) $learningModule->enable_protection;
-        }
-    @endphp
-    @if($isProtectionEnabled)
+    @if($antiScreenshot)
     <script>
         (function() {
             'use strict';
@@ -1043,16 +1078,12 @@
                 // Windows intercepts the 'S' key, so we MUST trigger on Meta (Win) key!
                 // ----------------------------------------------------
                 if (!isMac) {
-                    // Detect Windows key (Meta) alone or combination
                     const isWinKey = e.key === 'Meta' || e.code === 'MetaLeft' || e.code === 'MetaRight' || e.code === 'OSLeft' || e.code === 'OSRight' || e.keyCode === 91 || e.keyCode === 92;
 
-                    // If Windows key is pressed (alone or with Shift)
                     if (isWinKey || e.metaKey) {
-                        // Instant blackout! Before user even presses 'S', screen is 100% black!
                         triggerInstantBlackout('Windows Key / Snipping Tool', 5000, true);
                     }
 
-                    // If Shift is pressed while Meta is down
                     if (e.shiftKey && (isWinKey || e.metaKey)) {
                         triggerInstantBlackout('Win+Shift Snipping Tool', 5000, true);
                     }
@@ -1060,19 +1091,15 @@
 
                 // ----------------------------------------------------
                 // MAC OS SCREENSHOT (Cmd + Shift + 3 / 4 / 5)
-                // macOS intercepts 3/4/5, so we MUST trigger on (Cmd + Shift)!
                 // ----------------------------------------------------
                 if (isMac) {
                     const isCmdKey = e.key === 'Meta' || e.keyCode === 91 || e.keyCode === 93 || e.metaKey;
                     const isShiftKey = e.key === 'Shift' || e.keyCode === 16 || e.shiftKey;
 
-                    // If both Command (Meta) and Shift are active
                     if ((e.metaKey && e.shiftKey) || (isCmdKey && isShiftKey)) {
-                        // Instant blackout! Before user touches 3/4/5, screen is 100% black!
                         triggerInstantBlackout('Mac Screenshot Shortcut', 5000, true);
                     }
 
-                    // If Meta + 3/4/5 is received
                     if (e.metaKey && ['3', '4', '5'].includes(e.key)) {
                         triggerInstantBlackout('Mac Screenshot Key', 5000, true);
                     }
@@ -1084,11 +1111,9 @@
                 }
             }
 
-            // Register keydown with capture phase on BOTH window and document
             window.addEventListener('keydown', handleKeyDown, true);
             document.addEventListener('keydown', handleKeyDown, true);
 
-            // Keyup: re-poison clipboard (do NOT immediately clear blackout so snipping stays black!)
             window.addEventListener('keyup', function(e) {
                 if (e.key === 'PrintScreen' || e.keyCode === 44 || e.code === 'PrintScreen') {
                     poisonClipboardBurst();
@@ -1098,29 +1123,20 @@
             // ========================================================
             // B. MOBILE PHONES (HP) & EXTERNAL SCREENSHOT TOOLS
             // ========================================================
-            // 1. Multi-Touch Gesture Detection:
-            // Android 3-finger swipe screenshot triggers touchstart with 2+ touches.
-            // Instant blackout happens BEFORE gesture completes!
             window.addEventListener('touchstart', function(e) {
                 if (e.touches && e.touches.length >= 2) {
                     triggerInstantBlackout('Multi-touch gesture screenshot', 4500, true);
                 }
             }, { passive: true, capture: true });
 
-            // 2. Window Blur:
-            // Triggers when external screenshot apps (Lightshot, ShareX, Snipping Tool) take focus,
-            // or on Mobile when hardware buttons / notification bar / app switcher triggers.
             window.addEventListener('blur', function() {
                 triggerInstantBlackout('Window blur / External capture', 4000, true);
             });
 
-            // 3. Document Visibility Change:
-            // When user switches apps or OS capture overlay hides the webpage
             document.addEventListener('visibilitychange', function() {
                 if (document.hidden || document.visibilityState === 'hidden') {
                     triggerInstantBlackout('Visibility change / Capture hidden', 4000, true);
                 } else {
-                    // Only restore after brief delay if not actively locked
                     setTimeout(() => {
                         if (!isSnippingLocked && !document.hidden) {
                             clearBlackout(true);
@@ -1129,7 +1145,6 @@
                 }
             });
 
-            // 4. Page Hide
             window.addEventListener('pagehide', function() {
                 triggerInstantBlackout('Page hide', 4000, true);
             });
@@ -1137,7 +1152,6 @@
             // ========================================================
             // C. SEAMLESS USER RESTORATION (RESUME READING)
             // ========================================================
-            // Tapping or clicking anywhere on the black screen immediately clears the blackout
             if (blackoutShield) {
                 blackoutShield.addEventListener('click', function() {
                     clearBlackout(hadScreenshotAttempt);
@@ -1149,7 +1163,6 @@
                 }, { passive: true });
             }
 
-            // Window focus: if lock duration has expired, restore cleanly
             window.addEventListener('focus', function() {
                 setTimeout(() => {
                     if (!isSnippingLocked && !document.hidden) {
@@ -1158,22 +1171,19 @@
                 }, 300);
             });
 
-            // Single tap on document restores after lock
             document.addEventListener('touchstart', function(e) {
                 if (blackoutActive && (!e.touches || e.touches.length === 1) && !isSnippingLocked && !document.hidden) {
                     clearBlackout(hadScreenshotAttempt);
                 }
             }, { passive: true });
 
-            // Print capture protection
             window.addEventListener('beforeprint', function() {
                 triggerInstantBlackout('Print capture', 4000, true);
             });
 
-            // Screen Recording Protection (Block getDisplayMedia)
+            // Screen Recording Protection
             try {
                 if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
-                    const originalGetDisplayMedia = navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices);
                     navigator.mediaDevices.getDisplayMedia = function() {
                         triggerInstantBlackout('Screen recording capture attempt', 5000, true);
                         showToast('Perekaman layar tidak diizinkan pada modul ini.');
@@ -1181,10 +1191,29 @@
                     };
                 }
             } catch (err) {}
+        })();
+    </script>
+    @endif
 
-            // ========================================================
-            // D. ANTI-COPY, CONTEXT MENU & DRAG RESTRICTIONS
-            // ========================================================
+    <!-- ================================================================= -->
+    <!-- 2. ANTI-COPY & CONTEXT MENU ENGINE                                -->
+    <!-- ================================================================= -->
+    @if($antiCopy)
+    <script>
+        (function() {
+            'use strict';
+
+            const toast = document.getElementById('doc-toast');
+            const toastMsg = document.getElementById('doc-toast-msg');
+
+            function showToast(msg) {
+                if (!toast || !toastMsg) return;
+                toastMsg.innerText = msg;
+                toast.classList.add('show');
+                clearTimeout(toast.__timer);
+                toast.__timer = setTimeout(() => toast.classList.remove('show'), 3500);
+            }
+
             document.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
                 showToast('Klik kanan dinonaktifkan pada materi modul.');
@@ -1200,10 +1229,11 @@
 
             document.addEventListener('cut', function(e) {
                 e.preventDefault();
+                showToast('Fitur cut dinonaktifkan pada materi modul.');
             });
 
             document.addEventListener('dragstart', function(e) {
-                if (e.target.tagName === 'IMG') {
+                if (e.target.tagName === 'IMG' || (e.target.closest && e.target.closest('#mainArticleContainer'))) {
                     e.preventDefault();
                 }
             });

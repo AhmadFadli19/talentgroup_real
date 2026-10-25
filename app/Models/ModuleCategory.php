@@ -22,6 +22,8 @@ class ModuleCategory extends Model
         'badge',
         'order',
         'is_active',
+        'enable_anti_screenshot',
+        'enable_anti_copy',
     ];
 
     /**
@@ -43,8 +45,20 @@ class ModuleCategory extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'is_public' => 'boolean',
+        'enable_anti_screenshot' => 'boolean',
+        'enable_anti_copy' => 'boolean',
         'order' => 'integer',
     ];
+
+    public function isAntiScreenshotEnabled(): bool
+    {
+        return (bool) ($this->enable_anti_screenshot ?? true);
+    }
+
+    public function isAntiCopyEnabled(): bool
+    {
+        return (bool) ($this->enable_anti_copy ?? true);
+    }
 
     protected static function boot()
     {

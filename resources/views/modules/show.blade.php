@@ -5,52 +5,53 @@
 @section('content')
 
     <!-- Breadcrumb Bar (Desktop & Mobile) -->
-    <div class="flex flex-wrap items-center justify-between gap-3 pb-6 mb-6 border-b border-slate-800/80">
-        <nav class="flex items-center gap-2 text-xs font-medium text-slate-400">
-            <a href="{{ route('modules.index') }}" class="hover:text-cyan-400 transition-colors flex items-center gap-1.5 font-semibold">
+    <div class="flex items-center justify-between gap-2.5 pb-4 mb-6 border-b border-slate-800/80 w-full min-w-0">
+        <nav class="flex items-center gap-1.5 sm:gap-2 text-xs font-medium text-slate-400 overflow-x-auto whitespace-nowrap scrollbar-none py-1 flex-1 min-w-0 pr-2">
+            <a href="{{ route('modules.index') }}" class="hover:text-cyan-400 transition-colors flex items-center gap-1.5 font-semibold shrink-0" title="Katalog Modul">
                 <i class="fas fa-layer-group text-[11px] text-cyan-400"></i>
-                <span>Katalog Modul</span>
+                <span class="hidden sm:inline">Katalog Modul</span>
             </a>
-            <i class="fas fa-chevron-right text-[9px] text-slate-600"></i>
+            <i class="fas fa-chevron-right text-[9px] text-slate-600 shrink-0"></i>
             @if(isset($learningModule))
-                <a href="{{ route('modules.module.show', $learningModule->slug) }}" class="text-slate-300 hover:text-cyan-400 transition-colors">
+                <a href="{{ route('modules.module.show', $learningModule->slug) }}" class="text-slate-300 hover:text-cyan-400 transition-colors shrink-0">
                     {{ $learningModule->name }}
                 </a>
-                <i class="fas fa-chevron-right text-[9px] text-slate-600"></i>
+                <i class="fas fa-chevron-right text-[9px] text-slate-600 shrink-0"></i>
             @elseif(isset($module->category))
-                <a href="{{ route('modules.module.show', $module->category->slug) }}" class="text-slate-300 hover:text-cyan-400 transition-colors">
+                <a href="{{ route('modules.module.show', $module->category->slug) }}" class="text-slate-300 hover:text-cyan-400 transition-colors shrink-0">
                     {{ $module->category->name }}
                 </a>
-                <i class="fas fa-chevron-right text-[9px] text-slate-600"></i>
+                <i class="fas fa-chevron-right text-[9px] text-slate-600 shrink-0"></i>
             @endif
             @if(!empty($module->section))
-                <span class="text-slate-500 font-mono text-[11px] uppercase">{{ $module->section }}</span>
-                <i class="fas fa-chevron-right text-[9px] text-slate-600"></i>
+                <span class="text-slate-500 font-mono text-[11px] uppercase shrink-0">{{ $module->section }}</span>
+                <i class="fas fa-chevron-right text-[9px] text-slate-600 shrink-0"></i>
             @endif
-            <span class="text-cyan-400 font-semibold truncate max-w-[200px] sm:max-w-none">{{ $module->title ?? 'Materi' }}</span>
+            <span class="text-cyan-400 font-semibold truncate shrink-0 max-w-[160px] sm:max-w-none">{{ $module->title ?? 'Materi' }}</span>
         </nav>
 
         <!-- Right status & Admin Quick Actions -->
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 shrink-0 flex-shrink-0">
             @php
                 $isPublicModule = isset($learningModule) ? $learningModule->is_public : (isset($module->category) ? $module->category->is_public : true);
             @endphp
             @if(!$isPublicModule)
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                    <i class="fas fa-lock text-[9px]"></i> PRIVATE
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 shrink-0 shadow-sm">
+                    <i class="fas fa-lock text-[9px]"></i> <span>PRIVATE</span>
                 </span>
             @else
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                    <i class="fas fa-globe text-[9px]"></i> PUBLIC
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shrink-0 shadow-sm">
+                    <i class="fas fa-globe text-[9px]"></i> <span>PUBLIC</span>
                 </span>
             @endif
 
             @auth
                 @if(auth()->user()->isAdmin() && isset($learningModule))
                     <a href="{{ route('admin.modules.contents.index', $learningModule->id) }}" 
-                       class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition">
+                       class="inline-flex items-center gap-1.5 px-2 sm:px-2.5 py-1 rounded-md text-[11px] font-semibold bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition shrink-0 shadow-sm"
+                       title="Kelola Materi Modul">
                         <i class="fas fa-cog text-cyan-400 text-[10px]"></i>
-                        <span>Kelola Materi</span>
+                        <span class="hidden sm:inline">Kelola</span>
                     </a>
                 @endif
             @endauth
@@ -150,7 +151,7 @@
         <article class="prose prose-invert max-w-none">
             
             <!-- Main Document Title -->
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-4">
+            <h1 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-4 break-words">
                 {{ $module->title }}
             </h1>
 

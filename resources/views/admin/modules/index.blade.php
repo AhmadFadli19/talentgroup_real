@@ -1,243 +1,44 @@
 @extends('layouts.app')
 
-@section('title', 'Manage Modules | Flow Academy')
+@section('title', 'Kelola Modul Dokumentasi | TalentGroup')
 
 @section('content')
 
-<style>
-/* ================= PIXEL / CYBER MODULE ADMIN ================= */
-.pixel-admin-container {
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-/* HEADER */
-.pixel-admin-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    flex-wrap: wrap;
-    gap: 16px;
-    margin-bottom: 28px;
-}
-
-.pixel-admin-title h1 {
-    font-size: 18px;
-    color: var(--accent);
-    margin-bottom: 6px;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-}
-
-.pixel-admin-title p {
-    font-size: 9px;
-    color: var(--muted);
-}
-
-.pixel-create-btn {
-    background: #8b5cf6;
-    border: 3px solid #8b5cf6;
-    color: #fff;
-    font-size: 9px;
-    font-weight: 700;
-    padding: 10px 14px;
-    box-shadow: 4px 4px 0 var(--shadow);
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.pixel-create-btn:hover {
-    transform: translate(-2px,-2px);
-    box-shadow: 6px 6px 0 var(--shadow);
-    background: #7c3aed;
-}
-
-/* ALERT */
-.pixel-alert {
-    border: 2px solid #22c55e;
-    background: #002a12;
-    color: #86efac;
-    padding: 12px;
-    font-size: 9px;
-    margin-bottom: 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-/* LIST */
-.pixel-course-list {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 14px;
-}
-
-/* MODULE CARD */
-.pixel-course-card {
-    background: var(--card);
-    border: 3px solid var(--border);
-    box-shadow: 4px 4px 0 var(--shadow);
-    padding: 16px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 14px;
-    align-items: center;
-}
-
-.pixel-course-info {
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-}
-
-.pixel-course-thumb {
-    width: 60px;
-    height: 60px;
-    background: var(--bg);
-    border: 2px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    font-size: 24px;
-}
-
-.pixel-course-text h3 {
-    font-size: 13px;
-    color: var(--text);
-    margin-bottom: 4px;
-    font-weight: 700;
-}
-
-.pixel-course-text p {
-    font-size: 10px;
-    color: var(--muted);
-    max-width: 550px;
-    line-height: 1.5;
-}
-
-/* META */
-.pixel-course-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 8px;
-    font-size: 9px;
-    color: var(--muted);
-    align-items: center;
-}
-
-.pixel-badge {
-    border: 2px solid;
-    padding: 2px 6px;
-    font-size: 8px;
-    font-weight: 700;
-}
-
-.pixel-active {
-    border-color: #22c55e;
-    color: #22c55e;
-}
-
-.pixel-inactive {
-    border-color: #ff5555;
-    color: #ff5555;
-}
-
-.pixel-public {
-    border-color: #38bdf8;
-    color: #38bdf8;
-}
-
-.pixel-private {
-    border-color: #f59e0b;
-    color: #f59e0b;
-}
-
-/* ACTIONS */
-.pixel-course-actions {
-    display: grid;
-    gap: 6px;
-    min-width: 90px;
-}
-
-.pixel-action-btn {
-    border: 2px solid var(--border);
-    background: var(--bg);
-    font-size: 9px;
-    font-weight: 700;
-    padding: 6px 10px;
-    color: var(--text);
-    text-align: center;
-    transition: all 0.15s ease;
-    display: block;
-}
-
-.pixel-action-btn:hover {
-    border-color: var(--accent);
-    color: var(--accent);
-}
-
-/* EMPTY */
-.pixel-empty {
-    background: var(--card);
-    border: 3px dashed var(--border);
-    padding: 40px 20px;
-    text-align: center;
-}
-
-.pixel-empty h3 {
-    font-size: 12px;
-    margin-bottom: 8px;
-    color: var(--text);
-}
-
-.pixel-empty p {
-    font-size: 9px;
-    color: var(--muted);
-    margin-bottom: 14px;
-}
-
-/* RESPONSIVE */
-@media (max-width: 640px) {
-    .pixel-course-card {
-        grid-template-columns: 1fr;
-    }
-
-    .pixel-course-actions {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-</style>
-
-<div class="pixel-admin-container py-6">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-6">
 
     <!-- HEADER -->
-    <div class="pixel-admin-header">
-        <div class="pixel-admin-title">
-            <h1>MODULE MANAGER</h1>
-            <p>Kelola modul pembelajaran, materi bab, kode referral, dan hak akses pengguna</p>
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <span class="pill blue-soft text-[10px] uppercase font-bold tracking-wider">
+                    Dokumentasi Platform
+                </span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-[var(--ink)] tracking-tight">
+                Kelola Modul Dokumentasi
+            </h1>
+            <p class="text-xs sm:text-sm text-[var(--text2)] mt-0.5">
+                Atur buku modul materi, bab pembelajaran interaktif, dan hak akses pembaca.
+            </p>
         </div>
 
-        <div class="flex items-center gap-3">
-            <a href="{{ route('admin.referral-codes.index') }}" class="pixel-action-btn flex items-center gap-1.5" style="border-color: #8b5cf6; color: #c4b5fd;">
-                <i class="fas fa-ticket-alt"></i>
-                <span>REFERRAL CODES</span>
+        <div class="flex items-center gap-2 flex-wrap">
+            <a href="{{ route('admin.module-categories.index') }}" class="btn btn-small btn-outline text-xs">
+                <i class="fas fa-folder-tree text-[var(--blue)] mr-1"></i> Kategori Sidebar
             </a>
-
-            <a href="{{ route('admin.modules.create') }}" class="pixel-create-btn">
-                <i class="fas fa-plus"></i>
-                <span>CREATE MODULE</span>
+            <a href="{{ route('admin.referral-codes.index') }}" class="btn btn-small btn-outline text-xs">
+                <i class="fas fa-ticket-alt text-[var(--blue)] mr-1"></i> Kode Referral
+            </a>
+            <a href="{{ route('admin.modules.create') }}" class="btn btn-small btn-gradient text-xs">
+                <i class="fas fa-plus mr-1"></i> Tambah Modul Baru
             </a>
         </div>
     </div>
 
     @if(session('success'))
-        <div class="pixel-alert">
-            <i class="fas fa-check-circle"></i>
-            <span>{{ session('success') }}</span>
+        <div class="mb-6 p-4 rounded-xl border border-emerald-500/30 bg-emerald-50 text-emerald-800 text-xs flex items-center gap-2.5 shadow-sm">
+            <i class="fas fa-check-circle text-emerald-600 text-base"></i>
+            <span class="font-medium">{{ session('success') }}</span>
         </div>
     @endif
 
@@ -248,95 +49,98 @@
             $currentVis = request('visibility');
         @endphp
         <a href="{{ route('admin.modules.index') }}" 
-           class="px-3 py-1.5 rounded-lg border {{ !$currentStatus && !$currentVis ? 'bg-slate-800 text-cyan-400 border-cyan-500/50 font-bold' : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white' }} transition">
+           class="px-3.5 py-1.5 rounded-lg border font-bold transition {{ !$currentStatus && !$currentVis ? 'bg-[var(--blue)] text-white border-[var(--blue)]' : 'bg-white text-[var(--text2)] border-[var(--border)] hover:border-[var(--blue)]' }}">
             Semua Modul
         </a>
         <a href="{{ route('admin.modules.index', ['status' => 'active']) }}" 
-           class="px-3 py-1.5 rounded-lg border {{ $currentStatus === 'active' ? 'bg-emerald-950/60 text-emerald-400 border-emerald-500/50 font-bold' : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white' }} transition">
-            ● Aktif (Active)
+           class="px-3.5 py-1.5 rounded-lg border font-bold transition {{ $currentStatus === 'active' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50' }}">
+            ● Aktif
         </a>
         <a href="{{ route('admin.modules.index', ['status' => 'inactive']) }}" 
-           class="px-3 py-1.5 rounded-lg border {{ $currentStatus === 'inactive' ? 'bg-rose-950/60 text-rose-400 border-rose-500/50 font-bold' : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white' }} transition">
-            ○ Nonaktif (Inactive)
+           class="px-3.5 py-1.5 rounded-lg border font-bold transition {{ $currentStatus === 'inactive' ? 'bg-rose-600 text-white border-rose-600' : 'bg-white text-rose-700 border-rose-200 hover:bg-rose-50' }}">
+            ○ Nonaktif
         </a>
         <a href="{{ route('admin.modules.index', ['visibility' => 'public']) }}" 
-           class="px-3 py-1.5 rounded-lg border {{ $currentVis === 'public' ? 'bg-sky-950/60 text-sky-400 border-sky-500/50 font-bold' : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white' }} transition">
-            🌐 Public
+           class="px-3.5 py-1.5 rounded-lg border font-bold transition {{ $currentVis === 'public' ? 'bg-[var(--blue)] text-white border-[var(--blue)]' : 'bg-white text-[var(--blue)] border-[var(--border)] hover:bg-[var(--blue-light)]' }}">
+            🌐 Publik (Gratis)
         </a>
         <a href="{{ route('admin.modules.index', ['visibility' => 'private']) }}" 
-           class="px-3 py-1.5 rounded-lg border {{ $currentVis === 'private' ? 'bg-amber-950/60 text-amber-400 border-amber-500/50 font-bold' : 'bg-slate-900 text-slate-400 border-slate-800 hover:text-white' }} transition">
-            🔒 Private
+           class="px-3.5 py-1.5 rounded-lg border font-bold transition {{ $currentVis === 'private' ? 'bg-amber-600 text-white border-amber-600' : 'bg-white text-amber-700 border-amber-200 hover:bg-amber-50' }}">
+            🔒 Privat
         </a>
     </div>
 
     <!-- LIST OF MODULES -->
-    <div class="pixel-course-list">
-
+    <div class="space-y-4">
         @forelse($modules as $module)
-            <div class="pixel-course-card">
+            <div class="cyber-card p-5 bg-white border border-[var(--border)] rounded-2xl shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-5 hover:border-[var(--blue)] transition-all">
 
                 <!-- INFO -->
-                <div>
-                    <div class="pixel-course-info">
-                        <!-- THUMBNAIL / ICON -->
-                        <div class="pixel-course-thumb" style="border-color: {{ $module->color ?: 'var(--border)' }}; color: {{ $module->color ?: 'var(--accent)' }}; overflow: hidden;">
-                            @if($module->image_url)
-                                <img src="{{ $module->image_url }}" alt="{{ $module->name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                <div class="flex items-start gap-4 flex-1 min-w-0">
+                    <div class="w-14 h-14 rounded-2xl bg-[var(--blue-light)] text-[var(--blue)] border border-[#bfdbfe] flex items-center justify-center text-xl flex-shrink-0 overflow-hidden shadow-sm">
+                        @if($module->image_url)
+                            <img src="{{ $module->image_url }}" alt="{{ $module->name }}" class="w-full h-full object-cover">
+                        @else
+                            <i class="{{ $module->icon ?: 'fas fa-book' }}"></i>
+                        @endif
+                    </div>
+
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2 flex-wrap mb-1">
+                            <h2 class="text-base font-extrabold text-[var(--ink)] truncate" title="{{ $module->name }}">
+                                {{ $module->name }}
+                            </h2>
+                            @if($module->is_public)
+                                <span class="pill blue-soft text-[10px]">🌐 Publik</span>
                             @else
-                                <i class="{{ $module->icon ?: 'fas fa-book' }}"></i>
+                                <span class="pill pending text-[10px]">🔒 Privat</span>
+                                @if($module->referral_code)
+                                    <span class="text-[10px] font-mono font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                                        REF: {{ $module->referral_code }}
+                                    </span>
+                                @endif
                             @endif
                         </div>
 
-                        <!-- TEXT & METADATA -->
-                        <div class="pixel-course-text">
-                            <h3>{{ $module->name }}</h3>
-                            <p>{{ Str::limit($module->description ?: 'Dokumentasi pembelajaran interaktif dengan contoh kode.', 100) }}</p>
+                        <p class="text-xs text-[var(--text2)] line-clamp-1 mb-2">
+                            {{ $module->description ?: 'Dokumentasi pembelajaran interaktif dengan contoh kode praktis.' }}
+                        </p>
 
-                            <div class="pixel-course-meta">
-                                <!-- PUBLIC OR PRIVATE BADGE -->
-                                @if($module->is_public)
-                                    <span class="pixel-badge pixel-public">🌐 PUBLIC (GRATIS)</span>
-                                @else
-                                    <span class="pixel-badge pixel-private">🔒 PRIVATE</span>
-                                    @if($module->referral_code)
-                                        <span class="font-mono" style="color: #fbbf24;">🔑 REF: {{ $module->referral_code }}</span>
-                                    @endif
-                                @endif
-
-                                <span>📚 {{ $module->modules_count }} Bab Materi</span>
-                                <span>📅 {{ $module->created_at ? $module->created_at->format('M d, Y') : '-' }}</span>
-
-                                <!-- Quick Toggle Active / Inactive -->
-                                <form action="{{ route('admin.modules.toggle-active', $module->id) }}" method="POST" class="inline">
-                                    @csrf
-                                    <button type="submit" 
-                                            class="pixel-badge cursor-pointer transition {{ $module->is_active ? 'pixel-active hover:bg-emerald-950/60' : 'pixel-inactive hover:bg-rose-950/60' }}"
-                                            title="Klik untuk ubah status aktif/nonaktif">
-                                        {{ $module->is_active ? '● ACTIVE (Klik Nonaktifkan)' : '○ INACTIVE (Klik Aktifkan)' }}
-                                    </button>
-                                </form>
-                            </div>
+                        <div class="flex items-center gap-3 text-xs text-[var(--muted)] font-medium flex-wrap">
+                            <span><i class="fas fa-layer-group text-[var(--blue)] mr-1"></i> {{ $module->modules_count }} Bab Materi</span>
+                            <span>·</span>
+                            <span>{{ $module->created_at ? $module->created_at->format('d M Y') : '-' }}</span>
+                            <span>·</span>
+                            <!-- Toggle Active Form -->
+                            <form action="{{ route('admin.modules.toggle-active', $module->id) }}" method="POST" class="inline">
+                                @csrf
+                                <button type="submit" 
+                                        class="pill {{ $module->is_active ? 'success-outline' : 'pending' }} text-[10px] cursor-pointer hover:opacity-80 transition"
+                                        title="Klik untuk ubah status aktif/nonaktif">
+                                    {{ $module->is_active ? '● Aktif' : '○ Nonaktif' }}
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
 
-                <!-- ACTIONS -->
-                <div class="pixel-course-actions">
-                    <a href="{{ route('modules.module.show', $module->slug) }}" target="_blank" class="pixel-action-btn">
-                        VIEW
+                <!-- ACTIONS BUTTONS -->
+                <div class="flex items-center gap-2 flex-wrap self-end md:self-center">
+                    <a href="{{ route('modules.module.show', $module->slug) }}" target="_blank" class="btn btn-small btn-outline text-xs">
+                        <i class="fas fa-external-link-alt mr-1"></i> Buka
                     </a>
                     
-                    <a href="{{ route('admin.modules.contents.index', $module->id) }}" class="pixel-action-btn" style="border-color: #38bdf8; color: #38bdf8;">
-                        CONTENT
+                    <a href="{{ route('admin.modules.contents.index', $module->id) }}" class="btn btn-small btn-gradient text-xs">
+                        <i class="fas fa-list mr-1"></i> Materi ({{ $module->modules_count }})
                     </a>
                     
-                    <a href="{{ route('admin.modules.edit', $module->id) }}" class="pixel-action-btn">
-                        EDIT
+                    <a href="{{ route('admin.modules.edit', $module->id) }}" class="btn btn-small btn-outline text-xs p-2.5" title="Edit Modul">
+                        <i class="fas fa-edit text-xs"></i>
                     </a>
 
                     @if(!$module->is_public)
-                        <a href="{{ route('admin.modules.access.index', $module->id) }}" class="pixel-action-btn" style="border-color: #f59e0b; color: #f59e0b;">
-                            ACCESS
+                        <a href="{{ route('admin.modules.access.index', $module->id) }}" class="btn btn-small btn-outline text-xs p-2.5 text-amber-600" title="Hak Akses Siswa">
+                            <i class="fas fa-key text-xs"></i>
                         </a>
                     @endif
 
@@ -344,27 +148,27 @@
                           onsubmit="return confirm('Apakah Anda yakin ingin menghapus modul {{ $module->name }} beserta seluruh materinya?')">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="pixel-action-btn w-full" style="color:#ff5555">
-                            DELETE
+                        <button type="submit" class="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition border border-transparent hover:border-rose-200" title="Hapus Modul">
+                            <i class="fas fa-trash text-xs"></i>
                         </button>
                     </form>
                 </div>
 
             </div>
         @empty
-            <div class="pixel-empty">
-                <h3>NO MODULES FOUND</h3>
-                <p>Belum ada modul yang dibuat. Buat modul pertama Anda sekarang.</p>
-                <a href="{{ route('admin.modules.create') }}" class="pixel-create-btn">
-                    CREATE MODULE
+            <div class="cyber-card py-16 text-center bg-white border border-[var(--border)]">
+                <div class="text-5xl mb-3">📖</div>
+                <h3 class="text-base font-bold text-[var(--ink)] mb-1">Belum Ada Modul</h3>
+                <p class="text-xs text-[var(--text2)] mb-5">Buat modul dokumentasi pertama untuk platform Anda.</p>
+                <a href="{{ route('admin.modules.create') }}" class="btn btn-gradient text-xs">
+                    <i class="fas fa-plus mr-1"></i> Tambah Modul Sekarang
                 </a>
             </div>
         @endforelse
-
     </div>
 
     @if($modules->hasPages())
-        <div class="pixel-pagination mt-6">
+        <div class="mt-8 flex justify-center">
             {{ $modules->links() }}
         </div>
     @endif

@@ -15,13 +15,54 @@ class Course extends Model
         'price',
         'image',
         'is_active',
+        'quiz_answer_visibility',
+        'quiz_navigation_mode',
+        'shuffle_questions',
+        'shuffle_options',
         'created_by',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
         'is_active' => 'boolean',
+        'shuffle_questions' => 'boolean',
+        'shuffle_options' => 'boolean',
     ];
+
+    public function isShuffleQuestions(): bool
+    {
+        return $this->shuffle_questions ?? true;
+    }
+
+    public function isShuffleOptions(): bool
+    {
+        return $this->shuffle_options ?? true;
+    }
+
+    public function isInstantQuizFeedback(): bool
+    {
+        return $this->quiz_answer_visibility === 'instant';
+    }
+
+    public function isEndQuizFeedback(): bool
+    {
+        return $this->quiz_answer_visibility === 'end' || empty($this->quiz_answer_visibility);
+    }
+
+    public function isNoneQuizFeedback(): bool
+    {
+        return $this->quiz_answer_visibility === 'none';
+    }
+
+    public function isNextOnlyNavigation(): bool
+    {
+        return $this->quiz_navigation_mode === 'next_only';
+    }
+
+    public function isFreeNavigation(): bool
+    {
+        return !$this->isNextOnlyNavigation();
+    }
 
     /**
      * Get secure URL for course image with fallback capability.
@@ -69,7 +110,7 @@ class Course extends Model
         return $this->hasMany(CourseHtml::class)->orderBy('order');
     }
 
-    public function allContents()
+    public function allContents($forUser = null)
     {
         $stories = $this->stories()->get()->map(function($story) {
             $story->type = 'story';
@@ -91,7 +132,17 @@ class Course extends Model
             return $html;
         });
         
-        return $stories->concat($questions)->concat($videos)->concat($htmls)->sortBy('order');
+        $all = $stories->concat($questions)->concat($videos)->concat($htmls)->sortBy('order')->values();
+
+        if ($this->isShuffleQuestions() && $forUser) {
+            $userId = is_object($forUser) ? $forUser->id : $forUser;
+            $courseId = $this->id;
+            $all = $all->sortBy(function ($item) use ($courseId, $userId) {
+                return md5($courseId . '_' . $userId . '_' . $item->type . '_' . $item->id);
+            })->values();
+        }
+
+        return $all;
     }
 
     public function users()

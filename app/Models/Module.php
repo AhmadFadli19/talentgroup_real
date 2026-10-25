@@ -27,6 +27,8 @@ class Module extends Model
         'is_public',
         'referral_code',
         'enable_protection',
+        'enable_anti_screenshot',
+        'enable_anti_copy',
         'views_count',
     ];
 
@@ -35,9 +37,33 @@ class Module extends Model
         'is_published' => 'boolean',
         'is_public' => 'boolean',
         'enable_protection' => 'boolean',
+        'enable_anti_screenshot' => 'boolean',
+        'enable_anti_copy' => 'boolean',
         'views_count' => 'integer',
         'file_size' => 'integer',
     ];
+
+    /**
+     * Check if anti-screenshot protection is enabled for this lesson.
+     */
+    public function isAntiScreenshotEnabled(): bool
+    {
+        if (isset($this->attributes['enable_anti_screenshot']) && $this->attributes['enable_anti_screenshot'] !== null) {
+            return (bool) $this->attributes['enable_anti_screenshot'];
+        }
+        return (bool) ($this->attributes['enable_protection'] ?? true);
+    }
+
+    /**
+     * Check if anti-copy protection is enabled for this lesson.
+     */
+    public function isAntiCopyEnabled(): bool
+    {
+        if (isset($this->attributes['enable_anti_copy']) && $this->attributes['enable_anti_copy'] !== null) {
+            return (bool) $this->attributes['enable_anti_copy'];
+        }
+        return (bool) ($this->attributes['enable_protection'] ?? true);
+    }
 
     /**
      * Helper methods for document / content types
