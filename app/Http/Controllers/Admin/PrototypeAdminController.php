@@ -64,7 +64,9 @@ class PrototypeAdminController extends Controller
     public function updateSettings(Request $request)
     {
         $request->validate([
-            'active_provider' => 'required|in:gemini,deepseek,qwen',
+            'active_provider' => 'required|in:openai,gemini,deepseek,qwen',
+            'openai_api_key' => 'nullable|string',
+            'openai_model' => 'nullable|string',
             'gemini_api_key' => 'nullable|string',
             'gemini_model' => 'required|string',
             'deepseek_api_key' => 'nullable|string',
@@ -79,6 +81,8 @@ class PrototypeAdminController extends Controller
 
         $settings->update([
             'active_provider' => $request->active_provider,
+            'openai_api_key' => $request->openai_api_key,
+            'openai_model' => $request->openai_model ?: 'gpt-4o-mini',
             'gemini_api_key' => $request->gemini_api_key,
             'gemini_model' => $request->gemini_model,
             'deepseek_api_key' => $request->deepseek_api_key,

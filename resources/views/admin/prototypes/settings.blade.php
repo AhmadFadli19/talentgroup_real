@@ -43,7 +43,21 @@
                 Pilih provider AI utama yang bertugas menganalisa kode prototype yang diunggah pengguna.
             </p>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <!-- OpenAI / ChatGPT (Utama) -->
+                <label class="cursor-pointer">
+                    <input type="radio" name="active_provider" value="openai" class="hidden peer" {{ $settings->active_provider === 'openai' ? 'checked' : '' }}>
+                    <div class="p-5 rounded-2xl border-2 border-[var(--border)] bg-slate-50 peer-checked:border-emerald-500 peer-checked:bg-emerald-50/50 transition flex flex-col justify-between h-full shadow-sm">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-sm font-bold text-[var(--ink)] flex items-center gap-2">
+                                <i class="fas fa-bolt text-emerald-600"></i> ChatGPT (OpenAI)
+                            </span>
+                            <span class="w-4 h-4 rounded-full border-2 border-slate-300 peer-checked:border-emerald-600 peer-checked:bg-emerald-600"></span>
+                        </div>
+                        <p class="text-[11px] text-[var(--muted)] leading-relaxed"><span class="font-bold text-emerald-700">Pilihan Utama:</span> Evaluasi kode sangat cerdas, analisis syntax mendalam, dan penilaian akurat berbasis GPT-4o-mini.</p>
+                    </div>
+                </label>
+
                 <!-- Gemini -->
                 <label class="cursor-pointer">
                     <input type="radio" name="active_provider" value="gemini" class="hidden peer" {{ $settings->active_provider === 'gemini' ? 'checked' : '' }}>
@@ -89,6 +103,27 @@
 
             <!-- Provider Keys & Model Details -->
             <div class="space-y-6 pt-4 border-t border-[var(--border)]">
+                <!-- OpenAI ChatGPT Details (Utama) -->
+                <div class="p-5 rounded-2xl bg-emerald-50/40 border border-emerald-200">
+                    <div class="flex items-center gap-2 text-xs font-bold text-emerald-700 uppercase tracking-wider mb-3">
+                        <i class="fas fa-bolt text-emerald-600"></i> Konfigurasi OpenAI ChatGPT (Utama)
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[11px] font-bold text-[var(--ink)] uppercase mb-1.5">API Key OpenAI (ChatGPT)</label>
+                            <input type="password" name="openai_api_key" value="{{ $settings->openai_api_key }}"
+                                placeholder="sk-proj-..."
+                                class="w-full px-3.5 py-2.5 bg-white border border-[var(--border)] rounded-xl text-[var(--ink)] text-xs font-mono focus:border-emerald-500 focus:outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-[var(--ink)] uppercase mb-1.5">Model Name</label>
+                            <input type="text" name="openai_model" value="{{ $settings->openai_model ?: 'gpt-4o-mini' }}"
+                                placeholder="gpt-4o-mini"
+                                class="w-full px-3.5 py-2.5 bg-white border border-[var(--border)] rounded-xl text-[var(--ink)] text-xs font-mono focus:border-emerald-500 focus:outline-none transition">
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Gemini Details -->
                 <div class="p-5 rounded-2xl bg-slate-50 border border-[var(--border)]">
                     <div class="flex items-center gap-2 text-xs font-bold text-[var(--blue)] uppercase tracking-wider mb-3">

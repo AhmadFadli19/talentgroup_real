@@ -32,12 +32,17 @@ class AiCodeAnalyzerService
      */
     public function analyze(string $html, string $css = '', string $js = ''): array
     {
-        $provider = $this->settings->active_provider ?: 'gemini';
+        $provider = $this->settings->active_provider ?: 'openai';
         $report = null;
         $usedProvider = $provider;
 
         try {
             switch ($provider) {
+                case 'openai':
+                case 'chatgpt':
+                    $report = $this->analyzeWithOpenAi($html, $css, $js);
+                    break;
+
                 case 'gemini':
                     $report = $this->analyzeWithGemini($html, $css, $js);
                     break;
@@ -51,12 +56,27 @@ class AiCodeAnalyzerService
                     break;
 
                 default:
-                    $report = $this->analyzeWithGemini($html, $css, $js);
+                    $report = $this->analyzeWithOpenAi($html, $css, $js) ?: $this->analyzeWithGemini($html, $css, $js);
                     break;
             }
         } catch (Exception $e) {
-            Log::warning("AI Provider '{$provider}' failed: " . $e->getMessage() . ". Falling back to Intelligent Heuristic Analyzer.");
+            Log::warning("AI Provider '{$provider}' failed: " . $e->getMessage());
             $report = null;
+        }
+
+        // If primary provider (e.g. OpenAI) had quota exhausted or returned null, try secondary failovers
+        if (!$report || !isset($report['overall_score'])) {
+            if ($provider !== 'gemini' && !empty($this->settings->gemini_api_key ?: env('GEMINI_API_KEY'))) {
+                try {
+                    $geminiReport = $this->analyzeWithGemini($html, $css, $js);
+                    if ($geminiReport && isset($geminiReport['overall_score'])) {
+                        $report = $geminiReport;
+                        $usedProvider = 'gemini (Failover from ' . $provider . ')';
+                    }
+                } catch (Exception $e) {
+                    // Ignore failover error
+                }
+            }
         }
 
         // If provider returned null or failed, use smart heuristic fallback engine
@@ -161,6 +181,46 @@ PROMPT;
     }
 
     /**
+     * Analyze with OpenAI ChatGPT API (Utama)
+     */
+    protected function analyzeWithOpenAi(string $html, string $css, string $js): ?array
+    {
+        $apiKey = $this->settings->openai_api_key ?: env('OPENAI_API_KEY');
+        if (empty($apiKey)) {
+            return null;
+        }
+
+        $model = $this->settings->openai_model ?: env('OPENAI_MODEL', 'gpt-4o-mini');
+        $url = 'https://api.openai.com/v1/chat/completions';
+
+        $prompt = $this->buildPrompt($html, $css, $js);
+
+        $response = Http::withHeaders([
+            'Authorization' => "Bearer {$apiKey}",
+            'Content-Type'  => 'application/json',
+        ])->timeout(12)->post($url, [
+            'model' => $model,
+            'messages' => [
+                ['role' => 'system', 'content' => 'You are an expert static web code auditor. Always output pure valid JSON only.'],
+                ['role' => 'user', 'content' => $prompt]
+            ],
+            'response_format' => ['type' => 'json_object'],
+            'temperature' => 0.2,
+        ]);
+
+        if (!$response->successful()) {
+            $errBody = $response->json();
+            $errMsg = $errBody['error']['message'] ?? $response->body();
+            Log::warning("OpenAI ChatGPT API Error ({$response->status()}): {$errMsg}");
+            return null;
+        }
+
+        $data = $response->json();
+        $text = $data['choices'][0]['message']['content'] ?? '';
+        return $this->parseJsonSafely($text);
+    }
+
+    /**
      * Analyze with Google Gemini API
      */
     protected function analyzeWithGemini(string $html, string $css, string $js): ?array
@@ -171,36 +231,38 @@ PROMPT;
         }
 
         $primaryModel = $this->settings->gemini_model ?: 'gemini-3.5-flash';
-        $modelsToTry = array_unique([$primaryModel, 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-3.8-flash']);
+        $modelsToTry = array_unique([$primaryModel, 'gemini-3.8-flash']);
 
         $prompt = $this->buildPrompt($html, $css, $js);
 
         foreach ($modelsToTry as $model) {
             $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
 
-            $response = Http::timeout(30)->post($url, [
-                'contents' => [
-                    [
-                        'parts' => [
-                            ['text' => $prompt]
+            try {
+                $response = Http::timeout(6)->post($url, [
+                    'contents' => [
+                        [
+                            'parts' => [
+                                ['text' => $prompt]
+                            ]
                         ]
+                    ],
+                    'generationConfig' => [
+                        'response_mime_type' => 'application/json',
+                        'temperature' => 0.2,
                     ]
-                ],
-                'generationConfig' => [
-                    'response_mime_type' => 'application/json',
-                    'temperature' => 0.2,
-                ]
-            ]);
+                ]);
 
-            if ($response->successful()) {
-                $data = $response->json();
-                $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
-                $parsed = $this->parseJsonSafely($text);
-                if ($parsed && isset($parsed['overall_score'])) {
-                    return $parsed;
+                if ($response->successful()) {
+                    $data = $response->json();
+                    $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+                    $parsed = $this->parseJsonSafely($text);
+                    if ($parsed && isset($parsed['overall_score'])) {
+                        return $parsed;
+                    }
                 }
-            } else {
-                Log::warning("Gemini model '{$model}' error: " . $response->body());
+            } catch (Exception $e) {
+                // Timeout or network error
             }
         }
 

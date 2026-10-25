@@ -13,6 +13,8 @@ class AiSetting extends Model
 
     protected $fillable = [
         'active_provider',
+        'openai_api_key',
+        'openai_model',
         'gemini_api_key',
         'gemini_model',
         'deepseek_api_key',
@@ -43,9 +45,11 @@ class AiSetting extends Model
     public static function getSettings(): self
     {
         return self::firstOrCreate([], [
-            'active_provider' => 'gemini',
+            'active_provider' => 'openai',
+            'openai_api_key' => env('OPENAI_API_KEY', ''),
+            'openai_model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
             'gemini_api_key' => env('GEMINI_API_KEY', ''),
-            'gemini_model' => 'gemini-2.5-flash',
+            'gemini_model' => 'gemini-3.5-flash',
             'deepseek_api_key' => env('DEEPSEEK_API_KEY', ''),
             'deepseek_model' => 'deepseek-chat',
             'qwen_api_key' => env('QWEN_API_KEY', ''),

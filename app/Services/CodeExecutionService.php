@@ -1004,11 +1004,12 @@ class CodeExecutionService
         $results = [];
         $cleanCode = $this->stripCommentsAndStrings($code);
 
-        foreach ($rules as $rule) {
-            if (isset(self::$rulePatterns[$rule])) {
-                $results[$rule] = (bool) preg_match(self::$rulePatterns[$rule], $cleanCode);
+        foreach ($rules as $key => $rule) {
+            $ruleName = is_string($rule) ? $rule : ($rule['name'] ?? $rule['rule'] ?? $rule['type'] ?? (string)$key);
+            if (isset(self::$rulePatterns[$ruleName])) {
+                $results[$ruleName] = (bool) preg_match(self::$rulePatterns[$ruleName], $cleanCode);
             } else {
-                $results[$rule] = true;
+                $results[$ruleName] = true;
             }
         }
 
