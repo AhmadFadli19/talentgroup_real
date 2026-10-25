@@ -64,8 +64,8 @@
             </div>
             <div class="flex-1 overflow-y-auto custom-scrollbar p-5 flex flex-col gap-6" x-show="!problemCollapsed">
                 {{-- Problem Description --}}
-                <div class="text-[11px] leading-relaxed font-mono" style="color: var(--text2);">
-                    {!! nl2br(e($content->content)) !!}
+                <div class="course-story-article text-[12.5px] leading-relaxed font-sans" style="color: var(--text2);">
+                    {!! \App\Services\ModuleMarkdownParser::parse($content->content) !!}
                 </div>
 
                 {{-- Hint --}}
@@ -844,6 +844,28 @@ function codingChallenge() {
             document.addEventListener('mouseup', onMouseUp);
         },
     };
+}
+
+function copyCodeBlock(codeId, button) {
+    const codeEl = document.getElementById(codeId);
+    if (!codeEl) return;
+    const textToCopy = codeEl.innerText || codeEl.textContent;
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        const icon = button.querySelector('i');
+        const text = button.querySelector('span');
+        const origIcon = icon ? icon.className : '';
+        const origText = text ? text.innerText : '';
+        if (icon) icon.className = 'fas fa-check text-emerald-400';
+        if (text) text.innerText = 'Tersalin!';
+        button.classList.add('border-emerald-500/50', 'text-emerald-400');
+        setTimeout(() => {
+            if (icon) icon.className = origIcon;
+            if (text) text.innerText = origText;
+            button.classList.remove('border-emerald-500/50', 'text-emerald-400');
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+    });
 }
 </script>
 

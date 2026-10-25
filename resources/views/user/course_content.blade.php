@@ -28,6 +28,86 @@
     }
 @endphp
 
+<!-- Prism Syntax Highlighting Themes -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+
+<style>
+/* Clean typography and responsive design for course reading articles */
+.course-story-article {
+    word-break: break-word;
+    overflow-wrap: break-word;
+    color: var(--text2) !important;
+}
+.course-story-article p {
+    color: var(--text2) !important;
+    margin-bottom: 1.25rem;
+    line-height: 1.8;
+    font-size: 15px;
+}
+.course-story-article strong {
+    color: var(--text) !important;
+    font-weight: 700;
+}
+.course-story-article em {
+    color: var(--text2) !important;
+}
+.course-story-article h1, 
+.course-story-article h2, 
+.course-story-article h3, 
+.course-story-article h4 {
+    font-family: 'Outfit', sans-serif;
+    color: var(--text) !important;
+    letter-spacing: -0.015em;
+    font-weight: 800;
+}
+.course-story-article h1 { font-size: 1.85rem; margin-top: 1.5rem; margin-bottom: 1rem; }
+.course-story-article h2 { font-size: 1.45rem; margin-top: 2rem; margin-bottom: 0.85rem; border-top: 1px solid var(--border); padding-top: 1.25rem; }
+.course-story-article h3 { font-size: 1.2rem; margin-top: 1.75rem; margin-bottom: 0.75rem; }
+.course-story-article h4 { font-size: 1.05rem; margin-top: 1.25rem; margin-bottom: 0.5rem; }
+
+.course-story-article ul, 
+.course-story-article ol {
+    color: var(--text2) !important;
+    margin-bottom: 1.25rem;
+    padding-left: 1.5rem;
+    font-size: 14.5px;
+}
+.course-story-article li {
+    margin-bottom: 0.6rem;
+    line-height: 1.7;
+}
+.course-story-article code:not(pre code) {
+    background: rgba(6, 182, 212, 0.12) !important;
+    color: var(--cyan) !important;
+    border: 1px solid rgba(6, 182, 212, 0.25) !important;
+    border-radius: 0.375rem;
+    padding: 0.15rem 0.45rem;
+    font-family: 'Fira Code', monospace !important;
+    font-size: 13px !important;
+    font-weight: 600;
+}
+.course-story-article pre {
+    background: #070c18 !important;
+    border-radius: 0 0 0.75rem 0.75rem;
+    margin: 0 !important;
+    padding: 1.1rem !important;
+}
+.course-story-article pre code {
+    font-family: 'Fira Code', monospace !important;
+    font-size: 13.5px !important;
+    line-height: 1.65 !important;
+    color: #e2e8f0 !important;
+    text-shadow: none !important;
+    background: transparent !important;
+    padding: 0 !important;
+    border: none !important;
+}
+.course-story-article .code-frame-block {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+</style>
+
 <div id="learning-root" x-data="learningData()" class="max-w-6xl mx-auto py-6 px-4">
 
     <!-- Top learning bar showing progress -->
@@ -205,8 +285,8 @@
                             <i class="fas fa-video"></i> Video Deskripsi & Catatan
                         </span>
                         <h2 class="text-base font-extrabold text-white mb-4">{{ $content->title }}</h2>
-                        <div class="text-xs text-[var(--text2)] leading-relaxed font-mono">
-                            {!! nl2br(e($content->content)) !!}
+                        <div class="course-story-article text-[14px] leading-relaxed">
+                            {!! \App\Services\ModuleMarkdownParser::parse($content->content) !!}
                         </div>
                     </div>
                 </div>
@@ -264,9 +344,9 @@
                         </div>
                     @endif
 
-                    <!-- Clean reading article content -->
-                    <article class="text-xs text-[var(--text2)] leading-relaxed font-mono space-y-4 border-b border-[var(--border)] pb-6">
-                        {!! nl2br(e($content->content)) !!}
+                    <!-- Clean reading article content (Parsed from Markdown to Rich HTML) -->
+                    <article class="course-story-article text-[14.5px] leading-relaxed border-b border-[var(--border)] pb-8 pt-2">
+                        {!! \App\Services\ModuleMarkdownParser::parse($content->content) !!}
                     </article>
 
                     <!-- Save Notes Block -->
@@ -296,9 +376,9 @@
                         </span>
                     </div>
 
-                    <!-- Question content -->
-                    <div class="text-xs md:text-sm text-white font-extrabold leading-relaxed bg-black/15 p-4 border border-[var(--border)] rounded-xl">
-                        {!! nl2br(e($content->content)) !!}
+                    <!-- Question content (Parsed Rich Markdown) -->
+                    <div class="course-story-article text-xs md:text-sm font-semibold leading-relaxed bg-black/15 p-4 sm:p-5 border border-[var(--border)] rounded-xl">
+                        {!! \App\Services\ModuleMarkdownParser::parse($content->content) !!}
                     </div>
 
                     <!-- Answer Options Form -->
@@ -436,8 +516,8 @@
                         <h2 class="text-xl font-black text-white leading-tight" style="font-family: 'Outfit', sans-serif;">{{ $content->title }}</h2>
 
                         @if($content->content)
-                            <article class="text-xs text-[var(--text2)] leading-relaxed font-mono mt-3">
-                                {!! nl2br(e($content->content)) !!}
+                            <article class="course-story-article text-[13.5px] leading-relaxed mt-3">
+                                {!! \App\Services\ModuleMarkdownParser::parse($content->content) !!}
                             </article>
                         @endif
                     </div>
@@ -520,5 +600,35 @@ function learningData() {
         }
     };
 }
+
+// Global Copy Code Block Helper
+function copyCodeBlock(codeId, button) {
+    const codeEl = document.getElementById(codeId);
+    if (!codeEl) return;
+
+    const textToCopy = codeEl.innerText || codeEl.textContent;
+    navigator.clipboard.writeText(textToCopy).then(() => {
+        const icon = button.querySelector('i');
+        const text = button.querySelector('span');
+        const origIcon = icon ? icon.className : '';
+        const origText = text ? text.innerText : '';
+
+        if (icon) icon.className = 'fas fa-check text-emerald-400';
+        if (text) text.innerText = 'Tersalin!';
+        button.classList.add('border-emerald-500/50', 'text-emerald-400');
+
+        setTimeout(() => {
+            if (icon) icon.className = origIcon;
+            if (text) text.innerText = origText;
+            button.classList.remove('border-emerald-500/50', 'text-emerald-400');
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+    });
+}
 </script>
+
+<!-- Prism.js Syntax Highlighting Engine -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
 @endsection

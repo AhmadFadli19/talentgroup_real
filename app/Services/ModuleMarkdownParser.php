@@ -69,7 +69,7 @@ class ModuleMarkdownParser
         $text = preg_replace_callback('/((?:^>[^\n]+\n?)+)/m', function ($matches) use (&$tokens, &$tokenIndex) {
             $content = preg_replace('/^>\s?/m', '', $matches[1]);
             $token = '___DOC_TOKEN_QUOTE_' . ($tokenIndex++) . '___';
-            $tokens[$token] = '<blockquote class="border-l-4 border-cyan-500/80 bg-cyan-950/20 px-4 py-3 my-4 rounded-r-lg text-slate-300 italic">' . nl2br(trim($content)) . '</blockquote>';
+            $tokens[$token] = '<blockquote class="border-l-4 border-cyan-500 bg-cyan-500/10 px-4 py-3 my-4 rounded-r-lg text-slate-800 dark:text-slate-300 italic">' . nl2br(trim($content)) . '</blockquote>';
             return "\n\n" . $token . "\n\n";
         }, $text);
 
@@ -85,7 +85,7 @@ class ModuleMarkdownParser
                 $pText = trim(implode(' ', $paragraph));
                 if ($pText !== '') {
                     $pText = self::parseInlineElements($pText);
-                    $output[] = '<p class="text-slate-300 text-[15px] leading-relaxed mb-5 font-normal">' . $pText . '</p>';
+                    $output[] = '<p class="text-slate-800 dark:text-slate-200 text-[15px] leading-relaxed mb-5 font-normal">' . $pText . '</p>';
                 }
                 $paragraph = [];
             }
@@ -118,19 +118,19 @@ class ModuleMarkdownParser
                 $id = Str::slug(strip_tags($title));
 
                 if ($level === 1) {
-                    $output[] = '<h1 id="' . $id . '" class="text-3xl md:text-4xl font-extrabold text-white tracking-tight mt-2 mb-6 scroll-mt-24">' . self::parseInlineElements($title) . '</h1>';
+                    $output[] = '<h1 id="' . $id . '" class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-6 mb-4 scroll-mt-24">' . self::parseInlineElements($title) . '</h1>';
                 } elseif ($level === 2) {
-                    $output[] = '<h2 id="' . $id . '" class="text-2xl font-bold text-white tracking-tight mt-10 mb-4 pt-4 border-t border-slate-800/80 scroll-mt-24 flex items-center justify-between group">' .
+                    $output[] = '<h2 id="' . $id . '" class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight mt-8 mb-4 pt-3 border-t border-slate-200 dark:border-slate-800/80 scroll-mt-24 flex items-center justify-between group">' .
                                 '<span>' . self::parseInlineElements($title) . '</span>' .
-                                '<a href="#' . $id . '" class="text-slate-600 hover:text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity ml-2 text-lg">#</a>' .
+                                '<a href="#' . $id . '" class="text-slate-400 dark:text-slate-600 hover:text-cyan-500 dark:hover:text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity ml-2 text-lg">#</a>' .
                                 '</h2>';
                 } elseif ($level === 3) {
-                    $output[] = '<h3 id="' . $id . '" class="text-xl font-semibold text-slate-100 tracking-tight mt-8 mb-3 scroll-mt-24 flex items-center justify-between group">' .
+                    $output[] = '<h3 id="' . $id . '" class="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight mt-6 mb-3 scroll-mt-24 flex items-center justify-between group">' .
                                 '<span>' . self::parseInlineElements($title) . '</span>' .
-                                '<a href="#' . $id . '" class="text-slate-600 hover:text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity ml-2 text-base">#</a>' .
+                                '<a href="#' . $id . '" class="text-slate-400 dark:text-slate-600 hover:text-cyan-500 dark:hover:text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity ml-2 text-base">#</a>' .
                                 '</h3>';
                 } else {
-                    $output[] = '<h4 id="' . $id . '" class="text-lg font-medium text-slate-200 mt-6 mb-2 scroll-mt-24">' . self::parseInlineElements($title) . '</h4>';
+                    $output[] = '<h4 id="' . $id . '" class="text-base font-semibold text-slate-800 dark:text-slate-200 mt-5 mb-2 scroll-mt-24">' . self::parseInlineElements($title) . '</h4>';
                 }
                 continue;
             }
@@ -140,7 +140,7 @@ class ModuleMarkdownParser
                 $flushParagraph();
                 if (!$inList || $listType !== 'ul') {
                     $closeList();
-                    $output[] = '<ul class="list-disc pl-5 space-y-2 mb-5 text-slate-300 text-[15px]">';
+                    $output[] = '<ul class="list-disc pl-5 space-y-2 mb-5 text-slate-800 dark:text-slate-300 text-[15px]">';
                     $inList = true;
                     $listType = 'ul';
                 }
@@ -153,7 +153,7 @@ class ModuleMarkdownParser
                 $flushParagraph();
                 if (!$inList || $listType !== 'ol') {
                     $closeList();
-                    $output[] = '<ol class="list-decimal pl-5 space-y-2 mb-5 text-slate-300 text-[15px]">';
+                    $output[] = '<ol class="list-decimal pl-5 space-y-2 mb-5 text-slate-800 dark:text-slate-300 text-[15px]">';
                     $inList = true;
                     $listType = 'ol';
                 }
@@ -246,20 +246,20 @@ class ModuleMarkdownParser
     {
         // Inline code: `code`
         $text = preg_replace_callback('/`([^`]+)`/', function ($m) {
-            return '<code class="px-1.5 py-0.5 rounded bg-slate-800/90 text-cyan-300 font-mono text-[13px] border border-slate-700/70">' . htmlspecialchars($m[1]) . '</code>';
+            return '<code class="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800/90 text-cyan-700 dark:text-cyan-300 font-mono text-[13px] border border-slate-300 dark:border-slate-700/70 font-medium">' . htmlspecialchars($m[1]) . '</code>';
         }, $text);
 
         // Images inline: ![alt](url)
         $text = preg_replace('/!\[(.*?)\]\((.*?)\)/', '<img src="$2" alt="$1" class="rounded max-w-full inline-block my-2" />', $text);
 
         // Links: [text](url)
-        $text = preg_replace('/\[(.*?)\]\((.*?)\)/', '<a href="$2" class="text-cyan-400 hover:text-cyan-300 underline underline-offset-4 decoration-cyan-500/40 hover:decoration-cyan-400 transition">$1</a>', $text);
+        $text = preg_replace('/\[(.*?)\]\((.*?)\)/', '<a href="$2" class="text-cyan-600 dark:text-cyan-400 hover:text-cyan-500 dark:hover:text-cyan-300 underline underline-offset-4 decoration-cyan-500/40 hover:decoration-cyan-400 transition">$1</a>', $text);
 
         // Bold: **text** or __text__
-        $text = preg_replace('/(\*\*|__)(.*?)\1/', '<strong class="font-bold text-white">$2</strong>', $text);
+        $text = preg_replace('/(\*\*|__)(.*?)\1/', '<strong class="font-bold text-slate-900 dark:text-white">$2</strong>', $text);
 
         // Italic: *text* or _text_
-        $text = preg_replace('/(\*|_)(.*?)\1/', '<em class="italic text-slate-200">$2</em>', $text);
+        $text = preg_replace('/(\*|_)(.*?)\1/', '<em class="italic text-slate-800 dark:text-slate-200">$2</em>', $text);
 
         // Strikethrough: ~~text~~
         $text = preg_replace('/~~(.*?)~~/', '<del class="line-through text-slate-500">$1</del>', $text);
@@ -320,20 +320,20 @@ HTML;
 
         $headers = array_filter(array_map('trim', explode('|', trim($headerLine, '|'))));
 
-        $html = '<div class="doc-table-wrapper my-6 overflow-x-auto rounded-xl border border-slate-800 bg-[#0b1120] shadow-xl">';
+        $html = '<div class="doc-table-wrapper my-6 overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b1120] shadow-md">';
         $html .= '<table class="w-full text-left text-sm border-collapse">';
-        $html .= '<thead class="bg-[#0f172a] text-xs uppercase tracking-wider text-slate-300 border-b border-slate-800 font-semibold">';
+        $html .= '<thead class="bg-slate-50 dark:bg-[#0f172a] text-xs uppercase tracking-wider text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800 font-semibold">';
         $html .= '<tr>';
         foreach ($headers as $header) {
-            $html .= '<th class="px-5 py-3.5 text-slate-200">' . self::parseInlineElements($header) . '</th>';
+            $html .= '<th class="px-5 py-3.5 text-slate-800 dark:text-slate-200">' . self::parseInlineElements($header) . '</th>';
         }
         $html .= '</tr></thead>';
-        $html .= '<tbody class="divide-y divide-slate-800/80 text-slate-300 text-[13.5px]">';
+        $html .= '<tbody class="divide-y divide-slate-100 dark:divide-slate-800/80 text-slate-800 dark:text-slate-300 text-[13.5px]">';
 
         foreach ($lines as $line) {
             if (empty($line) || !str_contains($line, '|')) continue;
             $cells = array_map('trim', explode('|', trim($line, '|')));
-            $html .= '<tr class="hover:bg-slate-800/30 transition-colors">';
+            $html .= '<tr class="hover:bg-slate-50/80 dark:hover:bg-slate-800/30 transition-colors">';
             foreach ($cells as $cell) {
                 $html .= '<td class="px-5 py-3 font-normal">' . self::parseInlineElements($cell) . '</td>';
             }
@@ -350,11 +350,11 @@ HTML;
     public static function renderCallout(string $type, string $body): string
     {
         $config = [
-            'NOTE' => ['border' => 'border-sky-500/70', 'bg' => 'bg-sky-950/20', 'icon' => 'fa-info-circle', 'text' => 'text-sky-400', 'title' => 'Catatan'],
-            'TIP' => ['border' => 'border-emerald-500/70', 'bg' => 'bg-emerald-950/20', 'icon' => 'fa-lightbulb', 'text' => 'text-emerald-400', 'title' => 'Tips'],
-            'WARNING' => ['border' => 'border-amber-500/70', 'bg' => 'bg-amber-950/20', 'icon' => 'fa-exclamation-triangle', 'text' => 'text-amber-400', 'title' => 'Peringatan'],
-            'IMPORTANT' => ['border' => 'border-purple-500/70', 'bg' => 'bg-purple-950/20', 'icon' => 'fa-star', 'text' => 'text-purple-400', 'title' => 'Penting'],
-            'CAUTION' => ['border' => 'border-rose-500/70', 'bg' => 'bg-rose-950/20', 'icon' => 'fa-radiation', 'text' => 'text-rose-400', 'title' => 'Perhatian'],
+            'NOTE' => ['border' => 'border-sky-500/40 dark:border-sky-500/70', 'bg' => 'bg-sky-50 dark:bg-sky-950/20', 'icon' => 'fa-info-circle', 'text' => 'text-sky-600 dark:text-sky-400', 'title' => 'Catatan'],
+            'TIP' => ['border' => 'border-emerald-500/40 dark:border-emerald-500/70', 'bg' => 'bg-emerald-50 dark:bg-emerald-950/20', 'icon' => 'fa-lightbulb', 'text' => 'text-emerald-600 dark:text-emerald-400', 'title' => 'Tips'],
+            'WARNING' => ['border' => 'border-amber-500/40 dark:border-amber-500/70', 'bg' => 'bg-amber-50 dark:bg-amber-950/20', 'icon' => 'fa-exclamation-triangle', 'text' => 'text-amber-600 dark:text-amber-400', 'title' => 'Peringatan'],
+            'IMPORTANT' => ['border' => 'border-purple-500/40 dark:border-purple-500/70', 'bg' => 'bg-purple-50 dark:bg-purple-950/20', 'icon' => 'fa-star', 'text' => 'text-purple-600 dark:text-purple-400', 'title' => 'Penting'],
+            'CAUTION' => ['border' => 'border-rose-500/40 dark:border-rose-500/70', 'bg' => 'bg-rose-50 dark:bg-rose-950/20', 'icon' => 'fa-radiation', 'text' => 'text-rose-600 dark:text-rose-400', 'title' => 'Perhatian'],
         ];
 
         $style = $config[$type] ?? $config['NOTE'];
@@ -362,12 +362,12 @@ HTML;
         $parsedBody = self::parseInlineElements(nl2br($body));
 
         return <<<HTML
-<div class="doc-callout my-6 rounded-xl border {$style['border']} {$style['bg']} p-4 shadow-lg backdrop-blur-sm">
+<div class="doc-callout my-6 rounded-xl border {$style['border']} {$style['bg']} p-4 shadow-sm backdrop-blur-sm">
     <div class="flex items-start gap-3">
         <i class="fas {$style['icon']} {$style['text']} mt-0.5 text-base"></i>
         <div class="flex-1">
             <span class="block text-xs font-bold uppercase tracking-wider {$style['text']} mb-1">{$style['title']}</span>
-            <div class="text-[14px] text-slate-200 leading-relaxed font-normal">{$parsedBody}</div>
+            <div class="text-[14px] text-slate-800 dark:text-slate-200 leading-relaxed font-normal">{$parsedBody}</div>
         </div>
     </div>
 </div>

@@ -142,8 +142,10 @@
         <div>
 
             <div class="pixel-card">
-                <h3>CONTENT</h3>
-                <div class="pixel-text">{{ $content->content }}</div>
+                <h3>CONTENT PREVIEW</h3>
+                <div class="course-story-article text-[14px] leading-relaxed" style="word-break: break-word;">
+                    {!! \App\Services\ModuleMarkdownParser::parse($content->content) !!}
+                </div>
             </div>
 
             @if($content->type === 'story' && ($content->use_image || $content->use_audio || $content->use_video))
