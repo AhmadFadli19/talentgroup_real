@@ -55,15 +55,15 @@
             </div>
             <div class="flex flex-wrap items-center gap-2">
                 <a href="{{ route('modules.index') }}" 
-                   class="px-4 py-2 rounded-xl text-xs font-bold transition {{ !request()->filled('type') ? 'bg-[var(--blue)] text-white shadow-sm' : 'bg-slate-50 text-[var(--muted)] hover:bg-slate-100 border border-[var(--border)]' }}">
+                   class="px-4 py-2 rounded-xl text-xs font-bold transition {{ !request()->filled('type') ? 'bg-[var(--blue)] text-white shadow-sm' : 'bg-[var(--bg)] text-[var(--muted)] hover:bg-[var(--line)] border border-[var(--border)]' }}">
                     Semua Modul
                 </a>
                 <a href="{{ route('modules.index', ['type' => 'free']) }}" 
-                   class="px-4 py-2 rounded-xl text-xs font-bold transition {{ request('type') === 'free' ? 'bg-[var(--blue)] text-white shadow-sm' : 'bg-slate-50 text-[var(--muted)] hover:bg-slate-100 border border-[var(--border)]' }}">
+                   class="px-4 py-2 rounded-xl text-xs font-bold transition {{ request('type') === 'free' ? 'bg-[var(--blue)] text-white shadow-sm' : 'bg-[var(--bg)] text-[var(--muted)] hover:bg-[var(--line)] border border-[var(--border)]' }}">
                     Gratis (Free)
                 </a>
                 <a href="{{ route('modules.index', ['type' => 'premium']) }}" 
-                   class="px-4 py-2 rounded-xl text-xs font-bold transition {{ request('type') === 'premium' ? 'bg-[var(--blue)] text-white shadow-sm' : 'bg-slate-50 text-[var(--muted)] hover:bg-slate-100 border border-[var(--border)]' }}">
+                   class="px-4 py-2 rounded-xl text-xs font-bold transition {{ request('type') === 'premium' ? 'bg-[var(--blue)] text-white shadow-sm' : 'bg-[var(--bg)] text-[var(--muted)] hover:bg-[var(--line)] border border-[var(--border)]' }}">
                     Premium / Private
                 </a>
             </div>
@@ -87,7 +87,7 @@
                            name="search" 
                            value="{{ request('search') }}" 
                            placeholder="Ketik topik atau nama modul..." 
-                           class="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-[var(--border)] rounded-xl text-xs text-[var(--ink)] focus:bg-white focus:border-[var(--blue)] focus:outline-none transition">
+                           class="w-full pl-9 pr-4 py-2.5 bg-[var(--bg)] border border-[var(--border)] rounded-xl text-xs text-[var(--ink)] focus:bg-white focus:border-[var(--blue)] focus:outline-none transition">
                 </div>
                 <button type="submit" class="px-5 py-2.5 rounded-xl bg-[var(--blue)] hover:bg-[var(--blue-dark)] text-white text-xs font-bold shadow-sm transition">
                     Cari
@@ -186,7 +186,7 @@
             </div>
         @empty
             <div class="col-span-full py-16 px-6 text-center bg-white rounded-2xl border border-[var(--border)] shadow-sm">
-                <i class="fas fa-search text-3xl text-slate-300 mb-3 block"></i>
+                <i class="fas fa-search text-3xl text-[color:var(--body)] mb-3 block"></i>
                 <h3 class="text-sm font-bold text-[var(--ink)] mb-1">Tidak Ada Modul Ditemukan</h3>
                 <p class="text-xs text-[var(--muted)]">Coba ubah kata kunci pencarian atau filter kategori di atas.</p>
             </div>
@@ -210,7 +210,7 @@
                 <i class="fas fa-key text-amber-500"></i>
                 <span>Buka Akses Modul Private</span>
             </div>
-            <button type="button" onclick="closeUnlockModal()" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-[var(--muted)] hover:text-[var(--ink)] flex items-center justify-center transition">
+            <button type="button" onclick="closeUnlockModal()" class="w-8 h-8 rounded-lg bg-[var(--line)] hover:bg-[var(--line)] text-[var(--muted)] hover:text-[var(--ink)] flex items-center justify-center transition">
                 <i class="fas fa-times"></i>
             </button>
         </div>
@@ -221,7 +221,7 @@
 
             <div class="mb-4">
                 <label class="block text-xs font-mono uppercase text-[var(--muted)] mb-1">Modul yang Dipilih:</label>
-                <div id="modalModuleTitle" class="text-[var(--ink)] font-bold text-sm p-3 rounded-xl bg-slate-50 border border-[var(--border)]">
+                <div id="modalModuleTitle" class="text-[var(--ink)] font-bold text-sm p-3 rounded-xl bg-[var(--bg)] border border-[var(--border)]">
                     -
                 </div>
             </div>
@@ -234,7 +234,7 @@
                        name="referral_code" 
                        required 
                        placeholder="Contoh: CSSPRO, JSMASTER, dsb."
-                       class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-[var(--border)] text-[var(--blue)] font-mono uppercase tracking-wider text-sm outline-none focus:bg-white focus:border-[var(--blue)] transition font-bold">
+                       class="w-full px-3.5 py-2.5 rounded-xl bg-[var(--bg)] border border-[var(--border)] text-[var(--blue)] font-mono uppercase tracking-wider text-sm outline-none focus:bg-white focus:border-[var(--blue)] transition font-bold">
                 <p class="text-[11px] text-[var(--muted)] mt-1.5 leading-relaxed">
                     Modul private dapat dibuka menggunakan kode referral resmi atau persetujuan admin.
                 </p>
