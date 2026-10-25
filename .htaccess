@@ -2,15 +2,27 @@
     RewriteEngine On
     RewriteBase /
 
-    # Belokkan URL /storage secara aman ke /public/storage
-    RewriteRule ^storage/(.*)$ /public/storage/$1 [L]
+    # 1. Blokir akses HTTP langsung ke direktori internal storage yang sensitif
+    RewriteRule ^storage/(logs|framework|private)/ - [F,L]
 
-    # Jika file/folder BUKAN ada di public/, arahkan ke public/
+    # 2. Arahkan semua request /storage langsung ke Laravel Front Controller (melewati keterbatasan symlink 403)
+    RewriteRule ^storage(/.*)?$ /public/index.php [L]
+
+    # 3. Sajikan file fisik statis dari public/ jika file-nya ada (misal: CSS, JS, favicon, build)
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f
+    RewriteRule ^(.*)$ /public/$1 [L]
+
+    # 4. Arahkan semua request non-public lainnya ke public/
     RewriteCond %{REQUEST_URI} !^/public/
     RewriteRule ^(.*)$ /public/$1 [L]
 </IfModule>
 
-<Files .env>
-    Order allow,deny
-    Deny from all
-</Files>
+<FilesMatch "^\.(env|git|env\..*)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>

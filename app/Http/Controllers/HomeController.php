@@ -11,34 +11,57 @@ class HomeController extends Controller
         return view("Home.index", compact('courses'));
     }
 
-    public function streamFile($path)
+    public function streamFile(?string $path = null)
     {
-        // 1. Check public disk
-        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
-            $file = \Illuminate\Support\Facades\Storage::disk('public')->get($path);
-            $type = \Illuminate\Support\Facades\Storage::disk('public')->mimeType($path) ?: 'application/octet-stream';
-            return response($file, 200)->header('Content-Type', $type);
+        if (empty($path)) {
+            return redirect('/');
         }
 
-        // 2. Check local disk
-        if (\Illuminate\Support\Facades\Storage::disk('local')->exists($path)) {
-            $file = \Illuminate\Support\Facades\Storage::disk('local')->get($path);
-            $type = \Illuminate\Support\Facades\Storage::disk('local')->mimeType($path) ?: 'application/octet-stream';
-            return response($file, 200)->header('Content-Type', $type);
+        // Clean requested path to prevent Directory Traversal
+        $cleanPath = trim(str_replace(['../', '..\\'], '', $path), '/');
+        if (str_starts_with($cleanPath, 'storage/')) {
+            $cleanPath = substr($cleanPath, 8);
+        }
+        if (str_starts_with($cleanPath, 'public/')) {
+            $cleanPath = substr($cleanPath, 7);
         }
 
-        // 3. Fallback direct filesystem in storage/app/public
-        $fullPath = storage_path('app/public/' . $path);
+        // Disallow direct access to sensitive internal storage folders
+        if (
+            str_starts_with($cleanPath, 'framework') ||
+            str_starts_with($cleanPath, 'logs') ||
+            str_starts_with($cleanPath, 'private') ||
+            str_contains($cleanPath, '.env')
+        ) {
+            abort(403, 'Akses ke berkas internal ini dibatasi.');
+        }
+
+        // 1. Direct filesystem check in storage/app/public
+        $fullPath = storage_path('app/public/' . $cleanPath);
         if (file_exists($fullPath) && is_file($fullPath)) {
-            return response()->file($fullPath);
+            return response()->file($fullPath, [
+                'Cache-Control' => 'public, max-age=31536000',
+            ]);
         }
 
-        // 4. Fallback direct filesystem in storage/app
-        $fullLocalPath = storage_path('app/' . $path);
+        // 2. Check public disk via Storage facade
+        if (\Illuminate\Support\Facades\Storage::disk('public')->exists($cleanPath)) {
+            $absPath = \Illuminate\Support\Facades\Storage::disk('public')->path($cleanPath);
+            if (file_exists($absPath) && is_file($absPath)) {
+                return response()->file($absPath, [
+                    'Cache-Control' => 'public, max-age=31536000',
+                ]);
+            }
+        }
+
+        // 3. Fallback direct filesystem in storage/app (for non-sensitive items)
+        $fullLocalPath = storage_path('app/' . $cleanPath);
         if (file_exists($fullLocalPath) && is_file($fullLocalPath)) {
-            return response()->file($fullLocalPath);
+            return response()->file($fullLocalPath, [
+                'Cache-Control' => 'public, max-age=31536000',
+            ]);
         }
 
-        abort(404, 'File tidak ditemukan: ' . $path);
+        abort(404, 'File storage tidak ditemukan: ' . $cleanPath);
     }
 }
