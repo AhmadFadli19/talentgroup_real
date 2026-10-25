@@ -439,6 +439,22 @@ class CourseController extends Controller
             return redirect()->back()->with('error', 'Hanya bisa menjawab pertanyaan.');
         }
 
+        $userCourse = UserCourse::where('user_id', $user->id)
+            ->where('course_id', $course->id)
+            ->first();
+
+        // Jika kuis sudah dikumpulkan (is_completed), jawaban dikunci dan tidak bisa diedit/dihapus
+        if ($userCourse && $userCourse->is_completed) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kuis ini sudah dikumpulkan secara final. Jawaban telah dikunci dan tidak dapat diubah lagi.',
+                    'is_locked' => true,
+                ], 403);
+            }
+            return redirect()->back()->with('error', 'Kuis ini sudah dikumpulkan secara final. Jawaban telah dikunci.');
+        }
+
         $content = CourseQuestion::findOrFail($id);
 
         // Handle coding question submission
@@ -558,6 +574,16 @@ class CourseController extends Controller
             // Default: 'end'
             $message = 'Jawaban Anda berhasil disimpan! Hasil evaluasi dan kunci jawaban akan ditampilkan setelah Anda menyelesaikan seluruh materi kursus.';
             $flashType = 'info';
+        }
+
+        if ($request->ajax() || $request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'answer' => $request->input('answer'),
+                'is_correct' => $isCorrect,
+                'reveal_answers' => $course->isInstantQuizFeedback(),
+            ]);
         }
 
         return redirect()->route('user.courses.content', [$course->id, $contentId])

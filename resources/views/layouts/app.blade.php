@@ -66,6 +66,10 @@
             --cyan2: #0284c7;
             --orange: #ea580c;
             --orange2: #f97316;
+            --yellow: #d97706;
+            --yellow2: #b45309;
+            --red: #ef4444;
+            --red2: #dc2626;
             --panel: var(--surface);
             --sidebar-width: 270px;
             --topbar-height: 68px;
@@ -91,10 +95,17 @@
             --muted: #94a3b8;
             --line: #1d3768;
             --canvas: #070e1e;
+            --green: #10b981;
             --php: #38bdf8;
             --php2: #60a5fa;
             --cyan: #38bdf8;
             --cyan2: #7dd3fc;
+            --orange: #f97316;
+            --orange2: #fb923c;
+            --yellow: #f59e0b;
+            --yellow2: #d97706;
+            --red: #f87171;
+            --red2: #ef4444;
             --card-shadow: 0 8px 30px rgba(0, 15, 45, 0.55);
         }
 

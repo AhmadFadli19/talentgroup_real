@@ -116,7 +116,7 @@
         <div class="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
             <div>
                 <span class="text-[9px] uppercase tracking-wider text-[var(--text3)] font-mono font-bold">{{ $course->title }}</span>
-                <h1 class="text-lg md:text-xl font-black text-white leading-tight" style="font-family: 'Outfit', sans-serif;">{{ $content->title }}</h1>
+                <h1 class="text-lg md:text-xl font-black text-slate-900 dark:text-white leading-tight" style="font-family: 'Outfit', sans-serif;">{{ $content->title }}</h1>
             </div>
             <div class="flex items-center gap-3">
                 <a href="{{ route('user.courses.learn', $course->id) }}" class="cyber-btn text-[10px] py-2 flex items-center gap-1.5 outline">
@@ -364,144 +364,151 @@
 
             <!-- QUESTION (QUIZ) TYPE -->
             @if($content->type === 'question' && !$content->isCoding())
-                <div class="cyber-card p-6 bg-[var(--bg2)] border-[var(--border)] flex flex-col gap-6">
-                    <div class="flex justify-between items-center border-b border-[var(--border)] pb-3">
-                        <span class="text-[9px] uppercase tracking-wider font-extrabold text-[var(--yellow)] font-mono flex items-center gap-1.5">
-                            <i class="fas fa-question-circle"></i> Evaluasi Kuis Soal
-                        </span>
+                @php
+                    $isLocked = (bool)($userCourse->is_completed ?? false);
+                    $revealAnswers = $course->isInstantQuizFeedback() || ($course->isEndQuizFeedback() && $isLocked);
+                    $displayOptions = $content->options ?? [];
+                    if ($course->isShuffleOptions() && is_array($displayOptions) && count($displayOptions) > 1) {
+                        $userId = auth()->id() ?? 0;
+                        $seededOptions = [];
+                        foreach ($displayOptions as $opt) {
+                            $seededOptions[] = [
+                                'val' => $opt,
+                                'hash' => md5($course->id . '_' . $userId . '_' . $content->id . '_' . $opt)
+                            ];
+                        }
+                        usort($seededOptions, fn($a, $b) => strcmp($a['hash'], $b['hash']));
+                        $displayOptions = array_column($seededOptions, 'val');
+                    }
+                @endphp
+
+                <div class="cyber-card p-6 bg-[var(--bg2)] border-[var(--border)] flex flex-col gap-6 rounded-2xl shadow-sm">
+                    <!-- Quiz Header Bar -->
+                    <div class="flex justify-between items-center border-b border-[var(--border)] pb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] uppercase tracking-wider font-extrabold text-[var(--yellow)] font-mono flex items-center gap-1.5">
+                                <i class="fas fa-question-circle"></i> Evaluasi Kuis Soal
+                            </span>
+                            @if($isLocked)
+                                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                                    <i class="fas fa-lock text-[9px]"></i> Terkunci
+                                </span>
+                            @endif
+                        </div>
                         
                         <!-- Points badge -->
-                        <span class="px-2.5 py-1 rounded-full border border-yellow-500/30 text-[var(--yellow)] font-bold text-[10px] font-mono bg-yellow-500/5">
+                        <span class="px-2.5 py-1 rounded-full border border-yellow-500/30 text-amber-600 dark:text-yellow-400 font-bold text-[11px] font-mono bg-yellow-500/10 flex items-center gap-1">
                             ⚡ 10 Pts
                         </span>
                     </div>
 
-                    <!-- Question content (Parsed Rich Markdown) -->
-                    <div class="course-story-article text-xs md:text-sm font-semibold leading-relaxed bg-black/15 p-4 sm:p-5 border border-[var(--border)] rounded-xl">
-                        {!! \App\Services\ModuleMarkdownParser::parse($content->content) !!}
+                    <!-- Question Content Box (Crisp High-Contrast in Light & Dark Mode) -->
+                    <div class="bg-slate-100/90 dark:bg-slate-900/90 p-5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-inner">
+                        <div class="course-story-article text-sm md:text-base font-bold leading-relaxed text-slate-900 dark:text-slate-100">
+                            {!! \App\Services\ModuleMarkdownParser::parse($content->content) !!}
+                        </div>
                     </div>
 
-                    <!-- Answer Options Form -->
-                    <form action="{{ route('user.courses.answer', [$course->id, $content->type . ':' . $content->id]) }}" 
-                          method="POST" 
-                          class="flex flex-col gap-4">
-                        @csrf
-                        
-                        @php
-                            $revealAnswers = $course->isInstantQuizFeedback() || ($course->isEndQuizFeedback() && ($userCourse->is_completed ?? false));
-                            $displayOptions = $content->options ?? [];
-                            if ($course->isShuffleOptions() && is_array($displayOptions) && count($displayOptions) > 1) {
-                                $userId = auth()->id() ?? 0;
-                                $seededOptions = [];
-                                foreach ($displayOptions as $opt) {
-                                    $seededOptions[] = [
-                                        'val' => $opt,
-                                        'hash' => md5($course->id . '_' . $userId . '_' . $content->id . '_' . $opt)
-                                    ];
-                                }
-                                usort($seededOptions, fn($a, $b) => strcmp($a['hash'], $b['hash']));
-                                $displayOptions = array_column($seededOptions, 'val');
-                            }
-                        @endphp
+                    <!-- Answer Options Section -->
+                    <div class="flex flex-col gap-3">
+                        <div class="flex items-center justify-between text-xs text-[var(--text3)] font-medium px-1">
+                            <span>Pilih salah satu jawaban yang benar:</span>
+                            <!-- Live Auto-Save Status Indicator -->
+                            <div class="flex items-center gap-2 font-mono text-[11px]">
+                                <template x-if="savingAnswer">
+                                    <span class="text-blue-600 dark:text-cyan-400 font-bold flex items-center gap-1.5 animate-pulse">
+                                        <i class="fas fa-spinner fa-spin"></i> Menyimpan...
+                                    </span>
+                                </template>
+                                <template x-if="!savingAnswer && selectedAnswer && !isLocked">
+                                    <span class="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5">
+                                        <i class="fas fa-check-circle"></i> Tersimpan otomatis
+                                    </span>
+                                </template>
+                                <template x-if="isLocked">
+                                    <span class="text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1.5">
+                                        <i class="fas fa-lock"></i> Jawaban terkunci
+                                    </span>
+                                </template>
+                            </div>
+                        </div>
 
-                        <div class="flex flex-col gap-2.5">
+                        <!-- Options List -->
+                        <div class="flex flex-col gap-3">
                             @foreach($displayOptions as $index => $option)
                                 @php
-                                    $isCorrectAnswer = $option === $content->correct_answer;
-                                    $isSelected = $userAnswer && $userAnswer->answer === $option;
-                                    $isWrongSelection = $isSelected && !$userAnswer->is_correct;
-                                    
-                                    // Custom colors for option selectors based on checked state and corrections
-                                    $borderClass = 'border-[var(--border)]';
-                                    $bgClass = 'bg-black/10';
-                                    $iconClass = 'fa-circle text-transparent';
-                                    
-                                    if ($userAnswer) {
-                                        if ($revealAnswers) {
-                                            if ($isCorrectAnswer) {
-                                                $borderClass = 'border-[var(--green)]';
-                                                $bgClass = 'bg-green-500/10';
-                                                $iconClass = 'fa-check-circle text-[var(--green)]';
-                                            } elseif ($isWrongSelection) {
-                                                $borderClass = 'border-[var(--red)]';
-                                                $bgClass = 'bg-red-500/10';
-                                                $iconClass = 'fa-times-circle text-[var(--red)]';
-                                            }
-                                        } else {
-                                            // When answers are hidden until end or none: show selected option neutrally without revealing correctness
-                                            if ($isSelected) {
-                                                $borderClass = 'border-[var(--cyan)] shadow-sm';
-                                                $bgClass = 'bg-cyan-500/10';
-                                                $iconClass = 'fa-dot-circle text-[var(--cyan)]';
-                                            }
-                                        }
-                                    }
+                                    $letter = chr(65 + $index);
                                 @endphp
                                 
-                                <label class="flex items-center gap-3 p-3.5 border rounded-xl cursor-pointer transition-all hover:bg-white/[0.02] {{ $borderClass }} {{ $bgClass }}">
-                                    <!-- Hidden input if already answered -->
+                                <div @click="!isLocked && saveQuizAnswer('{{ addslashes($option) }}')"
+                                     :class="{
+                                         'cursor-not-allowed opacity-80': isLocked,
+                                         'cursor-pointer': !isLocked,
+                                         'border-blue-600 dark:border-cyan-400 bg-blue-50/90 dark:bg-cyan-950/40 shadow-sm ring-1 ring-blue-500/30 dark:ring-cyan-400/30': selectedAnswer === '{{ addslashes($option) }}',
+                                         'border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b1120] hover:border-blue-400 dark:hover:border-cyan-500 hover:bg-slate-50 dark:hover:bg-slate-800/40': selectedAnswer !== '{{ addslashes($option) }}'
+                                     }"
+                                     class="flex items-center gap-3.5 p-4 rounded-xl border transition-all duration-200 select-none">
+                                    
+                                    <!-- Radio Input (Accessible) -->
                                     <input type="radio" 
                                            name="answer" 
                                            value="{{ $option }}" 
-                                           required 
                                            class="hidden" 
-                                           {{ $userAnswer ? 'disabled' : '' }}
-                                           {{ $isSelected ? 'checked' : '' }}
-                                           @change="selectedAnswer = '{{ $option }}'">
-                                    
-                                    <!-- Bullet indicator -->
-                                    <div class="w-5 h-5 rounded-full border border-white/10 flex items-center justify-center flex-shrink-0 text-xs">
-                                        @if($userAnswer)
-                                            <i class="fas {{ $iconClass }} text-sm"></i>
-                                        @else
-                                            <div class="w-2.5 h-2.5 rounded-full transition-all"
-                                                 :style="selectedAnswer === '{{ $option }}' ? 'background: var(--yellow);' : 'background: transparent;'"></div>
-                                        @endif
+                                           :disabled="isLocked"
+                                           :checked="selectedAnswer === '{{ addslashes($option) }}'">
+
+                                    <!-- Letter Pill Indicator (A, B, C, D) -->
+                                    <div class="w-8 h-8 rounded-lg font-mono font-bold text-xs flex items-center justify-center border transition-all shrink-0"
+                                         :class="selectedAnswer === '{{ addslashes($option) }}' 
+                                            ? 'bg-blue-600 dark:bg-cyan-400 text-white dark:text-slate-950 border-blue-600 dark:border-cyan-400 shadow-sm' 
+                                            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700'">
+                                        {{ $letter }}
                                     </div>
 
-                                    <div class="flex-1 flex items-center justify-between">
-                                        <span class="text-xs text-[var(--text2)]">{{ chr(65 + $index) }}. {{ $option }}</span>
-                                        @if($userAnswer && $isSelected && !$revealAnswers)
-                                            <span class="text-[10px] font-mono text-[var(--cyan)] bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20 font-bold">Pilihan Anda</span>
-                                        @endif
-                                    </div>
-                                </label>
-                            @endforeach
-                        </div>
+                                    <!-- Option Text Content -->
+                                    <div class="flex-1 flex items-center justify-between gap-3 min-w-0">
+                                        <span class="text-xs sm:text-sm leading-relaxed transition-colors font-medium"
+                                              :class="selectedAnswer === '{{ addslashes($option) }}' 
+                                                ? 'text-blue-950 dark:text-white font-bold' 
+                                                : 'text-slate-800 dark:text-slate-200'">
+                                            {{ $option }}
+                                        </span>
 
-                        <!-- Submit Button / Correction alert -->
-                        @if($userAnswer)
-                            @if($revealAnswers)
-                                @if($userAnswer->is_correct)
-                                    <div class="p-4 rounded-xl border border-[var(--green)] bg-green-500/10 text-[var(--green)] text-xs font-semibold flex items-center gap-2">
-                                        <i class="fas fa-check-circle text-base"></i> Jawaban Anda Benar! (+10 Pts)
-                                    </div>
-                                @else
-                                    <div class="p-4 rounded-xl border border-[var(--red)] bg-red-500/10 text-[var(--red)] text-xs font-semibold flex items-center gap-2">
-                                        <i class="fas fa-times-circle text-base"></i> Jawaban masih salah. Silakan kaji materi kembali sebelum mencoba lagi!
-                                    </div>
-                                @endif
-                            @else
-                                <div class="p-4 rounded-xl border border-blue-500/30 bg-blue-500/10 text-cyan-300 text-xs font-semibold flex items-start gap-3">
-                                    <i class="fas fa-info-circle text-base mt-0.5 text-[var(--cyan)]"></i>
-                                    <div>
-                                        <div class="font-bold text-white mb-0.5">Jawaban Anda Berhasil Disimpan</div>
-                                        @if($course->isNoneQuizFeedback())
-                                            <p class="text-[11px] text-slate-300 font-normal">Kunci jawaban untuk materi/kuis ini dirahasiakan.</p>
-                                        @else
-                                            <p class="text-[11px] text-slate-300 font-normal">Hasil evaluasi dan kunci jawaban akan ditampilkan secara lengkap setelah Anda menyelesaikan seluruh materi kursus.</p>
-                                        @endif
+                                        <!-- Badge "Pilihan Anda" -->
+                                        <div class="shrink-0" x-show="selectedAnswer === '{{ addslashes($option) }}'" x-cloak>
+                                            <span class="inline-flex items-center gap-1 text-[11px] font-mono font-bold px-2.5 py-1 rounded-md bg-blue-100 dark:bg-cyan-500/20 text-blue-800 dark:text-cyan-300 border border-blue-300 dark:border-cyan-500/40 shadow-sm">
+                                                <i class="fas fa-check text-[10px]"></i> Pilihan Anda
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            @endif
-                        @else
-                            <div class="flex justify-end mt-2">
-                                <button type="submit" class="cyber-btn font-bold px-6 py-2.5" style="background: linear-gradient(135deg, var(--yellow), var(--orange2)); box-shadow: 0 0 16px rgba(234,179,8,0.25);">
-                                    <i class="fas fa-clipboard-check mr-2"></i> Verifikasi Jawaban Kuis
-                                </button>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <!-- Bottom Notification Box -->
+                    <div class="mt-2 p-4 rounded-xl border transition-all"
+                         :class="isLocked 
+                            ? 'bg-amber-50 dark:bg-amber-950/20 border-amber-300 dark:border-amber-500/40 text-amber-900 dark:text-amber-300' 
+                            : 'bg-blue-50/80 dark:bg-blue-950/20 border-blue-200 dark:border-blue-500/30 text-blue-900 dark:text-cyan-300'">
+                        <div class="flex items-start gap-3">
+                            <i class="fas mt-0.5 text-base" :class="isLocked ? 'fa-lock text-amber-600 dark:text-amber-400' : 'fa-info-circle text-blue-600 dark:text-cyan-400'"></i>
+                            <div class="text-xs leading-relaxed">
+                                <template x-if="isLocked">
+                                    <div>
+                                        <strong class="block font-bold text-amber-950 dark:text-white mb-0.5">Kuis Telah Dikumpulkan Secara Final</strong>
+                                        <p class="text-amber-800 dark:text-slate-300">Seluruh jawaban kuis telah dikunci dan tidak dapat diubah lagi. Anda dapat melihat ulasan skor Anda di menu Hasil Modul.</p>
+                                    </div>
+                                </template>
+                                <template x-if="!isLocked">
+                                    <div>
+                                        <strong class="block font-bold text-blue-950 dark:text-white mb-0.5">Jawaban Tersimpan Otomatis</strong>
+                                        <p class="text-blue-800 dark:text-slate-300">Cukup klik opsi yang diinginkan untuk menyimpan secara instan. Anda tetap dapat mengubah pilihan jawaban kapan saja sebelum mengumpulkan kuis di akhir modul.</p>
+                                    </div>
+                                </template>
                             </div>
-                        @endif
-                    </form>
+                        </div>
+                    </div>
                 </div>
             @endif
 
@@ -545,14 +552,16 @@
 
                 @if($nextContent)
                     <a href="{{ route('user.courses.content', [$course->id, $nextContent->type . ':' . $nextContent->id]) }}" 
-                       class="cyber-btn text-[11px] px-4 py-2" style="background: linear-gradient(135deg, var(--cyan), var(--cyan2)); box-shadow: 0 0 16px rgba(6,182,212,0.25);">
-                        Selanjutnya <i class="fas fa-arrow-right ml-2"></i>
+                       class="cyber-btn font-bold text-xs px-5 py-2.5" 
+                       style="background: linear-gradient(136deg, #0284c7, #0047b3); color: #ffffff !important; box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);">
+                        <span>Materi Selanjutnya</span> <i class="fas fa-arrow-right ml-2"></i>
                     </a>
                 @else
-                    <!-- Final Results Link -->
+                    <!-- Final Quiz / Course Submission Button -->
                     <a href="{{ route('user.courses.results', $course->id) }}" 
-                       class="cyber-btn text-[11px] px-4 py-2" style="background: linear-gradient(135deg, var(--green), #059669); box-shadow: 0 0 16px rgba(16,185,129,0.25);">
-                        Lihat Hasil Modul <i class="fas fa-trophy ml-2"></i>
+                       class="cyber-btn font-bold text-xs px-6 py-2.5" 
+                       style="background: linear-gradient(136deg, #059669, #10b981); color: #ffffff !important; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);">
+                        <i class="fas fa-check-double mr-2"></i> <span>Kumpulkan & Selesaikan Kuis</span> <i class="fas fa-trophy ml-2 text-amber-300"></i>
                     </a>
                 @endif
             </div>
@@ -566,10 +575,48 @@
 function learningData() {
     return {
         navOpen: false,
-        selectedAnswer: '',
+        selectedAnswer: '{{ $userAnswer ? addslashes($userAnswer->answer) : '' }}',
+        savingAnswer: false,
+        saveStatus: '{{ $userAnswer ? 'saved' : 'idle' }}',
+        isLocked: {{ ($userCourse && $userCourse->is_completed) ? 'true' : 'false' }},
         audioPlaying: false,
         audioProgress: 0,
         audioInterval: null,
+
+        saveQuizAnswer(option) {
+            if (this.isLocked || this.savingAnswer) return;
+            this.selectedAnswer = option;
+            this.savingAnswer = true;
+            this.saveStatus = 'saving';
+
+            fetch('{{ route('user.courses.answer', [$course->id, $content->type . ':' . $content->id]) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ answer: option })
+            })
+            .then(res => res.json())
+            .then(data => {
+                this.savingAnswer = false;
+                if (data.success) {
+                    this.saveStatus = 'saved';
+                } else if (data.is_locked) {
+                    this.isLocked = true;
+                    this.saveStatus = 'locked';
+                    alert(data.message || 'Kuis ini sudah dikumpulkan dan telah dikunci.');
+                } else {
+                    this.saveStatus = 'error';
+                }
+            })
+            .catch(err => {
+                this.savingAnswer = false;
+                this.saveStatus = 'error';
+                console.error(err);
+            });
+        },
 
         togglePlayAudio(hasRealFile = false) {
             if (hasRealFile) {
