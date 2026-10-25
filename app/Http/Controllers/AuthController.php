@@ -320,17 +320,41 @@ class AuthController extends Controller
     }
 
     // ==================== GOOGLE OAUTH ====================
-    public function redirectToGoogle()
+    public function redirectToGoogle(Request $request)
     {
         try {
-            $clientId = config('services.google.client_id');
-            $clientSecret = config('services.google.client_secret');
+            $clientId = config('services.google.client_id') ?: env('GOOGLE_CLIENT_ID');
+            $clientSecret = config('services.google.client_secret') ?: env('GOOGLE_CLIENT_SECRET');
+            $redirectUri = config('services.google.redirect') ?: env('GOOGLE_REDIRECT_URI');
+
+            if (empty($redirectUri)) {
+                $redirectUri = url('/auth/google/callback');
+            }
 
             if (empty($clientId) || empty($clientSecret)) {
                 return redirect()->route('login')->with('error', 'Google Client ID atau Client Secret belum diatur di file .env server. Silakan hubungi administrator.');
             }
 
-            return \Laravel\Socialite\Facades\Socialite::driver('google')->redirect();
+            // 1. Jika Socialite terpasang di vendor, gunakan Socialite
+            if (class_exists('\Laravel\Socialite\Facades\Socialite')) {
+                return \Laravel\Socialite\Facades\Socialite::driver('google')->redirect();
+            }
+
+            // 2. Fallback Mandiri (Native Google OAuth 2.0 tanpa dependensi Socialite)
+            $state = Str::random(40);
+            session(['oauth_state' => $state]);
+
+            $query = http_build_query([
+                'client_id' => $clientId,
+                'redirect_uri' => $redirectUri,
+                'response_type' => 'code',
+                'scope' => 'openid profile email',
+                'state' => $state,
+                'access_type' => 'offline',
+                'prompt' => 'select_account',
+            ]);
+
+            return redirect()->away('https://accounts.google.com/o/oauth2/v2/auth?' . $query);
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Google OAuth Redirect Error: ' . $e->getMessage(), [
                 'exception' => $e
@@ -339,15 +363,72 @@ class AuthController extends Controller
         }
     }
 
-    public function handleGoogleCallback()
+    public function handleGoogleCallback(Request $request)
     {
         try {
-            // Coba ambil pengguna dengan stateful, jika sesi bermasalah di proxy/hosting coba stateless
-            try {
-                $googleUser = \Laravel\Socialite\Facades\Socialite::driver('google')->user();
-            } catch (\Exception $stateException) {
-                \Illuminate\Support\Facades\Log::warning('Google OAuth state verification failed, falling back to stateless: ' . $stateException->getMessage());
-                $googleUser = \Laravel\Socialite\Facades\Socialite::driver('google')->stateless()->user();
+            if ($request->has('error')) {
+                return redirect()->route('login')->with('error', 'Login Google dibatalkan: ' . $request->error);
+            }
+
+            if (!$request->has('code')) {
+                return redirect()->route('login')->with('error', 'Kode otorisasi Google tidak ditemukan.');
+            }
+
+            $googleUser = null;
+
+            // 1. Coba lewat Socialite jika package tersedia di vendor
+            if (class_exists('\Laravel\Socialite\Facades\Socialite')) {
+                try {
+                    $googleUser = \Laravel\Socialite\Facades\Socialite::driver('google')->user();
+                } catch (\Exception $stateException) {
+                    \Illuminate\Support\Facades\Log::warning('Google OAuth state verification failed, falling back to stateless: ' . $stateException->getMessage());
+                    try {
+                        $googleUser = \Laravel\Socialite\Facades\Socialite::driver('google')->stateless()->user();
+                    } catch (\Exception $e) {
+                        $googleUser = null;
+                    }
+                }
+            }
+
+            // 2. Fallback Mandiri menggunakan HTTP Client bawaan Laravel (tanpa Socialite)
+            if (!$googleUser || empty($googleUser->email)) {
+                $clientId = config('services.google.client_id') ?: env('GOOGLE_CLIENT_ID');
+                $clientSecret = config('services.google.client_secret') ?: env('GOOGLE_CLIENT_SECRET');
+                $redirectUri = config('services.google.redirect') ?: env('GOOGLE_REDIRECT_URI');
+
+                if (empty($redirectUri)) {
+                    $redirectUri = url('/auth/google/callback');
+                }
+
+                $tokenResponse = \Illuminate\Support\Facades\Http::asForm()->post('https://oauth2.googleapis.com/token', [
+                    'client_id' => $clientId,
+                    'client_secret' => $clientSecret,
+                    'code' => $request->code,
+                    'grant_type' => 'authorization_code',
+                    'redirect_uri' => $redirectUri,
+                ]);
+
+                if (!$tokenResponse->successful()) {
+                    \Illuminate\Support\Facades\Log::error('Google Token Exchange Failed: ' . $tokenResponse->body());
+                    $errorDesc = $tokenResponse->json('error_description') ?: $tokenResponse->json('error') ?: 'Gagal autentikasi token';
+                    return redirect()->route('login')->with('error', 'Gagal menukarkan token Google: ' . $errorDesc);
+                }
+
+                $accessToken = $tokenResponse->json('access_token');
+                $userResponse = \Illuminate\Support\Facades\Http::withToken($accessToken)->get('https://www.googleapis.com/oauth2/v3/userinfo');
+
+                if (!$userResponse->successful()) {
+                    \Illuminate\Support\Facades\Log::error('Google Userinfo Failed: ' . $userResponse->body());
+                    return redirect()->route('login')->with('error', 'Gagal mengambil data profil dari akun Google.');
+                }
+
+                $userData = $userResponse->json();
+                $googleUser = (object) [
+                    'id' => $userData['sub'] ?? null,
+                    'name' => $userData['name'] ?? 'Pengguna Google',
+                    'email' => $userData['email'] ?? null,
+                    'avatar' => $userData['picture'] ?? null,
+                ];
             }
 
             if (!$googleUser || empty($googleUser->email)) {
