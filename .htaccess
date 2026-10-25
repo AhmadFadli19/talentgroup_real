@@ -1,27 +1,13 @@
-DirectoryIndex index.php public/index.php
-
 <IfModule mod_rewrite.c>
     RewriteEngine On
-
-    # Keamanan: Blokir akses ke file .env dan file sensitif
-    RewriteRule ^\.(.*)$ - [F,L]
+    RewriteBase /
 
     # Belokkan URL /storage secara aman ke /public/storage
-    RewriteRule ^storage/(.*)$ public/storage/$1 [L]
+    RewriteRule ^storage/(.*)$ /public/storage/$1 [L]
 
-    # Jangan rewrite jika sudah mengarah ke public/
-    RewriteCond %{REQUEST_URI} ^/public/ [NC]
-    RewriteRule ^ - [L]
-
-    # Arahkan file statis atau folder yang ada di folder public
-    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f [OR]
-    RewriteCond %{DOCUMENT_ROOT}/public/$1 -d
-    RewriteRule ^(.*)$ public/$1 [L]
-
-    # Arahkan semua request lainnya ke index.php
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)$ index.php [L]
+    # Jika file/folder BUKAN ada di public/, arahkan ke public/
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ /public/$1 [L]
 </IfModule>
 
 <Files .env>
