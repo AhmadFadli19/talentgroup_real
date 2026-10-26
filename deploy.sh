@@ -1,76 +1,153 @@
 #!/bin/bash
 # ============================================================
-# deploy.sh — Script Deployment untuk Shared Hosting
-# talentgroup.id / flowacademy.fun
+# deploy.sh — Self-Healing Deployment Script untuk Shared Hosting
+# talentgroup.cloud / flowacademy.fun
 # 
 # CARA PAKAI di SSH hosting:
 #   chmod +x deploy.sh && ./deploy.sh
-#
-# ⚠️  Script ini TIDAK memerlukan storage:link
-#     File diakses via route /storage/{path} → HomeController
 # ============================================================
 
 set -e
 
 echo "=========================================="
-echo "  🚀 Deploying flowacademy.fun"
+echo "  🚀 Memulai Deployment flowacademy / talentgroup"
 echo "=========================================="
 
 # 1. Tarik pembaruan terbaru dari GitHub
 echo ""
-echo "📥 [1/6] Pulling latest code..."
+echo "📥 [1/6] Mengambil code terbaru dari GitHub..."
 git fetch origin main
 git reset --hard FETCH_HEAD
-echo "✅ Code updated successfully"
+echo "✅ Code berhasil diperbarui ke commit: $(git rev-parse --short HEAD)"
 
-# 2. Hapus broken symlink public/storage (jika ada)
-#    Ini mencegah error 403 dari Apache yang mencoba follow broken symlink
+# 2. Pastikan file root entry point (.htaccess & index.php) selalu ada
 echo ""
-echo "🔗 [2/6] Cleaning broken symlinks..."
+echo "🌐 [2/6] Memverifikasi root entry point (.htaccess & index.php)..."
+
+cat << 'EOF' > index.php
+<?php
+/**
+ * Shared Hosting Root Entry Point
+ * Meneruskan request ke folder public/index.php
+ */
+require_once __DIR__ . '/public/index.php';
+EOF
+chmod 644 index.php
+echo "✅ Root index.php siap"
+
+cat << 'EOF' > .htaccess
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # 1. Blokir akses HTTP langsung ke direktori internal storage yang sensitif
+    RewriteRule ^storage/(logs|framework|private)/ - [F,L]
+
+    # 2. Arahkan semua request /storage langsung ke Laravel Front Controller
+    RewriteRule ^storage(/.*)?$ /public/index.php [L]
+
+    # 3. Sajikan file fisik statis dari public/ jika file-nya ada (CSS, JS, gambar, dsb)
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f
+    RewriteRule ^(.*)$ /public/$1 [L]
+
+    # 4. Arahkan semua request lainnya ke folder public/
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ /public/$1 [L]
+</IfModule>
+
+<FilesMatch "^\.(env|git|env\..*)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order deny,allow
+        Deny from all
+    </IfModule>
+</FilesMatch>
+EOF
+chmod 644 .htaccess
+echo "✅ Root .htaccess siap"
+
+# 3. Pastikan public/.htaccess siap untuk routing storage tanpa symlink
+echo ""
+echo "🔒 [3/6] Memverifikasi public/.htaccess..."
+cat << 'EOF' > public/.htaccess
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # Handle Authorization Header
+    RewriteCond %{HTTP:Authorization} .
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+
+    # Handle X-XSRF-Token Header
+    RewriteCond %{HTTP:x-xsrf-token} .
+    RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
+
+    # CRITICAL: Route ALL /storage requests through Laravel (bypass symlink)
+    # Menghindari error 403 Forbidden pada shared hosting
+    RewriteRule ^storage(/.*)?$ index.php [L]
+
+    # Redirect Trailing Slashes If Not A Folder...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} !^/public/p/
+    RewriteCond %{REQUEST_URI} !^/p/
+    RewriteCond %{REQUEST_URI} (.+)/$
+    RewriteRule ^ %1 [L,R=301]
+
+    # Send Requests To Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>
+EOF
+chmod 644 public/.htaccess
+echo "✅ public/.htaccess siap"
+
+# 4. Bersihkan broken symlink public/storage jika ada
+echo ""
+echo "🔗 [4/6] Memeriksa link public/storage..."
 if [ -L "public/storage" ]; then
     rm -f "public/storage"
-    echo "✅ Removed broken symlink public/storage"
+    echo "✅ Broken symlink public/storage dihapus (tidak lagi dibutuhkan)"
 elif [ -d "public/storage" ]; then
-    echo "ℹ️  public/storage is a real directory, skipping"
+    echo "ℹ️  public/storage adalah folder fisik, dibiarkan"
 else
-    echo "ℹ️  No public/storage found, skipping"
+    echo "ℹ️  Tidak ada broken symlink public/storage"
 fi
 
-# 3. Install/update dependencies (jika ada perubahan composer)
+# 5. Pastikan folder direktori storage & cache ada serta memiliki permission yang benar
 echo ""
-echo "📦 [3/6] Checking composer dependencies..."
-if [ -f "composer.lock" ]; then
-    composer install --no-dev --optimize-autoloader --no-interaction 2>/dev/null || echo "⚠️  Composer install skipped"
-fi
-
-# 4. Clear semua cache Laravel
-echo ""
-echo "🧹 [4/6] Clearing Laravel caches..."
-php artisan optimize:clear 2>/dev/null || true
-
-# 5. Pastikan folder storage ada dan writable
-echo ""
-echo "📁 [5/6] Ensuring storage directories exist..."
+echo "📁 [5/6] Mempersiapkan folder storage dan cache..."
 mkdir -p storage/app/public
 mkdir -p storage/framework/cache/data
 mkdir -p storage/framework/sessions
 mkdir -p storage/framework/views
 mkdir -p storage/logs
-chmod -R 775 storage 2>/dev/null || true
-chmod -R 775 bootstrap/cache 2>/dev/null || true
+mkdir -p bootstrap/cache
 
-# 6. Rebuild cache untuk production
+# Hapus cache bootstrap lama secara langsung dari filesystem
+rm -f bootstrap/cache/*.php 2>/dev/null || true
+rm -rf storage/framework/cache/data/* 2>/dev/null || true
+rm -rf storage/framework/views/* 2>/dev/null || true
+
+chmod -R 775 storage 2>/dev/null || chmod -R 755 storage 2>/dev/null || true
+chmod -R 775 bootstrap/cache 2>/dev/null || chmod -R 755 bootstrap/cache 2>/dev/null || true
+echo "✅ Permission storage dan cache diperbaiki"
+
+# 6. Jalankan pembersihan cache Laravel
 echo ""
-echo "⚡ [6/6] Optimizing for production..."
-php artisan config:cache 2>/dev/null || true
-php artisan route:cache 2>/dev/null || true
-php artisan view:cache 2>/dev/null || true
+echo "🧹 [6/6] Membersihkan cache Laravel via artisan..."
+php artisan optimize:clear 2>/dev/null || echo "ℹ️  Clear via artisan dilewati (cache filesystem sudah dibersihkan manual)"
 
 echo ""
 echo "=========================================="
-echo "  ✅ Deployment selesai!"
-echo ""
-echo "  ℹ️  Storage link TIDAK diperlukan."
-echo "  ℹ️  File diakses via route /storage/{path}"
-echo "  ℹ️  Handled oleh HomeController::streamFile()"
+echo "  🎉 DEPLOYMENT SUKSES & SELESAI!"
+echo "=========================================="
+echo "  ✓ Root .htaccess & index.php aktif"
+echo "  ✓ Bypass symlink storage aktif"
+echo "  ✓ Cache sistem telah disegarkan"
 echo "=========================================="
