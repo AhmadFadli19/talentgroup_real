@@ -390,7 +390,7 @@
                                 </h3>
                                 <p class="text-[11px] text-[var(--muted)] font-mono mt-0.5">
                                     Deploy: {{ $proto->created_at->format('d M Y') }} &middot; 
-                                    <span class="capitalize">{{ $proto->upload_type === 'zip_archive' ? 'Paket .ZIP' : 'Multi-File Manual' }}</span>
+                                    <span class="capitalize">{{ $proto->upload_type === 'zip_archive' ? 'Paket .ZIP' : 'Prototype lama' }}</span>
                                 </p>
                             </div>
 
@@ -539,29 +539,15 @@
                         Ganti Berkas / Update Kode (Opsional)
                     </label>
                     <p class="text-[11px] text-[var(--muted)] mb-3 leading-relaxed">
-                        Biarkan kosong jika hanya ingin mengubah nama atau slug URL. Unggah file baru jika ingin memperbarui seluruh isi website Anda.
+                        Biarkan kosong jika hanya ingin mengubah nama atau slug URL. Unggah paket ZIP baru jika ingin memperbarui seluruh isi website Anda.
                     </p>
 
                     <div class="space-y-3 p-3.5 rounded-xl bg-[var(--bg3)] border border-[var(--border)]">
                         <div>
                             <label class="text-[11px] font-bold text-[var(--ink)] block mb-1">
-                                Opsi A: Ganti dengan Paket .ZIP Baru
+                                Ganti dengan Paket .ZIP Baru
                             </label>
                             <input type="file" name="zip_file" accept=".zip" class="w-full text-xs text-[var(--text2)]">
-                        </div>
-
-                        <div class="pt-2 border-t border-[var(--border)]">
-                            <label class="text-[11px] font-bold text-[var(--ink)] block mb-1">
-                                Opsi B: Ganti dengan HTML Utama (.html)
-                            </label>
-                            <input type="file" name="html_file" accept=".html,.htm" class="w-full text-xs text-[var(--text2)]">
-                        </div>
-
-                        <div>
-                            <label class="text-[11px] font-bold text-[var(--ink)] block mb-1">
-                                File Slide &amp; Berkas Tambahan (Multi-file)
-                            </label>
-                            <input type="file" name="additional_files[]" multiple class="w-full text-xs text-[var(--text2)]">
                         </div>
                     </div>
                 </div>

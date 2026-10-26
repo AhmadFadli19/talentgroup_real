@@ -40,32 +40,14 @@
                 
                 <div class="border-b border-[var(--border)] pb-4 mb-6">
                     <h2 class="text-xl sm:text-2xl font-black text-[var(--ink)]">Detail Berkas Prototype</h2>
-                    <p class="text-sm text-[var(--muted)] mt-1">Pilih metode upload dan lengkapi detail aplikasi web statis Anda.</p>
+                    <p class="text-sm text-[var(--muted)] mt-1">Unggah satu paket ZIP dan lengkapi detail aplikasi web statis Anda.</p>
                 </div>
 
                 <form id="prototype-upload-form" enctype="multipart/form-data">
                     @csrf
-                    
-                    <!-- Upload Mode Picker -->
-                    <div class="mb-6">
-                        <label class="block text-xs sm:text-sm font-extrabold uppercase tracking-wider text-[var(--ink)] mb-2.5">
-                            Metode Upload Berkas
-                        </label>
-                        <div class="grid grid-cols-2 gap-3 p-1.5 bg-[var(--bg3)] border border-[var(--border)] rounded-xl">
-                            <button type="button" id="tab-zip" onclick="switchUploadMode('zip_archive')"
-                                class="py-2.5 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition bg-[var(--blue)] text-white shadow-sm">
-                                <i class="fas fa-file-archive text-base"></i> Paket File .ZIP
-                            </button>
-                            <button type="button" id="tab-manual" onclick="switchUploadMode('manual_files')"
-                                class="py-2.5 px-4 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition text-[var(--text2)] hover:text-[var(--blue)]">
-                                <i class="fas fa-file-code text-base"></i> File Terpisah (HTML/CSS/JS)
-                            </button>
-                        </div>
-                        <input type="hidden" name="upload_type" id="upload_type" value="zip_archive">
-                    </div>
 
-                    <!-- MODE A: ZIP Dropzone -->
-                    <div id="section-zip" class="mb-6">
+                    <!-- ZIP Dropzone -->
+                    <div class="mb-6">
                         <label class="block text-xs sm:text-sm font-extrabold uppercase tracking-wider text-[var(--ink)] mb-2.5">
                             Berkas Proyek Web (.ZIP)
                         </label>
@@ -90,68 +72,11 @@
                                 <span class="pill blue-soft py-1 px-3">Auto-Sanitasi Kode</span>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- MODE B: Separate Files -->
-                    <div id="section-manual" class="space-y-4 mb-6 hidden">
-                        <div class="p-4 rounded-xl bg-[var(--blue-light)] border border-[#bfdbfe] text-xs sm:text-sm text-[var(--blue-dark)] flex items-start gap-3">
+                        <div class="mt-3 p-4 rounded-xl bg-[var(--blue-light)] border border-[#bfdbfe] text-xs sm:text-sm text-[var(--blue-dark)] flex items-start gap-3">
                             <i class="fas fa-info-circle text-[var(--blue)] text-base mt-0.5"></i>
                             <div class="leading-relaxed">
-                                <strong>Multi-Halaman & Multi-Slide Didukung:</strong> Unggah <code>index.html</code> sebagai halaman utama yang dibuka pertama kali. Anda juga bisa mengunggah banyak slide/halaman HTML lain (misal: <code>slide1.html</code>, <code>slide2.html</code>, dll.) serta CSS, JS, dan gambar secara langsung agar seluruh halaman saling terhubung tanpa error 404!
+                                <strong>Struktur folder otomatis dibaca:</strong> ZIP boleh berisi folder proyek. Pastikan hasil website statis memiliki <code>index.html</code>; file CSS, JavaScript, gambar, dan halaman lain ikut disimpan. Backend Node seperti <code>server.js</code> tidak dijalankan oleh hosting prototype.
                             </div>
-                        </div>
-
-                        <!-- 1. Primary HTML -->
-                        <div class="p-4 sm:p-5 rounded-xl border border-[var(--border)] bg-[var(--bg3)]">
-                            <label class="text-xs sm:text-sm font-bold text-[var(--ink)] block mb-1">
-                                <i class="fab fa-html5 text-orange-500 mr-1.5 text-base"></i> File HTML Utama (index.html) <span class="text-rose-500">*</span>
-                            </label>
-                            <p class="text-[11px] text-[var(--muted)] mb-2.5">Halaman depan yang pertama kali terbuka saat pengunjung membuka URL web Anda.</p>
-                            <input type="file" name="html_file" id="html_file" accept=".html,.htm" class="w-full text-xs sm:text-sm text-[var(--text2)]">
-                        </div>
-
-                        <!-- 2. Additional Slides & HTML Pages -->
-                        <div class="p-4 sm:p-5 rounded-xl border border-[var(--border)] bg-[var(--bg3)]">
-                            <div class="flex items-center justify-between mb-1">
-                                <label class="text-xs sm:text-sm font-bold text-[var(--ink)] block">
-                                    <i class="fas fa-layer-group text-indigo-500 mr-1.5 text-base"></i> Slide & Halaman HTML Lainnya (Bisa Pilih Banyak)
-                                </label>
-                                <span class="pill blue-soft text-[10px]">Multi-File</span>
-                            </div>
-                            <p class="text-[11px] text-[var(--muted)] mb-2.5">Pilih sekaligus banyak file slide (contoh: <code>slide1.html</code>, <code>slide2.html</code>, <code>about.html</code>). Semua akan otomatis saling terhubung.</p>
-                            <input type="file" name="additional_files[]" id="additional_html_files" accept=".html,.htm" multiple class="w-full text-xs sm:text-sm text-[var(--text2)]">
-                        </div>
-
-                        <!-- 3. CSS Files -->
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--bg3)]">
-                                <label class="text-xs sm:text-sm font-bold text-[var(--ink)] block mb-1">
-                                    <i class="fab fa-css3-alt text-blue-500 mr-1.5 text-base"></i> File CSS (.css) - Opsional
-                                </label>
-                                <p class="text-[11px] text-[var(--muted)] mb-2">Style tampilan web.</p>
-                                <input type="file" name="css_file" id="css_file" accept=".css" class="w-full text-xs text-[var(--text2)]">
-                            </div>
-
-                            <!-- 4. JS Files -->
-                            <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--bg3)]">
-                                <label class="text-xs sm:text-sm font-bold text-[var(--ink)] block mb-1">
-                                    <i class="fab fa-js text-amber-500 mr-1.5 text-base"></i> File JavaScript (.js) - Opsional
-                                </label>
-                                <p class="text-[11px] text-[var(--muted)] mb-2">Skrip interaktivitas web.</p>
-                                <input type="file" name="js_file" id="js_file" accept=".js" class="w-full text-xs text-[var(--text2)]">
-                            </div>
-                        </div>
-
-                        <!-- 5. Additional Assets (Images, etc.) -->
-                        <div class="p-4 sm:p-5 rounded-xl border border-[var(--border)] bg-[var(--bg3)]">
-                            <div class="flex items-center justify-between mb-1">
-                                <label class="text-xs sm:text-sm font-bold text-[var(--ink)] block">
-                                    <i class="fas fa-images text-emerald-500 mr-1.5 text-base"></i> Gambar & Aset Media Pendukung (Bisa Pilih Banyak)
-                                </label>
-                                <span class="pill success-outline text-[10px]">Opsional</span>
-                            </div>
-                            <p class="text-[11px] text-[var(--muted)] mb-2.5">Unggah gambar (<code>.png, .jpg, .svg, .webp</code>) atau berkas aset yang dipanggil di dalam HTML Anda.</p>
-                            <input type="file" name="additional_files[]" id="additional_asset_files" accept=".png,.jpg,.jpeg,.svg,.webp,.gif,.ico,.woff,.woff2,.ttf,.json" multiple class="w-full text-xs sm:text-sm text-[var(--text2)]">
                         </div>
                     </div>
 
@@ -453,30 +378,7 @@
 </div>
 
 <script>
-    let currentMode = 'zip_archive';
     let currentTempToken = null;
-
-    function switchUploadMode(mode) {
-        currentMode = mode;
-        document.getElementById('upload_type').value = mode;
-
-        const tabZip = document.getElementById('tab-zip');
-        const tabManual = document.getElementById('tab-manual');
-        const sectionZip = document.getElementById('section-zip');
-        const sectionManual = document.getElementById('section-manual');
-
-        if (mode === 'zip_archive') {
-            tabZip.className = "py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition bg-[var(--blue)] text-white shadow-sm";
-            tabManual.className = "py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition text-[var(--text2)] hover:text-[var(--blue)]";
-            sectionZip.classList.remove('hidden');
-            sectionManual.classList.add('hidden');
-        } else {
-            tabManual.className = "py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition bg-[var(--blue)] text-white shadow-sm";
-            tabZip.className = "py-2 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-2 transition text-[var(--text2)] hover:text-[var(--blue)]";
-            sectionManual.classList.remove('hidden');
-            sectionZip.classList.add('hidden');
-        }
-    }
 
     function handleZipSelected(input) {
         if (input.files && input.files[0]) {
@@ -524,18 +426,10 @@
 
         const formData = new FormData(this);
 
-        if (currentMode === 'zip_archive') {
-            const zipInput = document.getElementById('zip_file');
-            if (!zipInput.files || !zipInput.files[0]) {
-                alert('Silakan pilih berkas file .ZIP terlebih dahulu.');
-                return;
-            }
-        } else {
-            const htmlInput = document.getElementById('html_file');
-            if (!htmlInput.files || !htmlInput.files[0]) {
-                alert('File HTML (.html) wajib diunggah sebagai halaman utama.');
-                return;
-            }
+        const zipInput = document.getElementById('zip_file');
+        if (!zipInput.files || !zipInput.files[0]) {
+            alert('Silakan pilih berkas file .ZIP terlebih dahulu.');
+            return;
         }
 
         showLoadingOverlay();

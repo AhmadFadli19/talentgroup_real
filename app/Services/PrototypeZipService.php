@@ -2,11 +2,9 @@
 
 namespace App\Services;
 
-use Exception;
-use ZipArchive;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Str;
+use ZipArchive;
 
 class PrototypeZipService
 {
@@ -16,7 +14,7 @@ class PrototypeZipService
     protected array $blacklistedExtensions = [
         'php', 'phtml', 'phar', 'php3', 'php4', 'php5', 'php7', 'php8',
         'exe', 'bat', 'cmd', 'sh', 'py', 'pl', 'cgi', 'env', 'htaccess',
-        'jsp', 'asp', 'aspx', 'vbs', 'scr', 'msi', 'com', 'bin', 'dll'
+        'jsp', 'asp', 'aspx', 'vbs', 'scr', 'msi', 'com', 'bin', 'dll',
     ];
 
     /**
@@ -27,44 +25,43 @@ class PrototypeZipService
         'png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico', 'bmp', 'avif',
         'woff', 'woff2', 'ttf', 'eot', 'otf',
         'mp3', 'wav', 'ogg', 'mp4', 'webm',
-        'pdf', 'xml'
+        'pdf', 'xml',
     ];
 
     /**
      * Process an uploaded ZIP file into the destination directory.
      *
-     * @param UploadedFile $zipFile
-     * @param string $destinationDir Absolute path to extract files into
+     * @param  string  $destinationDir  Absolute path to extract files into
      * @return array [
-     *    'success' => bool,
-     *    'index_path' => string|null,
-     *    'html_code' => string,
-     *    'css_code' => string,
-     *    'js_code' => string,
-     *    'file_count' => int,
-     *    'error' => string|null
-     * ]
+     *               'success' => bool,
+     *               'index_path' => string|null,
+     *               'html_code' => string,
+     *               'css_code' => string,
+     *               'js_code' => string,
+     *               'file_count' => int,
+     *               'error' => string|null
+     *               ]
      */
     public function extractZip(UploadedFile $zipFile, string $destinationDir): array
     {
-        if (!class_exists('ZipArchive')) {
+        if (! class_exists('ZipArchive')) {
             return [
                 'success' => false,
                 'error' => 'Ekstensi PHP ZipArchive tidak aktif di server ini.',
             ];
         }
 
-        if (!File::exists($destinationDir)) {
+        if (! File::exists($destinationDir)) {
             File::makeDirectory($destinationDir, 0755, true);
         }
 
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         $openResult = $zip->open($zipFile->getRealPath());
 
         if ($openResult !== true) {
             return [
                 'success' => false,
-                'error' => 'Gagal membuka file ZIP (Kode Error: ' . $openResult . '). Pastikan file ZIP valid dan tidak rusak.',
+                'error' => 'Gagal membuka file ZIP (Kode Error: '.$openResult.'). Pastikan file ZIP valid dan tidak rusak.',
             ];
         }
 
@@ -99,7 +96,7 @@ class PrototypeZipService
             }
 
             // Full target path
-            $targetPath = rtrim($destinationDir, '/\\') . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $cleanRelativePath);
+            $targetPath = rtrim($destinationDir, '/\\').DIRECTORY_SEPARATOR.str_replace('/', DIRECTORY_SEPARATOR, $cleanRelativePath);
 
             // Safety check: canonical path must stay within destination directory
             $realDest = realpath($destinationDir);
@@ -109,9 +106,10 @@ class PrototypeZipService
 
             // Directory entry
             if (str_ends_with($entryName, '/')) {
-                if (!File::exists($targetPath)) {
+                if (! File::exists($targetPath)) {
                     File::makeDirectory($targetPath, 0755, true);
                 }
+
                 continue;
             }
 
@@ -121,12 +119,13 @@ class PrototypeZipService
             // Disallow blacklisted files immediately
             if (in_array($ext, $this->blacklistedExtensions, true)) {
                 $ignoredFiles++;
+
                 continue;
             }
 
             // Ensure parent directory exists
             $parentDir = dirname($targetPath);
-            if (!File::exists($parentDir)) {
+            if (! File::exists($parentDir)) {
                 File::makeDirectory($parentDir, 0755, true);
             }
 
@@ -153,7 +152,7 @@ class PrototypeZipService
         // Normalize / find index.html
         $indexPath = $this->ensureIndexHtml($destinationDir);
 
-        if (!$indexPath || !File::exists($indexPath)) {
+        if (! $indexPath || ! File::exists($indexPath)) {
             return [
                 'success' => false,
                 'error' => 'File index.html tidak ditemukan di dalam ZIP. Pastikan file HTML utama Anda bernama index.html.',
@@ -171,116 +170,6 @@ class PrototypeZipService
             'js_code' => $codePayload['js'],
             'file_count' => $extractedFiles,
             'ignored_files' => $ignoredFiles,
-            'error' => null,
-        ];
-    }
-
-    /**
-     * Process manual file uploads (HTML required, CSS/JS/Slides/Assets optional).
-     *
-     * @param UploadedFile|null $htmlFile Primary HTML file (saved as index.html)
-     * @param UploadedFile|null $cssFile Optional single CSS file (saved as style.css)
-     * @param UploadedFile|null $jsFile Optional single JS file (saved as script.js)
-     * @param string $destinationDir
-     * @param array $additionalFiles Optional array of UploadedFile (e.g. slide1.html, slide2.html, images, etc.)
-     * @return array
-     */
-    public function createFromManualFiles(
-        ?UploadedFile $htmlFile,
-        ?UploadedFile $cssFile,
-        ?UploadedFile $jsFile,
-        string $destinationDir,
-        array $additionalFiles = []
-    ): array
-    {
-        if (!File::exists($destinationDir)) {
-            File::makeDirectory($destinationDir, 0755, true);
-        }
-
-        if (!$htmlFile) {
-            return [
-                'success' => false,
-                'error' => 'File HTML (.html) wajib diunggah sebagai halaman utama (index.html) prototype.',
-            ];
-        }
-
-        // Read and save HTML
-        $htmlContent = file_get_contents($htmlFile->getRealPath());
-        $cssContent = '';
-        $jsContent = '';
-
-        // Handle CSS if provided
-        if ($cssFile && $cssFile->isValid()) {
-            $cssContent = file_get_contents($cssFile->getRealPath());
-            file_put_contents($destinationDir . DIRECTORY_SEPARATOR . 'style.css', $cssContent);
-
-            // Automatically inject <link rel="stylesheet" href="style.css"> if not already linked
-            if (!str_contains($htmlContent, 'style.css')) {
-                if (stripos($htmlContent, '</head>') !== false) {
-                    $htmlContent = str_ireplace('</head>', "    <link rel=\"stylesheet\" href=\"style.css\">\n</head>", $htmlContent);
-                } else {
-                    $htmlContent = "<link rel=\"stylesheet\" href=\"style.css\">\n" . $htmlContent;
-                }
-            }
-        }
-
-        // Handle JS if provided
-        if ($jsFile && $jsFile->isValid()) {
-            $jsContent = file_get_contents($jsFile->getRealPath());
-            file_put_contents($destinationDir . DIRECTORY_SEPARATOR . 'script.js', $jsContent);
-
-            // Automatically inject <script src="script.js"></script> if not already linked
-            if (!str_contains($htmlContent, 'script.js')) {
-                if (stripos($htmlContent, '</body>') !== false) {
-                    $htmlContent = str_ireplace('</body>', "    <script src=\"script.js\"></script>\n</body>", $htmlContent);
-                } else {
-                    $htmlContent .= "\n<script src=\"script.js\"></script>";
-                }
-            }
-        }
-
-        // Save index.html
-        $indexPath = $destinationDir . DIRECTORY_SEPARATOR . 'index.html';
-        file_put_contents($indexPath, $htmlContent);
-
-        // Process any additional files (slides, secondary HTML, CSS, JS, images, etc.)
-        foreach ($additionalFiles as $file) {
-            if (!$file || !($file instanceof UploadedFile) || !$file->isValid()) {
-                continue;
-            }
-
-            $originalName = $file->getClientOriginalName();
-            $cleanRelativePath = $this->sanitizeEntryPath($originalName);
-            if (empty($cleanRelativePath)) {
-                continue;
-            }
-
-            $ext = strtolower(pathinfo($cleanRelativePath, PATHINFO_EXTENSION));
-            if (in_array($ext, $this->blacklistedExtensions, true)) {
-                continue;
-            }
-
-            $targetPath = rtrim($destinationDir, '/\\') . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $cleanRelativePath);
-            $parentDir = dirname($targetPath);
-            if (!File::exists($parentDir)) {
-                File::makeDirectory($parentDir, 0755, true);
-            }
-
-            file_put_contents($targetPath, file_get_contents($file->getRealPath()));
-        }
-
-        $allFiles = File::allFiles($destinationDir);
-        $fileCount = count($allFiles);
-
-        $codePayload = $this->gatherCodePayload($destinationDir, $indexPath);
-
-        return [
-            'success' => true,
-            'index_path' => $indexPath,
-            'html_code' => $codePayload['html'],
-            'css_code' => $codePayload['css'],
-            'js_code' => $codePayload['js'],
-            'file_count' => $fileCount,
             'error' => null,
         ];
     }
@@ -312,59 +201,71 @@ class PrototypeZipService
      */
     protected function flattenNestedRootFolder(string $dir): void
     {
-        $items = File::glob(rtrim($dir, '/\\') . DIRECTORY_SEPARATOR . '*');
+        $root = rtrim($dir, '/\\');
 
-        // Check if index.html already exists at top level
-        foreach ($items as $item) {
-            if (strtolower(basename($item)) === 'index.html' || strtolower(basename($item)) === 'index.htm') {
-                return; // Already has index at root!
+        // Unwrap any number of single wrapper folders, such as project/export/dist.
+        for ($depth = 0; $depth < 25; $depth++) {
+            $items = File::glob($root.DIRECTORY_SEPARATOR.'*') ?: [];
+
+            foreach ($items as $item) {
+                if (in_array(strtolower(basename($item)), ['index.html', 'index.htm'], true)) {
+                    return;
+                }
             }
+
+            $directories = array_values(array_filter($items, 'is_dir'));
+            $files = array_values(array_filter($items, 'is_file'));
+            if (count($directories) !== 1 || count($files) !== 0) {
+                break;
+            }
+
+            $wrapper = $directories[0];
+            foreach (File::glob(rtrim($wrapper, '/\\').DIRECTORY_SEPARATOR.'*') ?: [] as $item) {
+                File::move($item, $root.DIRECTORY_SEPARATOR.basename($item));
+            }
+            File::deleteDirectory($wrapper);
         }
 
-        // If exactly 1 directory at root level and no files
-        $dirsOnly = array_filter($items, 'is_dir');
-        $filesOnly = array_filter($items, 'is_file');
+        // A project ZIP can include source/config files at its root while its static
+        // output lives deeper in public/, dist/, build/, or another nested folder.
+        $indexCandidates = array_values(array_filter(
+            $this->findFilesByExtensions($root, ['html', 'htm']),
+            fn (string $path): bool => in_array(strtolower(basename($path)), ['index.html', 'index.htm'], true)
+        ));
 
-        if (count($dirsOnly) === 1 && count($filesOnly) === 0) {
-            $singleSubDir = reset($dirsOnly);
-            $subItems = File::allFiles($singleSubDir, true);
-            $subDirs = File::directories($singleSubDir);
+        usort($indexCandidates, static function (string $left, string $right) use ($root): int {
+            $leftRelative = ltrim(str_replace($root, '', $left), '/\\');
+            $rightRelative = ltrim(str_replace($root, '', $right), '/\\');
+            $leftDepth = substr_count(str_replace('\\', '/', $leftRelative), '/');
+            $rightDepth = substr_count(str_replace('\\', '/', $rightRelative), '/');
 
-            // Move all files and directories up one level
-            foreach (File::glob(rtrim($singleSubDir, '/\\') . DIRECTORY_SEPARATOR . '*') as $subItem) {
-                $targetName = basename($subItem);
-                $destination = rtrim($dir, '/\\') . DIRECTORY_SEPARATOR . $targetName;
-                File::move($subItem, $destination);
-            }
+            return $leftDepth <=> $rightDepth ?: strcmp($leftRelative, $rightRelative);
+        });
 
-            // Remove the empty subdirectory
-            @rmdir($singleSubDir);
+        if ($indexCandidates === []) {
             return;
         }
 
-        // Alternative scan: If index.html is located somewhere in a subfolder (e.g. "dist/index.html" or "src/index.html")
-        $allHtmlFiles = File::glob(rtrim($dir, '/\\') . '/**/index.html');
-        if (empty($allHtmlFiles)) {
-            $allHtmlFiles = File::glob(rtrim($dir, '/\\') . '/**/*.html');
+        $selectedIndex = $indexCandidates[0];
+        $websiteRoot = dirname($selectedIndex);
+        if ($websiteRoot === $root) {
+            return;
         }
 
-        if (!empty($allHtmlFiles)) {
-            $firstHtml = reset($allHtmlFiles);
-            $parentFolder = dirname($firstHtml);
+        // Copy the chosen static output to the hosting root while keeping the
+        // original extracted tree intact for compatibility and auditing.
+        foreach (File::directories($websiteRoot) as $sourceDirectory) {
+            File::copyDirectory(
+                $sourceDirectory,
+                $root.DIRECTORY_SEPARATOR.basename($sourceDirectory)
+            );
+        }
 
-            // If index is in a nested folder and root has no index, copy or promote
-            if ($parentFolder !== $dir && File::exists($firstHtml)) {
-                // If the parent folder has the website assets, move items to root
-                foreach (File::glob(rtrim($parentFolder, '/\\') . DIRECTORY_SEPARATOR . '*') as $subItem) {
-                    $targetDest = rtrim($dir, '/\\') . DIRECTORY_SEPARATOR . basename($subItem);
-                    if (!File::exists($targetDest)) {
-                        @File::copyDirectory($subItem, $targetDest);
-                        if (is_file($subItem)) {
-                            @copy($subItem, $targetDest);
-                        }
-                    }
-                }
-            }
+        foreach (File::files($websiteRoot) as $sourceFile) {
+            $targetName = in_array(strtolower($sourceFile->getFilename()), ['index.html', 'index.htm'], true)
+                ? 'index.html'
+                : $sourceFile->getFilename();
+            File::copy($sourceFile->getPathname(), $root.DIRECTORY_SEPARATOR.$targetName);
         }
     }
 
@@ -373,7 +274,7 @@ class PrototypeZipService
      */
     protected function ensureIndexHtml(string $dir): ?string
     {
-        $exactIndex = rtrim($dir, '/\\') . DIRECTORY_SEPARATOR . 'index.html';
+        $exactIndex = rtrim($dir, '/\\').DIRECTORY_SEPARATOR.'index.html';
         if (File::exists($exactIndex)) {
             return $exactIndex;
         }
@@ -387,19 +288,49 @@ class PrototypeZipService
                 if ($file->getFilename() !== 'index.html') {
                     File::copy($file->getRealPath(), $exactIndex);
                 }
-                return $exactIndex;
-            }
-        }
 
-        // If no index.html, look for any .html file and copy it as index.html
-        foreach ($files as $file) {
-            if (strtolower($file->getExtension()) === 'html' || strtolower($file->getExtension()) === 'htm') {
-                File::copy($file->getRealPath(), $exactIndex);
                 return $exactIndex;
             }
         }
 
         return null;
+    }
+
+    /**
+     * Recursively find files by extension. PHP glob's ** pattern is not recursive,
+     * so all nested prototype folders must be traversed explicitly.
+     *
+     * @param  array<int, string>  $extensions
+     * @return array<int, string>
+     */
+    public function findFilesByExtensions(string $dir, array $extensions): array
+    {
+        if (! File::isDirectory($dir)) {
+            return [];
+        }
+
+        $extensions = array_map(
+            static fn (string $extension): string => strtolower(ltrim($extension, '.')),
+            $extensions
+        );
+        $matches = [];
+
+        foreach (File::allFiles($dir) as $file) {
+            $path = $file->getPathname();
+            $normalizedPath = '/'.ltrim(str_replace('\\', '/', $path), '/');
+
+            if (preg_match('#/(?:node_modules|\.git|__MACOSX)/#i', $normalizedPath)) {
+                continue;
+            }
+
+            if (in_array(strtolower($file->getExtension()), $extensions, true)) {
+                $matches[] = $path;
+            }
+        }
+
+        sort($matches, SORT_STRING);
+
+        return $matches;
     }
 
     /**
@@ -410,37 +341,37 @@ class PrototypeZipService
         $htmlCode = File::exists($indexPath) ? File::get($indexPath) : '';
 
         // Check for other HTML files (slides, subpages)
-        $allHtmlFiles = File::glob(rtrim($dir, '/\\') . '/**/*.html');
+        $allHtmlFiles = $this->findFilesByExtensions($dir, ['html', 'htm']);
         foreach ($allHtmlFiles as $otherHtml) {
             if (realpath($otherHtml) === realpath($indexPath)) {
                 continue;
             }
             $filename = basename($otherHtml);
             if (strlen($htmlCode) < 45000) {
-                $htmlCode .= "\n\n<!-- [Subpage / Slide: {$filename}] -->\n" . substr(File::get($otherHtml), 0, 5000);
+                $htmlCode .= "\n\n<!-- [Subpage / Slide: {$filename}] -->\n".substr(File::get($otherHtml), 0, 5000);
             }
         }
 
         // Limit HTML length (first 50,000 chars)
         if (strlen($htmlCode) > 50000) {
-            $htmlCode = substr($htmlCode, 0, 50000) . "\n<!-- [Truncated Content] -->";
+            $htmlCode = substr($htmlCode, 0, 50000)."\n<!-- [Truncated Content] -->";
         }
 
         // Find CSS files
         $cssCode = '';
-        $cssFiles = File::glob(rtrim($dir, '/\\') . '/**/*.css');
+        $cssFiles = $this->findFilesByExtensions($dir, ['css']);
         foreach ($cssFiles as $cssFile) {
             if (strlen($cssCode) < 30000) {
-                $cssCode .= "/* File: " . basename($cssFile) . " */\n" . File::get($cssFile) . "\n\n";
+                $cssCode .= '/* File: '.basename($cssFile)." */\n".File::get($cssFile)."\n\n";
             }
         }
         if (strlen($cssCode) > 30000) {
-            $cssCode = substr($cssCode, 0, 30000) . "\n/* [Truncated Content] */";
+            $cssCode = substr($cssCode, 0, 30000)."\n/* [Truncated Content] */";
         }
 
         // Find JS files
         $jsCode = '';
-        $jsFiles = File::glob(rtrim($dir, '/\\') . '/**/*.js');
+        $jsFiles = $this->findFilesByExtensions($dir, ['js']);
         foreach ($jsFiles as $jsFile) {
             $filename = basename($jsFile);
             // Skip minified vendor libraries to save tokens and focus on user code
@@ -448,11 +379,11 @@ class PrototypeZipService
                 continue;
             }
             if (strlen($jsCode) < 30000) {
-                $jsCode .= "// File: " . $filename . "\n" . File::get($jsFile) . "\n\n";
+                $jsCode .= '// File: '.$filename."\n".File::get($jsFile)."\n\n";
             }
         }
         if (strlen($jsCode) > 30000) {
-            $jsCode = substr($jsCode, 0, 30000) . "\n// [Truncated Content]";
+            $jsCode = substr($jsCode, 0, 30000)."\n// [Truncated Content]";
         }
 
         return [
@@ -467,7 +398,7 @@ class PrototypeZipService
      */
     public function injectBaseTag(string $indexPath, string $baseHref): void
     {
-        if (!File::exists($indexPath)) {
+        if (! File::exists($indexPath)) {
             return;
         }
 
@@ -484,7 +415,7 @@ class PrototypeZipService
             } elseif (stripos($content, '<head ') !== false) {
                 $content = preg_replace('/(<head[^>]*>)/i', "$1\n    {$baseTag}", $content, 1);
             } else {
-                $content = "{$baseTag}\n" . $content;
+                $content = "{$baseTag}\n".$content;
             }
         }
 
