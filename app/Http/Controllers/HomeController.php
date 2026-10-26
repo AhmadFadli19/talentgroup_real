@@ -19,11 +19,19 @@ class HomeController extends Controller
 
         // Clean requested path to prevent Directory Traversal
         $cleanPath = trim(str_replace(['../', '..\\'], '', $path), '/');
-        if (str_starts_with($cleanPath, 'storage/')) {
-            $cleanPath = substr($cleanPath, 8);
-        }
-        if (str_starts_with($cleanPath, 'public/')) {
-            $cleanPath = substr($cleanPath, 7);
+
+        // Strip known storage URL prefixes in a loop (handles nested / repeated prefixes)
+        $changed = true;
+        while ($changed) {
+            $prev = $cleanPath;
+            if (str_starts_with($cleanPath, 'storage/')) {
+                $cleanPath = substr($cleanPath, 8);
+            } elseif (str_starts_with($cleanPath, 'storage-file/')) {
+                $cleanPath = substr($cleanPath, 13);
+            } elseif (str_starts_with($cleanPath, 'public/')) {
+                $cleanPath = substr($cleanPath, 7);
+            }
+            $changed = ($prev !== $cleanPath);
         }
 
         // Double-check: remove any remaining traversal attempts after cleaning
@@ -40,14 +48,14 @@ class HomeController extends Controller
             abort(403, 'Akses ke berkas internal ini dibatasi.');
         }
 
-        // Resolve file path with priority: storage/app/public > storage/app
+        // Resolve file path with priority: storage/app/public > Storage disk > storage/app > public/
         $filePath = $this->resolveStorageFile($cleanPath);
 
         if (!$filePath) {
             abort(404, 'File storage tidak ditemukan: ' . $cleanPath);
         }
 
-        // Serve the file with proper headers (MIME, ETag, Cache)
+        // Serve the file with proper headers (MIME, ETag, Range/Audio, Cache)
         return $this->serveFile($filePath);
     }
 
@@ -56,7 +64,7 @@ class HomeController extends Controller
      */
     private function resolveStorageFile(string $cleanPath): ?string
     {
-        // Priority 1: storage/app/public (main public storage)
+        // Priority 1: storage/app/public (main public storage disk)
         $fullPath = storage_path('app/public/' . $cleanPath);
         if (file_exists($fullPath) && is_file($fullPath)) {
             return $fullPath;
@@ -70,21 +78,27 @@ class HomeController extends Controller
                     return $absPath;
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             // Storage facade might fail on some hosting configs, continue to fallback
         }
 
-        // Priority 3: Fallback to storage/app (for non-sensitive items)
+        // Priority 3: Fallback to storage/app (e.g. certificates or direct uploads)
         $fullLocalPath = storage_path('app/' . $cleanPath);
         if (file_exists($fullLocalPath) && is_file($fullLocalPath)) {
             return $fullLocalPath;
+        }
+
+        // Priority 4: Fallback to public/ directory directly (if uploaded without symlink)
+        $publicPath = public_path($cleanPath);
+        if (file_exists($publicPath) && is_file($publicPath)) {
+            return $publicPath;
         }
 
         return null;
     }
 
     /**
-     * Serve a file with proper MIME type, ETag, and cache headers.
+     * Serve a file with proper MIME type, ETag, Range support (for audio/video in quizzes), and cache headers.
      * This replaces the need for symlink-based file serving.
      */
     private function serveFile(string $filePath): \Symfony\Component\HttpFoundation\Response
@@ -93,24 +107,25 @@ class HomeController extends Controller
         $etag = md5($filePath . $lastModified);
         $mimeType = $this->getMimeType($filePath);
 
-        // Handle 304 Not Modified (browser cache validation)
-        $requestEtag = request()->header('If-None-Match');
-        $requestModified = request()->header('If-Modified-Since');
-
-        if ($requestEtag === '"' . $etag . '"') {
-            return response('', 304);
-        }
-
-        if ($requestModified && strtotime($requestModified) >= $lastModified) {
-            return response('', 304);
-        }
-
-        return response()->file($filePath, [
+        $headers = [
             'Content-Type' => $mimeType,
-            'Cache-Control' => 'public, max-age=31536000, immutable',
+            'Accept-Ranges' => 'bytes',
+            'Cache-Control' => 'public, max-age=31536000',
             'ETag' => '"' . $etag . '"',
             'Last-Modified' => gmdate('D, d M Y H:i:s', $lastModified) . ' GMT',
-        ]);
+        ];
+
+        // Handle 304 Not Modified only for non-Range requests (crucial for audio player seeking in quizzes)
+        if (!request()->headers->has('Range')) {
+            $requestEtag = request()->header('If-None-Match');
+            $requestModified = request()->header('If-Modified-Since');
+
+            if ($requestEtag === '"' . $etag . '"' || ($requestModified && strtotime($requestModified) >= $lastModified)) {
+                return response('', 304, $headers);
+            }
+        }
+
+        return response()->file($filePath, $headers);
     }
 
     /**

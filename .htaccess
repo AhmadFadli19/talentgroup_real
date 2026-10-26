@@ -5,8 +5,8 @@
     # 1. Blokir akses HTTP langsung ke direktori internal storage yang sensitif
     RewriteRule ^storage/(logs|framework|private)/ - [F,L]
 
-    # 2. Arahkan semua request /storage langsung ke Laravel Front Controller (melewati keterbatasan symlink 403)
-    RewriteRule ^storage(/.*)?$ /public/index.php [L]
+    # 2. Arahkan semua request /storage dan /storage-file langsung ke Laravel Front Controller (melewati keterbatasan symlink 403)
+    RewriteRule ^(storage|storage-file)(/.*)?$ /public/index.php [L]
 
     # 3. Sajikan file fisik statis dari public/ jika file-nya ada (misal: CSS, JS, favicon, build)
     RewriteCond %{DOCUMENT_ROOT}/public/$1 -f

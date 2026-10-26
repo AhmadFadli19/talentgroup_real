@@ -43,8 +43,8 @@ cat << 'EOF' > .htaccess
     # 1. Blokir akses HTTP langsung ke direktori internal storage yang sensitif
     RewriteRule ^storage/(logs|framework|private)/ - [F,L]
 
-    # 2. Arahkan semua request /storage langsung ke Laravel Front Controller
-    RewriteRule ^storage(/.*)?$ /public/index.php [L]
+    # 2. Arahkan semua request /storage dan /storage-file langsung ke Laravel Front Controller
+    RewriteRule ^(storage|storage-file)(/.*)?$ /public/index.php [L]
 
     # 3. Sajikan file fisik statis dari public/ jika file-nya ada (CSS, JS, gambar, dsb)
     RewriteCond %{DOCUMENT_ROOT}/public/$1 -f
@@ -87,9 +87,9 @@ cat << 'EOF' > public/.htaccess
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
-    # CRITICAL: Route ALL /storage requests through Laravel (bypass symlink)
+    # CRITICAL: Route ALL /storage dan /storage-file requests through Laravel (bypass symlink)
     # Menghindari error 403 Forbidden pada shared hosting
-    RewriteRule ^storage(/.*)?$ index.php [L]
+    RewriteRule ^(storage|storage-file)(/.*)?$ index.php [L]
 
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d

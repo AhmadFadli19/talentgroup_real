@@ -31,6 +31,8 @@ use App\Http\Controllers\Admin\PrototypeAdminController as AdminPrototypeControl
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/storage/{path?}', [HomeController::class, 'streamFile'])->where('path', '.*')->name('storage.file');
 Route::get('/storage-file/{path}', [HomeController::class, 'streamFile'])->where('path', '.*')->name('storage.stream');
+Route::get('/public/storage/{path?}', [HomeController::class, 'streamFile'])->where('path', '.*');
+Route::get('/public/storage-file/{path}', [HomeController::class, 'streamFile'])->where('path', '.*');
 
 // Virtual Subdomain / Free Hosting Prototype Route
 Route::get('/p/{slug}/{path?}', [PrototypeHostController::class, 'serve'])->where('path', '.*')->name('prototype.serve');
