@@ -13,15 +13,14 @@
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
-    # Route /storage requests directly to index.php to bypass symlink restrictions (403 Forbidden)
+    # CRITICAL: Route ALL /storage requests through Laravel (bypass symlink)
+    # This prevents 403 errors when symlink is broken or missing
     RewriteRule ^storage(/.*)?$ index.php [L]
 
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} !^/public/p/
     RewriteCond %{REQUEST_URI} !^/p/
-    RewriteCond %{REQUEST_URI} !^/public/storage
-    RewriteCond %{REQUEST_URI} !^/storage
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
@@ -30,3 +29,4 @@
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
 </IfModule>
+
