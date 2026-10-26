@@ -96,4 +96,37 @@ class PrototypeHostingTest extends TestCase
     {
         $this->get('/p/hosted-demo/assets/missing.js')->assertNotFound();
     }
+
+    public function test_it_serves_a_legacy_upload_with_an_index_inside_a_nested_public_folder(): void
+    {
+        $legacyRoot = $this->prototypeDirectory.'/legacy-project';
+        File::makeDirectory($legacyRoot.'/public/assets', 0755, true);
+        File::put(
+            $legacyRoot.'/public/index.html',
+            '<!doctype html><html><head></head><body><script src="assets/legacy.js"></script></body></html>'
+        );
+        File::put($legacyRoot.'/public/assets/legacy.js', 'window.legacyPrototype = true;');
+        File::put($legacyRoot.'/server.js', 'console.log("this backend must not execute");');
+
+        Prototype::create([
+            'user_id' => 1,
+            'project_name' => 'Legacy Nested Demo',
+            'slug' => 'legacy-nested-demo',
+            'upload_type' => 'zip_archive',
+            'storage_path' => $legacyRoot,
+            'ai_provider_used' => 'test',
+            'ai_score' => 100,
+            'is_approved' => true,
+            'is_hosted' => true,
+            'is_active' => true,
+        ]);
+
+        $this->get('/p/legacy-nested-demo')
+            ->assertOk()
+            ->assertSee('assets/legacy.js', false);
+
+        $this->get('/p/legacy-nested-demo/assets/legacy.js')
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/javascript; charset=utf-8');
+    }
 }

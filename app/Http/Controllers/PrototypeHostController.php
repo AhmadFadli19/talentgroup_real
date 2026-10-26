@@ -86,6 +86,10 @@ class PrototypeHostController extends Controller
             }
         }
 
+        // Keep older uploads working when their index.html was stored inside a
+        // nested project output folder before ZIP normalization was introduced.
+        $baseDir = $this->resolveStaticRoot($baseDir);
+
         // Clean requested path to prevent Directory Traversal
         $cleanPath = trim(str_replace(['../', '..\\'], '', (string) $path), '/');
 
@@ -197,6 +201,49 @@ class PrototypeHostController extends Controller
             'Cache-Control' => 'public, max-age=86400',
             'X-Content-Type-Options' => 'nosniff',
         ]);
+    }
+
+    /**
+     * Resolve the actual static-site root for both current and legacy uploads.
+     */
+    protected function resolveStaticRoot(string $baseDir): string
+    {
+        foreach (File::files($baseDir) as $file) {
+            if (in_array(strtolower($file->getFilename()), ['index.html', 'index.htm'], true)) {
+                return $baseDir;
+            }
+        }
+
+        $candidates = [];
+        foreach (File::allFiles($baseDir) as $file) {
+            $normalizedPath = '/'.ltrim(str_replace('\\', '/', $file->getPathname()), '/');
+            if (preg_match('#/(?:node_modules|\.git|__MACOSX)/#i', $normalizedPath)) {
+                continue;
+            }
+
+            if (in_array(strtolower($file->getFilename()), ['index.html', 'index.htm'], true)) {
+                $candidates[] = $file->getPathname();
+            }
+        }
+
+        usort($candidates, static function (string $left, string $right) use ($baseDir): int {
+            $preferredFolders = ['public', 'dist', 'build', 'out'];
+            $leftPreferred = in_array(strtolower(basename(dirname($left))), $preferredFolders, true) ? 0 : 1;
+            $rightPreferred = in_array(strtolower(basename(dirname($right))), $preferredFolders, true) ? 0 : 1;
+
+            if ($leftPreferred !== $rightPreferred) {
+                return $leftPreferred <=> $rightPreferred;
+            }
+
+            $leftRelative = ltrim(str_replace($baseDir, '', $left), '/\\');
+            $rightRelative = ltrim(str_replace($baseDir, '', $right), '/\\');
+            $leftDepth = substr_count(str_replace('\\', '/', $leftRelative), '/');
+            $rightDepth = substr_count(str_replace('\\', '/', $rightRelative), '/');
+
+            return $leftDepth <=> $rightDepth ?: strcmp($leftRelative, $rightRelative);
+        });
+
+        return $candidates === [] ? $baseDir : dirname($candidates[0]);
     }
 
     /**
