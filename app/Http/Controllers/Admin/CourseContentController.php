@@ -10,6 +10,7 @@ use App\Models\CourseContent;
 use App\Models\CourseQuestion;
 use App\Services\CodeExecutionService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use App\Http\Controllers\Controller;
 
 class CourseContentController extends Controller
@@ -30,7 +31,8 @@ class CourseContentController extends Controller
     public function create(Course $course)
     {
         $codingRules = CourseQuestion::availableCodingRules();
-        return view('admin.courses.contents.create', compact('course', 'codingRules'));
+        $nextOrder = ($course->allContents()->max('order') ?? 0) + 1;
+        return view('admin.courses.contents.create', compact('course', 'codingRules', 'nextOrder'));
     }
 
     public function store(Request $request, Course $course)
@@ -45,11 +47,14 @@ class CourseContentController extends Controller
             'title' => 'required|string|max:255',
             'content' => 'nullable|string',
             'type' => 'required|in:story,question,coding,video,html',
-            'order' => 'required|integer|min:1',
+            'order' => 'nullable|integer|min:1',
         ];
 
         // Add conditional validation
         if ($request->type === 'question') {
+            // Judul opsional: kalau kosong, diambil dari teks soal
+            $rules['title'] = 'nullable|string|max:255';
+            $rules['content'] = 'required|string';
             $rules['options'] = 'required|array|min:2';
             $rules['options.*'] = 'required|string';
             $rules['correct_answer'] = 'required|string';
@@ -87,9 +92,9 @@ class CourseContentController extends Controller
 
         $data = [
             'course_id' => $course->id,
-            'title' => $request->title,
+            'title' => $request->filled('title') ? $request->title : Str::limit($request->content, 80),
             'content' => $request->content,
-            'order' => $request->order,
+            'order' => $request->filled('order') ? $request->order : ($course->allContents()->max('order') ?? 0) + 1,
         ];
 
         if ($request->type === 'story') {
@@ -152,6 +157,11 @@ class CourseContentController extends Controller
             $data['correct_answer'] = $request->correct_answer;
             $content = CourseQuestion::create($data);
             Log::info('Course question created', ['question_id' => $content->id]);
+        }
+
+        if ($request->input('action') === 'save_and_new') {
+            return redirect()->route('admin.courses.contents.create', $course)
+                ->with('success', 'Soal berhasil disimpan. Lanjut tambah soal berikutnya.');
         }
 
         return redirect()->route('admin.courses.contents.index', $course)

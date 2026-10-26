@@ -637,6 +637,9 @@
             font-size: 10px;
             transition: transform 0.3s ease;
         }
+        .dark .switch-theme-indicator {
+            transform: translateX(24px);
+        }
         /* ==============================================================
            NIGHT MODE / DARK MODE COMPREHENSIVE LUXURY BLUE SYSTEM
            Menyesuaikan seluruh komponen agar TIDAK putih, melainkan

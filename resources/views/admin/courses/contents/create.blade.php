@@ -58,8 +58,9 @@
             {{-- TITLE --}}
             <div class="pixel-group">
                 <label class="pixel-label">CONTENT TITLE</label>
-                <input type="text" name="title" value="{{ old('title') }}" required class="pixel-input @error('title') border-red-500 @enderror">
+                <input type="text" name="title" value="{{ old('title') }}" :required="contentType !== 'question'" class="pixel-input @error('title') border-red-500 @enderror">
                 @error('title') <div class="pixel-error">{{ $message }}</div> @enderror
+                <div class="pixel-help" x-show="contentType === 'question'">Opsional untuk soal pilihan ganda. Jika kosong, judul otomatis diambil dari teks soal.</div>
             </div>
 
             {{-- TYPE --}}
@@ -87,7 +88,8 @@
             {{-- ORDER --}}
             <div class="pixel-group">
                 <label class="pixel-label">ORDER</label>
-                <input type="number" name="order" min="1" value="{{ old('order', 1) }}" required class="pixel-input">
+                <input type="number" name="order" min="1" value="{{ old('order', $nextOrder ?? 1) }}" class="pixel-input">
+                <div class="pixel-help">Terisi otomatis dengan urutan terakhir. Kosongkan untuk tetap memakai urutan otomatis.</div>
             </div>
 
             {{-- STORY FIELDS (Media Options: Image, Audio, Video URL) --}}
@@ -369,7 +371,8 @@
             {{-- ACTIONS --}}
             <div class="pixel-actions">
                 <a href="{{ route('admin.courses.contents.index', $course) }}" class="pixel-btn">CANCEL</a>
-                <button type="submit" class="pixel-btn" style="background:var(--accent);color:#fff">ADD CONTENT</button>
+                <button type="submit" class="pixel-btn" style="background:#4f46e5;color:#fff;border-color:#4f46e5">ADD CONTENT</button>
+                <button type="submit" name="action" value="save_and_new" x-show="contentType === 'question'" class="pixel-btn" style="background:#f59e0b;color:#000;border-color:#f59e0b">SIMPAN & TAMBAH LAGI</button>
             </div>
         </form>
     </div>
