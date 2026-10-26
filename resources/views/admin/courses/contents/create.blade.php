@@ -371,7 +371,7 @@
             {{-- ACTIONS --}}
             <div class="pixel-actions">
                 <a href="{{ route('admin.courses.contents.index', $course) }}" class="pixel-btn">CANCEL</a>
-                <button type="submit" class="pixel-btn" style="background:var(--accent);color:#fff">ADD CONTENT</button>
+                <button type="submit" class="pixel-btn" style="background:#4f46e5;color:#fff;border-color:#4f46e5">ADD CONTENT</button>
                 <button type="submit" name="action" value="save_and_new" x-show="contentType === 'question'" class="pixel-btn" style="background:#f59e0b;color:#000;border-color:#f59e0b">SIMPAN & TAMBAH LAGI</button>
             </div>
         </form>
