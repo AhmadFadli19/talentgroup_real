@@ -7,7 +7,7 @@
     <title>@yield('title', 'TalentGroup.id')</title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/jpeg" href="{{ asset('tg/assets/logo-talentgroup-auth.jpeg') }}">
+    <link rel="icon" type="image/png" href="{{ asset('tg/assets/logo-talentgroup-clean.png') }}">
     
     <!-- Google Fonts: Plus Jakarta Sans (ultra crisp & modern), Inter, & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

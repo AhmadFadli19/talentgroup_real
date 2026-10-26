@@ -8,7 +8,7 @@
 <a href="{{ $href }}"
    {{ $attributes->class(['group inline-flex min-w-0 items-center gap-2.5 no-underline']) }}
    aria-label="TalentGroup.id">
-    <img src="{{ asset('tg/assets/logo-talentgroup-auth.jpeg') }}"
+    <img src="{{ asset('tg/assets/logo-talentgroup-clean.png') }}"
          alt="Logo TalentGroup.id"
          class="{{ $imageClass }} flex-shrink-0 rounded-full object-cover shadow-[0_2px_8px_rgba(0,71,179,0.22)] transition-transform duration-200 group-hover:scale-105">
 

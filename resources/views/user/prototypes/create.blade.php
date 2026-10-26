@@ -12,7 +12,11 @@
                 <h1 class="text-3xl sm:text-4xl font-black text-[var(--ink)] tracking-tight">
                     Upload Prototype
                 </h1>
-                <span class="pill success-outline text-xs sm:text-sm px-3.5 py-1 font-bold">Hosting 100% Gratis</span>
+                <span class="inline-flex items-baseline gap-1.5 rounded-lg border-2 border-[#0b2447] bg-white px-4 py-2 text-sm sm:text-base font-extrabold leading-none tracking-[-0.035em] shadow-[0_2px_0_#0b2447]"
+                      aria-label="Hosting 100% Gratis">
+                    <span class="text-[#0b2447]">Hosting</span>
+                    <span class="text-[#f97316]">100% Gratis</span>
+                </span>
             </div>
             <p class="text-sm sm:text-base text-[var(--text2)] max-w-3xl leading-relaxed">
                 Unggah prototype website Anda. AI Agent akan memindai & mereview otomatis kualitas, struktur, kerapihan, dan keamanan kode. Jika dinilai layak (skor minimal <strong class="text-[var(--blue)] font-mono font-bold">{{ $settings->min_passing_score }}</strong>), prototype langsung aktif di-hosting gratis dengan URL publik!
