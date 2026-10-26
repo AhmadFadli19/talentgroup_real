@@ -7,7 +7,7 @@
     <title>@yield('title', 'TalentGroup.id')</title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{{ asset('tg/assets/60-2-img-logo.png') }}">
+    <link rel="icon" type="image/jpeg" href="{{ asset('tg/assets/logo-talentgroup-auth.jpeg') }}">
     
     <!-- Google Fonts: Plus Jakarta Sans (ultra crisp & modern), Inter, & Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -240,19 +240,6 @@
         }
 
         /* Brand Styling */
-        .dashboard-brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-        }
-        .dashboard-brand strong {
-            font-size: 18px;
-            font-weight: 800;
-            color: var(--blue);
-            letter-spacing: -0.3px;
-        }
-
         /* Navigation Menu Links */
         .nav-menu-link {
             display: flex;
@@ -943,13 +930,7 @@
     <aside class="sidebar-container">
         <!-- Logo Branding Header -->
         <div class="p-5 border-b border-[var(--border)] flex items-center justify-between">
-            <a href="{{ route('home') }}" class="dashboard-brand">
-                <img src="{{ asset('tg/assets/60-2-img-logo.png') }}" class="w-8 h-8 object-contain" alt="TalentGroup">
-                <div>
-                    <strong>TalentGroup</strong>
-                    <div class="text-[9px] uppercase font-bold text-[var(--muted)] tracking-wider">Ruang Edukasi</div>
-                </div>
-            </a>
+            <x-talentgroup-brand image-class="w-10 h-10" text-class="text-[19px]" :show-tagline="true" />
             
             <!-- Mobile Close Button -->
             <button @click="mobileSidebarOpen = false" class="md:hidden text-[var(--muted)] hover:text-[var(--text)] text-lg p-1">
@@ -1158,10 +1139,7 @@
         <!-- Footer -->
         <footer style="background: var(--bg2); border-top: 1px solid var(--border); padding: 24px 0; text-align: center; margin-top: auto;">
             <div class="max-w-[1260px] mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="flex items-center gap-2">
-                    <img src="{{ asset('tg/assets/60-2-img-logo.png') }}" class="w-5 h-5 object-contain" alt="Logo">
-                    <span class="text-xs font-bold text-[var(--ink)]">TalentGroup.id</span>
-                </div>
+                <x-talentgroup-brand image-class="w-7 h-7" text-class="text-sm" />
                 <p class="text-xs text-[var(--muted)] font-mono">
                     &copy; {{ date('Y') }} TalentGroup.id. Seluruh hak cipta dilindungi.
                 </p>

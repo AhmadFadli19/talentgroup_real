@@ -146,8 +146,10 @@
         }
 
         .logo-box img {
+            width: 32px;
             height: 32px;
-            object-contain: fit;
+            object-fit: cover;
+            border-radius: 9999px;
         }
 
         .logo-text {
@@ -403,9 +405,9 @@
                 <!-- CERTIFICATE HEADER -->
                 <div class="cert-header">
                     <div class="logo-box">
-                        <img src="{{ asset('assets/images/logo.png') }}" alt="Logo">
+                        <img src="{{ asset('tg/assets/logo-talentgroup-auth.jpeg') }}" alt="Logo TalentGroup.id">
                         <div class="logo-text">
-                            <span class="logo-title">talentgroup.id</span>
+                            <span class="logo-title">TalentGroup.id</span>
                         </div>
                     </div>
                 </div>
@@ -423,7 +425,7 @@
                     <p class="cert-reason">
                         Atas kelulusan dan penguasaan menyeluruh pada modul materi pembelajaran:<br>
                         <span class="cert-course-name">"{{ $course->title }}"</span><br>
-                        yang diselenggarakan oleh platform pembelajaran interaktif talentgroup.id.
+                        yang diselenggarakan oleh platform pembelajaran interaktif TalentGroup.id.
                     </p>
                 </div>
 
@@ -433,7 +435,7 @@
                     <div class="cert-sign-block">
                         <!-- Simulated Digital Signature -->
                         <div style="font-family: 'Great Vibes', cursive; font-size: 26px; color: #7c5cbf; height: 48px; display: flex; align-items: center; justify-content: center;">
-                            talentgroup.id
+                            TalentGroup.id
                         </div>
                         <div class="signature-line"></div>
                         <span class="signer-name">System Instructor</span>

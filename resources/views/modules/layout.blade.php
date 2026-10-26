@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Dokumentasi Modul Belajar') | talentgroup.id</title>
+    <title>@yield('title', 'Dokumentasi Modul Belajar') | TalentGroup.id</title>
 
     <!-- Theme init (sama dengan dashboard): ikuti pilihan tersimpan atau sistem, cegah flash -->
     <script>
@@ -16,7 +16,7 @@
     </script>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{{ asset('assets/images/logo.png') }}">
+    <link rel="icon" type="image/jpeg" href="{{ asset('tg/assets/logo-talentgroup-auth.jpeg') }}">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -320,11 +320,10 @@
                 </button>
 
                 <!-- Brand Logo -->
-                <a href="{{ route('modules.index') }}" class="flex items-center gap-1.5 sm:gap-2 group min-w-0 flex-shrink">
-                    <img src="{{ asset('tg/assets/logo-talentgroup-clean.png') }}" alt="Logo TalentGroup" width="32" height="32" class="w-7 h-7 sm:w-8 sm:h-8 object-contain flex-shrink-0 group-hover:scale-105 transition-transform">
-                    <span class="text-sm sm:text-base font-extrabold tracking-tight truncate text-[color:var(--ink)]">Talent<span class="text-[#f97316]">Group</span>.id</span>
+                <div class="flex min-w-0 flex-shrink items-center gap-1.5 sm:gap-2">
+                    <x-talentgroup-brand :href="route('modules.index')" image-class="w-8 h-8 sm:w-9 sm:h-9" text-class="text-sm sm:text-base" />
                     <span class="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-[var(--surface)] text-[color:var(--blue)] border border-[color:var(--line)]">v4.3</span>
-                </a>
+                </div>
 
                 <!-- Module Title in Navbar (Desktop only) -->
                 @if(isset($learningModule))
