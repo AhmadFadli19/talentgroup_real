@@ -752,7 +752,7 @@
     <div class="container">
       <a href="#" class="navbar-brand-text d-flex align-items-center text-decoration-none">
         <div class="brand-logo">
-          <img src="{{ asset('tg/assets/60-2-img-logo.png') }}" alt="Talent Group" class="logo-img" onerror="this.src='{{ asset('images/logo.png') }}'" />
+          <img src="{{ asset('tg/assets/logo-talentgroup-clean.png') }}" alt="TalentGroup.id" class="logo-img" style="border-radius:9999px" />
         </div>
       </a>
 
@@ -804,7 +804,7 @@
         </div>
         <div class="works-card-content">
           <div class="works-card-logo">
-            <img src="{{ asset('tg/assets/60-2-img-logo.png') }}" alt="Talent Group" class="logo-img" onerror="this.src='{{ asset('images/logo.png') }}'" />
+            <img src="{{ asset('tg/assets/logo-talentgroup-clean.png') }}" alt="TalentGroup.id" class="logo-img" style="border-radius:9999px" />
           </div>
           <div>
             <h3 class="works-card-title">Kenali TalentGroup<br>Lebih Dekat</h3>
@@ -964,7 +964,7 @@
 
         <div class="footer-brand">
           <div class="footer-logo">
-            <img src="{{ asset('tg/assets/60-2-img-logo.png') }}" alt="Talent Group" class="logo-img" onerror="this.src='{{ asset('images/logo.png') }}'" />
+            <img src="{{ asset('tg/assets/logo-talentgroup-clean.png') }}" alt="TalentGroup.id" class="logo-img" style="border-radius:9999px" />
           </div>
           <p class="footer-address">
             Jl. Simprug Golf B No.6, RT.2/RW.8, Grogol Sel., Kec. Kby. Lama,<br>

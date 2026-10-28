@@ -2945,7 +2945,7 @@
       <div class="footer-grid container">
         <div class="footer-brand-column">
           <a href="{{ route('home') }}" class="footer-brand" style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
-            <img src="{{ asset('tg/assets/60-2-img-logo.png') }}" alt="TalentGroup.id" width="36" height="36">
+            <img src="{{ asset('tg/assets/logo-talentgroup-clean.png') }}" alt="TalentGroup.id" width="36" height="36" class="rounded-full object-cover">
             <strong style="color: #ffffff; font-size: 19px;">TalentGroup.id</strong>
           </a>
           <p>Platform edukasi digital untuk pengembangan keterampilan pemrograman. Belajar coding interaktif dengan PHP, Python, JavaScript, Go, dan banyak lagi secara terarah.</p>

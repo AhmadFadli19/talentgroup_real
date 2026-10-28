@@ -77,6 +77,10 @@ class Course extends Model
             return $this->image;
         }
 
+        if (str_starts_with($this->image, 'tg/') || str_starts_with($this->image, 'assets/')) {
+            return asset($this->image);
+        }
+
         return route('storage.stream', $this->image);
     }
 

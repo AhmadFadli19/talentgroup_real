@@ -15,14 +15,14 @@ echo "=========================================="
 
 # 1. Tarik pembaruan terbaru dari GitHub
 echo ""
-echo "📥 [1/6] Mengambil code terbaru dari GitHub..."
+echo "📥 [1/8] Mengambil code terbaru dari GitHub..."
 git fetch origin main
 git reset --hard FETCH_HEAD
 echo "✅ Code berhasil diperbarui ke commit: $(git rev-parse --short HEAD)"
 
 # 2. Pastikan file root entry point (.htaccess & index.php) selalu ada
 echo ""
-echo "🌐 [2/6] Memverifikasi root entry point (.htaccess & index.php)..."
+echo "🌐 [2/8] Memverifikasi root entry point (.htaccess & index.php)..."
 
 cat << 'EOF' > index.php
 <?php
@@ -70,7 +70,7 @@ echo "✅ Root .htaccess siap"
 
 # 3. Pastikan public/.htaccess siap untuk routing storage tanpa symlink
 echo ""
-echo "🔒 [3/6] Memverifikasi public/.htaccess..."
+echo "🔒 [3/8] Memverifikasi public/.htaccess..."
 cat << 'EOF' > public/.htaccess
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
@@ -109,7 +109,7 @@ echo "✅ public/.htaccess siap"
 
 # 4. Bersihkan broken symlink public/storage jika ada
 echo ""
-echo "🔗 [4/6] Memeriksa link public/storage..."
+echo "🔗 [4/8] Memeriksa link public/storage..."
 if [ -L "public/storage" ]; then
     rm -f "public/storage"
     echo "✅ Broken symlink public/storage dihapus (tidak lagi dibutuhkan)"
@@ -121,7 +121,7 @@ fi
 
 # 5. Pastikan folder direktori storage & cache ada serta memiliki permission yang benar
 echo ""
-echo "📁 [5/6] Mempersiapkan folder storage dan cache..."
+echo "📁 [5/8] Mempersiapkan folder storage dan cache..."
 mkdir -p storage/app/public
 mkdir -p storage/framework/cache/data
 mkdir -p storage/framework/sessions
@@ -138,9 +138,22 @@ chmod -R 775 storage 2>/dev/null || chmod -R 755 storage 2>/dev/null || true
 chmod -R 775 bootstrap/cache 2>/dev/null || chmod -R 755 bootstrap/cache 2>/dev/null || true
 echo "✅ Permission storage dan cache diperbaiki"
 
-# 6. Jalankan pembersihan cache Laravel
+# 6. Terapkan migration database terbaru
 echo ""
-echo "🧹 [6/6] Membersihkan cache Laravel via artisan..."
+echo "🗃️  [6/8] Menjalankan migration database..."
+php artisan migrate --force
+echo "✅ Migration database selesai"
+
+# 7. Sinkronkan bank latihan yang aman dan idempotent
+echo ""
+echo "📝 [7/8] Menyinkronkan bank latihan Figma dan Web..."
+php artisan db:seed --class=FigmaPracticeSeeder --force
+php artisan db:seed --class=WebFundamentalsPracticeSeeder --force
+echo "✅ Bank latihan berhasil disinkronkan"
+
+# 8. Jalankan pembersihan cache Laravel
+echo ""
+echo "🧹 [8/8] Membersihkan cache Laravel via artisan..."
 php artisan optimize:clear 2>/dev/null || echo "ℹ️  Clear via artisan dilewati (cache filesystem sudah dibersihkan manual)"
 
 echo ""
@@ -149,5 +162,7 @@ echo "  🎉 DEPLOYMENT SUKSES & SELESAI!"
 echo "=========================================="
 echo "  ✓ Root .htaccess & index.php aktif"
 echo "  ✓ Bypass symlink storage aktif"
+echo "  ✓ Migration database telah diterapkan"
+echo "  ✓ Bank latihan telah disinkronkan"
 echo "  ✓ Cache sistem telah disegarkan"
 echo "=========================================="

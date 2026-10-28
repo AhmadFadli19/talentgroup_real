@@ -40,13 +40,16 @@ class FigmaPracticeSeederTest extends TestCase
         $this->assertTrue($course->is_active);
         $this->assertFalse($course->isShuffleQuestions());
         $this->assertTrue($course->isShuffleOptions());
-        $this->assertSame(15, $course->questions()->count());
-        $this->assertSame(5, $course->questions()->where('difficulty', 'beginner')->count());
-        $this->assertSame(5, $course->questions()->where('difficulty', 'intermediate')->count());
-        $this->assertSame(5, $course->questions()->where('difficulty', 'advanced')->count());
+        $this->assertSame('tg/assets/quiz-figma.png', $course->image);
+        $this->assertStringEndsWith('/tg/assets/quiz-figma.png', $course->image_url);
+        $this->assertSame(30, $course->questions()->count());
+        $this->assertSame(10, $course->questions()->where('difficulty', 'beginner')->count());
+        $this->assertSame(10, $course->questions()->where('difficulty', 'intermediate')->count());
+        $this->assertSame(10, $course->questions()->where('difficulty', 'advanced')->count());
 
         $course->questions->each(function (CourseQuestion $question): void {
             $this->assertContains($question->correct_answer, $question->options);
+            $this->assertCorrectAnswerIsNotTheOnlyLongestOption($question);
         });
 
         $this->actingAs($admin)
@@ -54,5 +57,18 @@ class FigmaPracticeSeederTest extends TestCase
             ->assertOk()
             ->assertSee('Kelola Latihan Soal')
             ->assertSee('Latihan Figma: Dasar hingga Lanjutan');
+    }
+
+    private function assertCorrectAnswerIsNotTheOnlyLongestOption(CourseQuestion $question): void
+    {
+        $lengths = array_map(fn (string $option): int => mb_strlen($option), $question->options);
+        $correctLength = mb_strlen($question->correct_answer);
+        $longestLength = max($lengths);
+        $longestCount = count(array_filter($lengths, fn (int $length): bool => $length === $longestLength));
+
+        $this->assertFalse(
+            $correctLength === $longestLength && $longestCount === 1,
+            "Jawaban benar soal '{$question->title}' tidak boleh menjadi satu-satunya opsi terpanjang."
+        );
     }
 }

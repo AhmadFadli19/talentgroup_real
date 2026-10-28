@@ -30,6 +30,21 @@ class PracticeQuestionSecurityTest extends TestCase
             ]);
     }
 
+    public function test_question_page_uses_no_store_headers_and_quiz_protection(): void
+    {
+        [$student, $course, $question] = $this->makePracticeContext(true);
+
+        $this->actingAs($student)
+            ->get(route('user.courses.content', [$course, 'question:' . $question->id]))
+            ->assertOk()
+            ->assertHeader('Cache-Control', 'max-age=0, must-revalidate, no-cache, no-store, private')
+            ->assertHeader('Pragma', 'no-cache')
+            ->assertHeader('X-Robots-Tag', 'noindex, noarchive, nosnippet')
+            ->assertSee('data-quiz-protected', false)
+            ->assertSee('quiz-security-shield', false)
+            ->assertSee('Pencetakan dan simpan PDF dinonaktifkan', false);
+    }
+
     public function test_unenrolled_student_cannot_submit_an_answer(): void
     {
         [$student, $course, $question] = $this->makePracticeContext(false);

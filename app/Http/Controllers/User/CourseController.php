@@ -426,13 +426,29 @@ class CourseController extends Controller
         // For coding questions, use dedicated view
         if ($type === 'question' && $content->isCoding()) {
             $codingRules = CourseQuestion::availableCodingRules();
-            return view('user.course_coding', compact(
+            return response()->view('user.course_coding', compact(
                 'course', 'content', 'userAnswer', 'userCourse',
                 'previousContent', 'nextContent', 'codingRules'
-            ));
+            ))->withHeaders($this->quizProtectionHeaders());
         }
 
-        return view('user.course_content', compact('course', 'content', 'userAnswer', 'userCourse', 'previousContent', 'nextContent'));
+        $viewData = compact('course', 'content', 'userAnswer', 'userCourse', 'previousContent', 'nextContent');
+
+        if ($type === 'question') {
+            return response()->view('user.course_content', $viewData)
+                ->withHeaders($this->quizProtectionHeaders());
+        }
+
+        return view('user.course_content', $viewData);
+    }
+
+    private function quizProtectionHeaders(): array
+    {
+        return [
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, private, max-age=0',
+            'Pragma' => 'no-cache',
+            'X-Robots-Tag' => 'noindex, noarchive, nosnippet',
+        ];
     }
 
     public function submitAnswer(Request $request, $courseId, $contentId)

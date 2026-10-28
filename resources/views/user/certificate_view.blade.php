@@ -405,7 +405,7 @@
                 <!-- CERTIFICATE HEADER -->
                 <div class="cert-header">
                     <div class="logo-box">
-                        <img src="{{ asset('tg/assets/logo-talentgroup-auth.jpeg') }}" alt="Logo TalentGroup.id">
+                        <img src="{{ asset('tg/assets/logo-talentgroup-clean.png') }}" alt="Logo TalentGroup.id" style="border-radius:9999px">
                         <div class="logo-text">
                             <span class="logo-title">TalentGroup.id</span>
                         </div>

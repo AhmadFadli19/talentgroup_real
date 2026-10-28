@@ -58,14 +58,23 @@
         @forelse($courses as $course)
             <article class="bg-white border border-[var(--border)] rounded-2xl p-5 shadow-sm hover:border-[var(--blue)] transition">
                 <div class="flex items-start justify-between gap-4 mb-4">
-                    <div class="min-w-0">
-                        <div class="flex items-center gap-2 flex-wrap mb-1.5">
-                            <h2 class="text-base font-extrabold text-[var(--ink)]">{{ $course->title }}</h2>
-                            <span class="pill {{ $course->is_active ? 'success-outline' : 'pending' }} text-[10px]">
-                                {{ $course->is_active ? 'Aktif' : 'Nonaktif' }}
-                            </span>
+                    <div class="flex items-start gap-3 min-w-0">
+                        <div class="w-14 h-14 rounded-xl bg-slate-50 border border-[var(--border)] flex items-center justify-center overflow-hidden flex-shrink-0">
+                            @if($course->image_url)
+                                <img src="{{ $course->image_url }}" alt="Thumbnail {{ $course->title }}" class="w-full h-full object-contain p-1.5">
+                            @else
+                                <i class="fas fa-clipboard-question text-lg text-[var(--blue)]"></i>
+                            @endif
                         </div>
-                        <p class="text-xs text-[var(--text2)] line-clamp-2 leading-relaxed">{{ $course->description }}</p>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap mb-1.5">
+                                <h2 class="text-base font-extrabold text-[var(--ink)]">{{ $course->title }}</h2>
+                                <span class="pill {{ $course->is_active ? 'success-outline' : 'pending' }} text-[10px]">
+                                    {{ $course->is_active ? 'Aktif' : 'Nonaktif' }}
+                                </span>
+                            </div>
+                            <p class="text-xs text-[var(--text2)] line-clamp-2 leading-relaxed">{{ $course->description }}</p>
+                        </div>
                     </div>
                     <div class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-200 text-[var(--blue)] flex items-center justify-center font-black font-mono flex-shrink-0">
                         {{ $course->questions_count }}

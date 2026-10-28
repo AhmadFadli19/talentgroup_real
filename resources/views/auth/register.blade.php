@@ -20,10 +20,7 @@
         
         <!-- Logo Branding Header -->
         <div class="text-center mb-6">
-            <a href="{{ route('home') }}" class="inline-flex items-center gap-2 mb-2">
-                <img src="{{ asset('tg/assets/60-2-img-logo.png') }}" class="w-10 h-10 object-contain" alt="TalentGroup">
-                <span class="text-xl font-extrabold text-[var(--blue)] tracking-tight">TalentGroup</span>
-            </a>
+            <x-talentgroup-brand class="mb-3 justify-center" image-class="w-11 h-11" text-class="text-xl" />
             <h1 class="text-xl font-extrabold text-[var(--ink)] tracking-tight">
                 Mulai Petualangan Coding
             </h1>

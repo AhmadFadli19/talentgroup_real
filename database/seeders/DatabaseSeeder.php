@@ -17,6 +17,8 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             AdminUserSeeder::class,
             ComprehensiveWebDevCoursesSeeder::class,
+            FigmaPracticeSeeder::class,
+            WebFundamentalsPracticeSeeder::class,
         ]);
     }
 }

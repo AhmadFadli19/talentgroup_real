@@ -382,7 +382,7 @@
                     }
                 @endphp
 
-                <div class="cyber-card p-6 bg-[var(--bg2)] border-[var(--border)] flex flex-col gap-6 rounded-2xl shadow-sm">
+                <div data-quiz-protected class="cyber-card p-6 bg-[var(--bg2)] border-[var(--border)] flex flex-col gap-6 rounded-2xl shadow-sm">
                     <!-- Quiz Header Bar -->
                     <div class="flex justify-between items-center border-b border-[var(--border)] pb-4">
                         <div class="flex items-center gap-2">
@@ -688,4 +688,7 @@ function copyCodeBlock(codeId, button) {
 <!-- Prism.js Syntax Highlighting Engine -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
+@if($content->type === 'question')
+    @include('user.partials.quiz-protection')
+@endif
 @endsection

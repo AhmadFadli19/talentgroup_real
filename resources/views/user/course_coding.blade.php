@@ -62,7 +62,7 @@
                     <i :class="problemCollapsed ? 'fas fa-chevron-right' : 'fas fa-chevron-left'"></i>
                 </button>
             </div>
-            <div class="flex-1 overflow-y-auto custom-scrollbar p-5 flex flex-col gap-6" x-show="!problemCollapsed">
+            <div data-quiz-protected class="flex-1 overflow-y-auto custom-scrollbar p-5 flex flex-col gap-6" x-show="!problemCollapsed">
                 {{-- Problem Description --}}
                 <div class="course-story-article text-[12.5px] leading-relaxed font-sans" style="color: var(--text2);">
                     {!! \App\Services\ModuleMarkdownParser::parse($content->content) !!}
@@ -869,5 +869,5 @@ function copyCodeBlock(codeId, button) {
 }
 </script>
 
+@include('user.partials.quiz-protection')
 @endsection
-
