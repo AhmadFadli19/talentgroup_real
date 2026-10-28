@@ -19,6 +19,7 @@ use App\Models\ReferralCodeUsage;
 use App\Services\CodeExecutionService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class CourseController extends Controller
 {
@@ -219,7 +220,9 @@ class CourseController extends Controller
                 'type' => 'course_purchase',
                 'amount' => $finalPrice,
                 'status' => 'success',
-                'payment_method' => $finalPrice == 0 ? 'referral_code_free' : 'balance',
+                'payment_method' => $finalPrice > 0
+                    ? 'balance'
+                    : ($referralCode ? 'referral_code_free' : 'free_course'),
                 'description' => $desc,
             ]);
 
@@ -250,8 +253,10 @@ class CourseController extends Controller
             ]);
         });
 
-        $successMsg = $finalPrice == 0 
-            ? 'Selamat! Kursus berhasil dibuka GRATIS menggunakan kode referral!' 
+        $successMsg = $finalPrice == 0
+            ? ($referralCode
+                ? 'Selamat! Kursus berhasil dibuka GRATIS menggunakan kode referral!'
+                : 'Latihan gratis berhasil dibuka. Selamat belajar!')
             : 'Berhasil membeli kursus dengan potongan harga! Selamat belajar.';
 
         return redirect()->route('user.courses.show', $course->id)
@@ -324,10 +329,21 @@ class CourseController extends Controller
         $course = Course::findOrFail($courseId);
         $user = Auth::user();
 
+        $userCourse = UserCourse::where('user_id', $user->id)
+            ->where('course_id', $course->id)
+            ->first();
+
+        if (!$userCourse) {
+            return redirect()->route('user.courses.show', $course->id)
+                ->with('error', 'Anda belum membeli kursus ini.');
+        }
+
         [$type, $id] = explode(':', $contentId);
 
+        abort_unless(in_array($type, ['story', 'video', 'html', 'question'], true), 404);
+
         if ($type === 'story') {
-            $content = CourseStory::findOrFail($id);
+            $content = $course->stories()->findOrFail($id);
             $content->type = 'story';
 
             // Mark as read immediately (User request: story viewed = completed)
@@ -348,7 +364,7 @@ class CourseController extends Controller
             // Update progress to mark this node as visited/completed
             $this->updateProgress($user, $course, $content);
         } elseif ($type === 'video') {
-            $content = CourseVideo::findOrFail($id);
+            $content = $course->videos()->findOrFail($id);
             $content->type = 'video';
 
             // Mark as watched immediately
@@ -369,7 +385,7 @@ class CourseController extends Controller
             // Update progress to mark this node as visited/completed
             $this->updateProgress($user, $course, $content);
         } elseif ($type === 'html') {
-            $content = CourseHtml::findOrFail($id);
+            $content = $course->htmls()->findOrFail($id);
             $content->type = 'html';
 
             // Mark as viewed immediately
@@ -390,17 +406,8 @@ class CourseController extends Controller
             // Update progress to mark this node as visited/completed
             $this->updateProgress($user, $course, $content);
         } else {
-            $content = CourseQuestion::findOrFail($id);
+            $content = $course->questions()->findOrFail($id);
             $content->type = 'question';
-        }
-
-        $userCourse = UserCourse::where('user_id', $user->id)
-            ->where('course_id', $course->id)
-            ->first();
-
-        if (!$userCourse) {
-            return redirect()->route('user.courses.show', $course->id)
-                ->with('error', 'Anda belum membeli kursus ini.');
         }
 
         $userAnswer = UserAnswer::where('user_id', $user->id)
@@ -443,6 +450,18 @@ class CourseController extends Controller
             ->where('course_id', $course->id)
             ->first();
 
+        if (!$userCourse) {
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Anda belum terdaftar pada kursus ini.',
+                ], 403);
+            }
+
+            return redirect()->route('user.courses.show', $course->id)
+                ->with('error', 'Anda belum membeli kursus ini.');
+        }
+
         // Jika kuis sudah dikumpulkan (is_completed), jawaban dikunci dan tidak bisa diedit/dihapus
         if ($userCourse && $userCourse->is_completed) {
             if ($request->ajax() || $request->wantsJson()) {
@@ -455,7 +474,7 @@ class CourseController extends Controller
             return redirect()->back()->with('error', 'Kuis ini sudah dikumpulkan secara final. Jawaban telah dikunci.');
         }
 
-        $content = CourseQuestion::findOrFail($id);
+        $content = $course->questions()->findOrFail($id);
 
         // Handle coding question submission
         if ($content->isCoding()) {
@@ -530,7 +549,7 @@ class CourseController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'is_correct' => $isCorrect,
+                    'is_correct' => $showFeedback ? $isCorrect : null,
                     'is_completed' => $isCompleted,
                     'message' => $codeMsg,
                     'next_url' => $nextUrl,
@@ -543,7 +562,7 @@ class CourseController extends Controller
 
         // Handle multiple choice question
         $request->validate([
-            'answer' => 'required',
+            'answer' => ['required', 'string', Rule::in($content->options ?? [])],
         ]);
 
         $isCorrect = $content->correct_answer === $request->input('answer');
@@ -581,7 +600,7 @@ class CourseController extends Controller
                 'success' => true,
                 'message' => $message,
                 'answer' => $request->input('answer'),
-                'is_correct' => $isCorrect,
+                'is_correct' => $course->isInstantQuizFeedback() ? $isCorrect : null,
                 'reveal_answers' => $course->isInstantQuizFeedback(),
             ]);
         }

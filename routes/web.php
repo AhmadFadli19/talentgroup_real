@@ -24,6 +24,7 @@ use App\Http\Controllers\Admin\ReferralCodeController as AdminReferralCodeContro
 use App\Http\Controllers\PrototypeHostController;
 use App\Http\Controllers\User\PrototypeController as UserPrototypeController;
 use App\Http\Controllers\Admin\PrototypeAdminController as AdminPrototypeController;
+use App\Http\Controllers\Admin\PracticeQuestionController as AdminPracticeQuestionController;
 
 // ============================================
 // PUBLIC ROUTES
@@ -100,6 +101,9 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/home', [AdminController::class, 'index'])->name('admin-home');
+
+    // Practice Question Management
+    Route::get('/practice-questions', [AdminPracticeQuestionController::class, 'index'])->name('admin.practice-questions.index');
 
     // Course Management
     Route::resource('courses', AdminCourseController::class)->names('admin.courses');

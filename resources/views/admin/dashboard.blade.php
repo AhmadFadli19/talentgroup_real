@@ -113,6 +113,11 @@
             <a href="{{ route('admin.courses.index') }}" class="btn btn-outline text-xs justify-start py-2.5">
                 <i class="fas fa-layer-group text-[var(--blue)] mr-1"></i> Kelola Daftar Kursus
             </a>
+            <a href="{{ route('admin.practice-questions.index') }}" class="btn btn-outline text-xs justify-start py-2.5">
+                <i class="fas fa-clipboard-list text-[var(--blue)] mr-1"></i>
+                Kelola Latihan Soal
+                <span class="ml-auto px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-[10px] font-mono text-[var(--blue)]">{{ number_format($stats['total_questions']) }}</span>
+            </a>
             <a href="{{ route('admin.modules.index') }}" class="btn btn-outline text-xs justify-start py-2.5">
                 <i class="fas fa-book-reader text-[var(--blue)] mr-1"></i> Kelola Modul (Docs)
             </a>

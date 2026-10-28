@@ -949,6 +949,9 @@
                 <a href="{{ route('admin.courses.index') }}" class="nav-menu-link {{ Route::is('admin.courses.*') ? 'active' : '' }}">
                     <i class="fas fa-layer-group w-5 text-sm text-[var(--blue)]"></i> Kelola Kursus
                 </a>
+                <a href="{{ route('admin.practice-questions.index') }}" class="nav-menu-link {{ Route::is('admin.practice-questions.*') ? 'active' : '' }}">
+                    <i class="fas fa-clipboard-list w-5 text-sm text-[var(--blue)]"></i> Latihan Soal
+                </a>
                 <a href="{{ route('admin.modules.index') }}" class="nav-menu-link {{ Route::is('admin.modules.*') || Route::is('admin.module-categories.*') ? 'active' : '' }}">
                     <i class="fas fa-book-open w-5 text-sm text-[var(--blue)]"></i> Kelola Modul (Docs)
                 </a>

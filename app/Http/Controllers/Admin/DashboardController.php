@@ -7,6 +7,7 @@ use App\Models\Course;
 use App\Models\User;
 use App\Models\Transaction;
 use App\Models\UserCourse;
+use App\Models\CourseQuestion;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -19,6 +20,7 @@ class DashboardController extends Controller
             'active_courses' => Course::where('is_active', true)->count(),
             'total_enrollments' => UserCourse::count(),
             'total_revenue' => Transaction::where('type', 'course_purchase')->where('status', 'success')->sum('amount'),
+            'total_questions' => CourseQuestion::count(),
             'recent_users' => User::where('role_id', 2)->latest()->take(5)->get(),
             'recent_enrollments' => UserCourse::with(['user', 'course'])->latest()->take(5)->get(),
             'popular_courses' => Course::withCount('userCourses')->orderBy('user_courses_count', 'desc')->take(5)->get(),

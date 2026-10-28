@@ -144,6 +144,18 @@
                                 <span class="px-2.5 py-0.5 text-[9px] uppercase tracking-wider font-extrabold rounded-full border {{ $badgeStyle }}">
                                     {{ $badgeText }}
                                 </span>
+                                @if($isQuestion)
+                                    @php
+                                        $difficultyClasses = match ($content->difficulty ?? 'beginner') {
+                                            'intermediate' => 'bg-amber-50 text-amber-700 border-amber-200',
+                                            'advanced' => 'bg-rose-50 text-rose-700 border-rose-200',
+                                            default => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                                        };
+                                    @endphp
+                                    <span class="px-2.5 py-0.5 text-[9px] uppercase tracking-wider font-extrabold rounded-full border {{ $difficultyClasses }}">
+                                        {{ $content->difficulty_label }}
+                                    </span>
+                                @endif
                             </div>
 
                             @if($content->content)

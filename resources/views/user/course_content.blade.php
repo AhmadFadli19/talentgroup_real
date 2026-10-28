@@ -389,6 +389,16 @@
                             <span class="text-[10px] uppercase tracking-wider font-extrabold text-[var(--yellow)] font-mono flex items-center gap-1.5">
                                 <i class="fas fa-question-circle"></i> Evaluasi Kuis Soal
                             </span>
+                            @php
+                                $difficultyClasses = match ($content->difficulty ?? 'beginner') {
+                                    'intermediate' => 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30',
+                                    'advanced' => 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/30',
+                                    default => 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30',
+                                };
+                            @endphp
+                            <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold border {{ $difficultyClasses }}">
+                                Level {{ $content->difficulty_label }}
+                            </span>
                             @if($isLocked)
                                 <span class="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30 flex items-center gap-1">
                                     <i class="fas fa-lock text-[9px]"></i> Terkunci

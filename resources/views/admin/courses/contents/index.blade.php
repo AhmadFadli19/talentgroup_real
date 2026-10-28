@@ -202,6 +202,19 @@
                         @endif
                     </span>
 
+                    @if($content->type === 'question')
+                        @php
+                            $levelStyles = [
+                                'beginner' => 'border-color:#10b981;color:#059669;background:rgba(16,185,129,.08)',
+                                'intermediate' => 'border-color:#f59e0b;color:#d97706;background:rgba(245,158,11,.08)',
+                                'advanced' => 'border-color:#f43f5e;color:#e11d48;background:rgba(244,63,94,.08)',
+                            ];
+                        @endphp
+                        <span class="pixel-type" style="{{ $levelStyles[$content->difficulty ?? 'beginner'] }}">
+                            LEVEL {{ strtoupper($content->difficulty_label) }}
+                        </span>
+                    @endif
+
                     <div class="pixel-preview">
                         {{ Str::limit($content->content, 90) }}
                         @if($isCodingQ)
@@ -252,4 +265,3 @@
 </div>
 
 @endsection
-

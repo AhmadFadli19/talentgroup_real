@@ -58,6 +58,7 @@ class CourseContentController extends Controller
             $rules['options'] = 'required|array|min:2';
             $rules['options.*'] = 'required|string';
             $rules['correct_answer'] = 'required|string';
+            $rules['difficulty'] = 'nullable|in:beginner,intermediate,advanced';
         }
 
         if ($request->type === 'coding') {
@@ -70,6 +71,7 @@ class CourseContentController extends Controller
             $rules['test_cases'] = 'nullable|array';
             $rules['test_cases.*.input'] = 'nullable|string';
             $rules['test_cases.*.expected_output'] = 'required_with:test_cases|string';
+            $rules['difficulty'] = 'nullable|in:beginner,intermediate,advanced';
         }
 
         if ($request->type === 'video') {
@@ -148,6 +150,7 @@ class CourseContentController extends Controller
             $data['language'] = $request->input('language', 'go');
             $data['options'] = null;
             $data['correct_answer'] = null;
+            $data['difficulty'] = $request->input('difficulty', 'beginner');
             $content = CourseQuestion::create($data);
             Log::info('Coding question created', ['question_id' => $content->id]);
         } else {
@@ -155,6 +158,7 @@ class CourseContentController extends Controller
             $data['question_type'] = 'multiple_choice';
             $data['options'] = $request->options;
             $data['correct_answer'] = $request->correct_answer;
+            $data['difficulty'] = $request->input('difficulty', 'beginner');
             $content = CourseQuestion::create($data);
             Log::info('Course question created', ['question_id' => $content->id]);
         }
@@ -230,6 +234,7 @@ class CourseContentController extends Controller
             $rules['options'] = 'required|array|min:2';
             $rules['options.*'] = 'required|string';
             $rules['correct_answer'] = 'required|string';
+            $rules['difficulty'] = 'nullable|in:beginner,intermediate,advanced';
         }
 
         if ($isCoding) {
@@ -242,6 +247,7 @@ class CourseContentController extends Controller
             $rules['test_cases'] = 'nullable|array';
             $rules['test_cases.*.input'] = 'nullable|string';
             $rules['test_cases.*.expected_output'] = 'required_with:test_cases|string';
+            $rules['difficulty'] = 'nullable|in:beginner,intermediate,advanced';
         }
 
         if ($type === 'video') {
@@ -335,10 +341,12 @@ class CourseContentController extends Controller
                 $data['test_cases'] = $request->test_cases ? array_values(array_filter($request->test_cases, fn($tc) => !empty($tc['input']) || !empty($tc['expected_output']))) : null;
                 $data['hint'] = $request->hint;
                 $data['language'] = $request->input('language', 'go');
+                $data['difficulty'] = $request->input('difficulty', 'beginner');
             } else {
                 $data['question_type'] = 'multiple_choice';
                 $data['options'] = $request->options;
                 $data['correct_answer'] = $request->correct_answer;
+                $data['difficulty'] = $request->input('difficulty', 'beginner');
             }
 
             $content->update($data);

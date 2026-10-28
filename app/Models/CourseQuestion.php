@@ -9,9 +9,16 @@ class CourseQuestion extends Model
 {
     use HasFactory;
 
+    public const DIFFICULTIES = [
+        'beginner' => 'Dasar',
+        'intermediate' => 'Menengah',
+        'advanced' => 'Lanjutan',
+    ];
+
     protected $fillable = [
         'course_id',
         'question_type',
+        'difficulty',
         'title',
         'content',
         'options',
@@ -65,6 +72,20 @@ class CourseQuestion extends Model
     public function getTypeAttribute()
     {
         return 'question';
+    }
+
+    public function getDifficultyLabelAttribute(): string
+    {
+        return self::DIFFICULTIES[$this->difficulty] ?? self::DIFFICULTIES['beginner'];
+    }
+
+    public function getDifficultyColorAttribute(): string
+    {
+        return match ($this->difficulty) {
+            'intermediate' => 'amber',
+            'advanced' => 'rose',
+            default => 'emerald',
+        };
     }
 
     /**

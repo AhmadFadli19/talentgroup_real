@@ -103,6 +103,18 @@
                 <input type="number" name="order" min="1" value="{{ old('order', $content->order) }}" required class="pixel-input">
             </div>
 
+            {{-- DIFFICULTY LEVEL --}}
+            <div class="pixel-group" x-show="contentType === 'question' || contentType === 'coding'" x-cloak>
+                <label class="pixel-label">LEVEL KESULITAN</label>
+                <select name="difficulty" class="pixel-select">
+                    @foreach(\App\Models\CourseQuestion::DIFFICULTIES as $value => $label)
+                        <option value="{{ $value }}" {{ old('difficulty', $content->difficulty ?? 'beginner') === $value ? 'selected' : '' }}>{{ strtoupper($label) }}</option>
+                    @endforeach
+                </select>
+                <div class="pixel-help">Level tampil pada daftar admin dan halaman latihan siswa.</div>
+                @error('difficulty') <div class="pixel-error">{{ $message }}</div> @enderror
+            </div>
+
             {{-- STORY FIELDS (Media Options: Image, Audio, Video URL) --}}
             <div x-show="contentType === 'story'" class="pixel-question" style="border-color: #3b82f6; background: rgba(59, 130, 246, 0.03); margin-top: 20px;">
                 <strong style="font-size:10px; color: #3b82f6;">📘 STORY MULTIMEDIA OPTIONS</strong>
@@ -522,4 +534,3 @@ function adminCoding() {
 </script>
 
 @endsection
-
