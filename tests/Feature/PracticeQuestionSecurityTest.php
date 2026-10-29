@@ -49,6 +49,21 @@ class PracticeQuestionSecurityTest extends TestCase
             ->assertSee('Pencetakan dan simpan PDF dinonaktifkan', false);
     }
 
+    public function test_course_outline_renders_inline_markdown_instead_of_showing_markers(): void
+    {
+        [$student, $course, $question] = $this->makePracticeContext(true);
+        $question->update([
+            'content' => 'Apa fungsi utama **Frame** dan properti `display`?',
+        ]);
+
+        $this->actingAs($student)
+            ->get(route('user.courses.learn', $course))
+            ->assertOk()
+            ->assertSee('<strong class="font-extrabold text-[var(--ink)]">Frame</strong>', false)
+            ->assertSee('<code class="font-mono font-semibold text-[var(--blue)]">display</code>', false)
+            ->assertDontSee('**Frame**', false);
+    }
+
     public function test_unenrolled_student_cannot_submit_an_answer(): void
     {
         [$student, $course, $question] = $this->makePracticeContext(false);

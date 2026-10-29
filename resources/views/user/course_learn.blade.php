@@ -160,7 +160,7 @@
 
                             @if($content->content)
                                 <p class="text-xs text-[var(--muted)] leading-relaxed truncate max-w-2xl mb-1.5">
-                                    {{ strip_tags($content->content) }}
+                                    {!! \App\Services\ModuleMarkdownParser::parseInlinePreview($content->content) !!}
                                 </p>
                             @endif
                             

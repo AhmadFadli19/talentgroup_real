@@ -216,7 +216,7 @@
                     @endif
 
                     <div class="pixel-preview">
-                        {{ Str::limit($content->content, 90) }}
+                        {!! \App\Services\ModuleMarkdownParser::parseInlinePreview(Str::limit($content->content, 90)) !!}
                         @if($isCodingQ)
                             <br>({{ count($content->coding_rules ?? []) }} rules)
                         @elseif($content->type === 'question' && isset($content->options))

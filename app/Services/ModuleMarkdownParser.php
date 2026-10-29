@@ -268,6 +268,40 @@ class ModuleMarkdownParser
     }
 
     /**
+     * Render safe, single-line Markdown for compact cards and previews.
+     * Raw HTML and links are intentionally not rendered in this context.
+     */
+    public static function parseInlinePreview(string $markdown): string
+    {
+        $text = trim((string) preg_replace('/\s+/', ' ', strip_tags($markdown)));
+
+        if ($text === '') {
+            return '';
+        }
+
+        $codeTokens = [];
+        $text = preg_replace_callback('/`([^`]+)`/', function ($matches) use (&$codeTokens) {
+            $token = '@@INLINECODE' . count($codeTokens) . '@@';
+            $codeTokens[$token] = '<code class="font-mono font-semibold text-[var(--blue)]">'
+                . htmlspecialchars($matches[1], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')
+                . '</code>';
+
+            return $token;
+        }, $text);
+
+        $text = htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $text = preg_replace('/(\*\*|__)(.*?)\1/', '<strong class="font-extrabold text-[var(--ink)]">$2</strong>', $text);
+        $text = preg_replace('/(\*|_)(.*?)\1/', '<em class="italic">$2</em>', $text);
+        $text = preg_replace('/~~(.*?)~~/', '<del class="line-through">$1</del>', $text);
+
+        foreach ($codeTokens as $token => $codeHtml) {
+            $text = str_replace($token, $codeHtml, $text);
+        }
+
+        return $text;
+    }
+
+    /**
      * Render the Tailwind-style framed code block with filename header pill and copy button.
      */
     public static function renderCodeBlock(string $code, ?string $filename = null, string $lang = 'text'): string
