@@ -54,7 +54,8 @@ class ProtectedModuleSlidesTest extends TestCase
         $response->assertOk()
             ->assertSee('data-protected-slide-viewer', false)
             ->assertSee('data-protected-slide', false)
-            ->assertSee('student-slides@example.com', false)
+            ->assertDontSee('student-slides@example.com', false)
+            ->assertDontSee('rotate-[-22deg]', false)
             ->assertSee(route('modules.lesson.page', [
                 'moduleSlug' => $category->slug,
                 'lessonSlug' => $lesson->slug,

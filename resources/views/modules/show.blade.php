@@ -192,9 +192,6 @@
 
                 <!-- Embedded Document Viewers (Full Size & Large) -->
                 @if($module->isProtectedSlides())
-                    @php
-                        $readerIdentity = auth()->user()?->email ?: auth()->user()?->name ?: 'Pengguna TalentGroup.id';
-                    @endphp
                     <div data-protected-slide-viewer class="mb-10 rounded-2xl overflow-hidden border border-[color:var(--line)] bg-slate-950 shadow-2xl">
                         <div class="sticky top-14 sm:top-16 z-20 px-4 py-3 bg-slate-950/95 backdrop-blur border-b border-slate-800 flex items-center justify-between gap-3 text-xs font-mono text-slate-400">
                             <div class="flex items-center gap-2.5 min-w-0">
@@ -218,14 +215,6 @@
                                         referrerpolicy="no-referrer"
                                         style="-webkit-user-drag:none; user-select:none;"
                                     >
-
-                                    <div aria-hidden="true" class="absolute inset-[-20%] z-10 grid grid-cols-2 sm:grid-cols-3 content-around justify-items-center gap-y-8 rotate-[-22deg] pointer-events-none select-none overflow-hidden">
-                                        @for($mark = 0; $mark < 9; $mark++)
-                                            <span class="text-[8px] sm:text-[11px] font-mono font-black tracking-wide text-white/20 whitespace-nowrap text-center">
-                                                TalentGroup.id<br>{{ $readerIdentity }}
-                                            </span>
-                                        @endfor
-                                    </div>
 
                                     <figcaption class="absolute bottom-2 right-2 z-20 rounded-md border border-white/15 bg-black/65 px-2 py-1 text-[10px] font-mono text-white/70 pointer-events-none">
                                         {{ $page }} / {{ (int) $module->page_count }}
