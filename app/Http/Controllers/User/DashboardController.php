@@ -4,51 +4,51 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Course;
-use App\Models\UserCourse;
-use App\Models\UserAnswer;
-use App\Models\Transaction;
 use App\Models\CourseQuestion;
-use App\Models\CourseVideo;
 use App\Models\Prototype;
+use App\Models\Transaction;
+use App\Models\UserAnswer;
+use App\Models\UserCourse;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
     public function index()
     {
         $user = Auth::user();
-        
+
         // Get enrolled courses with progress calculation
         $enrolledCourses = UserCourse::where('user_id', $user->id)
+            ->whereHas('course')
             ->with(['course.stories', 'course.questions', 'course.videos'])
             ->get()
             ->map(function ($userCourse) use ($user) {
                 $course = $userCourse->course;
                 $totalLessons = $course->stories->count() + $course->questions->count() + $course->videos->count();
-                
-                $storyRefs = $course->stories->map(fn($s) => "story:{$s->id}")->toArray();
-                $questionRefs = $course->questions->map(fn($q) => "question:{$q->id}")->toArray();
-                $videoRefs = $course->videos->map(fn($v) => "video:{$v->id}")->toArray();
+
+                $storyRefs = $course->stories->map(fn ($s) => "story:{$s->id}")->toArray();
+                $questionRefs = $course->questions->map(fn ($q) => "question:{$q->id}")->toArray();
+                $videoRefs = $course->videos->map(fn ($v) => "video:{$v->id}")->toArray();
                 $allRefs = array_merge($storyRefs, $questionRefs, $videoRefs);
 
                 $completedLessons = UserAnswer::where('user_id', $user->id)
                     ->whereIn('content_reference', $allRefs)
                     ->distinct('content_reference')
                     ->count();
-                
+
                 $progress = $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100) : 0;
-                
+
                 return (object) [
                     'id' => $course->id,
                     'title' => $course->title,
                     'progress' => $progress,
                     'completed_lessons' => $completedLessons,
                     'total_lessons' => $totalLessons,
-                    'is_completed' => $userCourse->is_completed
+                    'is_completed' => $userCourse->is_completed,
                 ];
             });
 
@@ -62,15 +62,16 @@ class DashboardController extends Controller
 
         // Add recent course enrollments
         $recentEnrollments = UserCourse::where('user_id', $user->id)
+            ->whereHas('course')
             ->with('course')
             ->latest()
             ->take(3)
             ->get()
             ->map(function ($enrollment) {
                 return [
-                    'title' => 'Mendaftar kursus: ' . $enrollment->course->title,
+                    'title' => 'Mendaftar kursus: '.$enrollment->course->title,
                     'time' => $enrollment->created_at->diffForHumans(),
-                    'type' => 'enrollment'
+                    'type' => 'enrollment',
                 ];
             });
 
@@ -87,16 +88,16 @@ class DashboardController extends Controller
                         $title = 'Pembelian kursus berhasil';
                         break;
                     case 'topup':
-                        $title = 'Top up saldo sebesar Rp ' . number_format($transaction->amount, 0, ',', '.');
+                        $title = 'Top up saldo sebesar Rp '.number_format($transaction->amount, 0, ',', '.');
                         break;
                     default:
-                        $title = 'Transaksi ' . $transaction->type;
+                        $title = 'Transaksi '.$transaction->type;
                 }
-                
+
                 return [
                     'title' => $title,
                     'time' => $transaction->created_at->diffForHumans(),
-                    'type' => 'transaction'
+                    'type' => 'transaction',
                 ];
             });
 
@@ -108,13 +109,14 @@ class DashboardController extends Controller
             ->take(2)
             ->get()
             ->map(function ($answer) {
-                if (!$answer->courseQuestion || !$answer->courseQuestion->course) {
+                if (! $answer->courseQuestion || ! $answer->courseQuestion->course) {
                     return null;
                 }
+
                 return [
-                    'title' => 'Menyelesaikan soal: ' . $answer->courseQuestion->course->title,
+                    'title' => 'Menyelesaikan soal: '.$answer->courseQuestion->course->title,
                     'time' => $answer->created_at->diffForHumans(),
-                    'type' => 'quiz'
+                    'type' => 'quiz',
                 ];
             })->filter();
 
@@ -143,6 +145,7 @@ class DashboardController extends Controller
 
         // Get recent enrollments for legacy compatibility
         $recentCourses = UserCourse::where('user_id', $user->id)
+            ->whereHas('course')
             ->with('course')
             ->latest()
             ->take(5)
@@ -151,6 +154,7 @@ class DashboardController extends Controller
         // Get courses in progress for legacy compatibility
         $inProgressCourses = UserCourse::where('user_id', $user->id)
             ->where('is_completed', false)
+            ->whereHas('course')
             ->with('course')
             ->take(3)
             ->get();
@@ -178,7 +182,7 @@ class DashboardController extends Controller
         return view('user.dashboard', compact(
             'enrolledCourses',
             'totalCourses',
-            'activeCourses', 
+            'activeCourses',
             'completedCourses',
             'recentActivities',
             'stats',
@@ -196,7 +200,7 @@ class DashboardController extends Controller
         $transactions = Transaction::where('user_id', $user->id)
             ->latest()
             ->paginate(10);
-            
+
         return view('user.profile', compact('user', 'transactions'));
     }
 
@@ -206,9 +210,9 @@ class DashboardController extends Controller
 
         $rules = [
             'name' => 'sometimes|required|string|max:255',
-            'username' => 'sometimes|required|string|alpha_dash|max:255|unique:users,username,' . $user->id,
-            'email' => 'sometimes|required|string|email|max:255|unique:users,email,' . $user->id,
-            'phone' => 'sometimes|required|string|max:20|unique:users,phone,' . $user->id,
+            'username' => 'sometimes|required|string|alpha_dash|max:255|unique:users,username,'.$user->id,
+            'email' => 'sometimes|required|string|email|max:255|unique:users,email,'.$user->id,
+            'phone' => 'sometimes|nullable|string|max:20|unique:users,phone,'.$user->id,
             'password' => 'nullable|string|min:8|confirmed',
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ];

@@ -10,7 +10,7 @@
         <h1 class="text-2xl font-black text-[var(--ink)] flex items-center gap-3">
             <i class="fas fa-user-cog text-[var(--blue)]"></i> Pengaturan Profil Saya
         </h1>
-        <p class="text-xs text-[var(--muted)] mt-1 font-mono">Kelola informasi data diri, foto avatar, keamanan akun, dan riwayat transaksi Anda.</p>
+        <p class="text-xs text-[var(--muted)] mt-1 font-mono">Kelola informasi data diri, foto avatar, keamanan akun, dan histori kegiatan Anda.</p>
     </div>
 
     @if(session('success'))
@@ -92,7 +92,7 @@
                 <button @click="tab = 'transactions'" 
                         :class="tab === 'transactions' ? 'border-[var(--blue)] text-[var(--blue)]' : 'border-transparent text-[var(--muted)] hover:text-[var(--ink)]'" 
                         class="pb-3 px-4 font-bold text-xs uppercase tracking-wider border-b-2 transition-all font-mono">
-                    <i class="fas fa-receipt mr-1"></i> Riwayat Transaksi
+                    <i class="fas fa-history mr-1"></i> Histori Kegiatan
                 </button>
             </div>
 
@@ -188,7 +188,7 @@
 
             <!-- Tab Content: Transaction Log -->
             <div x-show="tab === 'transactions'" class="bg-white border border-[var(--border)] rounded-2xl p-6 sm:p-8 shadow-sm" style="display: none;">
-                <h3 class="font-extrabold text-[var(--ink)] text-sm mb-5 uppercase tracking-wider border-b border-[var(--border)] pb-3">Histori Transaksi Terakhir</h3>
+                <h3 class="font-extrabold text-[var(--ink)] text-sm mb-5 uppercase tracking-wider border-b border-[var(--border)] pb-3">Histori Kegiatan Terbaru</h3>
 
                 @if($transactions->count())
                     <div class="flex flex-col gap-3">
@@ -224,7 +224,7 @@
                 @else
                     <div class="text-center py-12 text-[var(--muted)] font-mono text-xs">
                         <div class="text-3xl mb-3">🧾</div>
-                        Belum ada riwayat transaksi yang tercatat.
+                        Belum ada histori kegiatan yang tercatat.
                     </div>
                 @endif
             </div>

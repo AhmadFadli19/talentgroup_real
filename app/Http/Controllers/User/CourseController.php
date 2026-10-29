@@ -3,20 +3,16 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Course;
-use App\Models\CourseContent;
-use App\Models\CourseStory;
-use App\Models\CourseVideo;
-use App\Models\CourseHtml;
 use App\Models\CourseQuestion;
-use App\Models\UserAnswer;
-use App\Models\UserCourse;
-use App\Models\Transaction;
-use App\Models\User;
 use App\Models\ReferralCode;
 use App\Models\ReferralCodeUsage;
+use App\Models\Transaction;
+use App\Models\User;
+use App\Models\UserAnswer;
+use App\Models\UserCourse;
 use App\Services\CodeExecutionService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -35,13 +31,13 @@ class CourseController extends Controller
         $query = Course::where('is_active', true);
 
         if ($request->filled('category')) {
-            $query->where('title', 'LIKE', $request->category . '%');
+            $query->where('title', 'LIKE', $request->category.'%');
         }
 
         if ($request->filled('search')) {
             $query->where(function ($q) use ($request) {
-                $q->where('title', 'LIKE', '%' . $request->search . '%')
-                    ->orWhere('description', 'LIKE', '%' . $request->search . '%');
+                $q->where('title', 'LIKE', '%'.$request->search.'%')
+                    ->orWhere('description', 'LIKE', '%'.$request->search.'%');
             });
         }
 
@@ -52,6 +48,7 @@ class CourseController extends Controller
         $allCourses = Course::where('is_active', true)->get();
         $categories = $allCourses->map(function ($course) {
             preg_match('/^([A-Z]\d+)/', $course->title, $matches);
+
             return $matches[1] ?? null;
         })->filter()->unique()->sort()->values();
 
@@ -67,12 +64,12 @@ class CourseController extends Controller
             ->where('course_id', $course->id)
             ->first();
 
-        if (!$userCourse) {
+        if (! $userCourse) {
             return redirect()->route('user.courses.show', $course->id)
                 ->with('error', 'Anda belum membeli kursus ini.');
         }
 
-        if (!$userCourse->is_completed) {
+        if (! $userCourse->is_completed) {
             return redirect()->route('user.courses.learn', $course->id)
                 ->with('info', 'Selesaikan kursus terlebih dahulu sebelum mengulang.');
         }
@@ -84,11 +81,11 @@ class CourseController extends Controller
             $htmlIds = $course->htmls()->pluck('id');
 
             UserAnswer::where('user_id', $user->id)
-                ->where(function($query) use ($questionIds, $storyIds, $videoIds, $htmlIds) {
-                    $query->where(fn($q) => $q->where('content_type', 'question')->whereIn('content_id', $questionIds))
-                        ->orWhere(fn($q) => $q->where('content_type', 'story')->whereIn('content_id', $storyIds))
-                        ->orWhere(fn($q) => $q->where('content_type', 'video')->whereIn('content_id', $videoIds))
-                        ->orWhere(fn($q) => $q->where('content_type', 'html')->whereIn('content_id', $htmlIds));
+                ->where(function ($query) use ($questionIds, $storyIds, $videoIds, $htmlIds) {
+                    $query->where(fn ($q) => $q->where('content_type', 'question')->whereIn('content_id', $questionIds))
+                        ->orWhere(fn ($q) => $q->where('content_type', 'story')->whereIn('content_id', $storyIds))
+                        ->orWhere(fn ($q) => $q->where('content_type', 'video')->whereIn('content_id', $videoIds))
+                        ->orWhere(fn ($q) => $q->where('content_type', 'html')->whereIn('content_id', $htmlIds));
                 })
                 ->delete();
 
@@ -96,7 +93,7 @@ class CourseController extends Controller
             $firstContentId = null;
 
             if ($firstContent) {
-                $firstContentId = $firstContent->type . ':' . $firstContent->id;
+                $firstContentId = $firstContent->type.':'.$firstContent->id;
             }
 
             $userCourse->update([
@@ -143,7 +140,7 @@ class CourseController extends Controller
 
         $referral = ReferralCode::where('code', $codeStr)->first();
 
-        if (!$referral || !$referral->isValidForCourse($course, $user)) {
+        if (! $referral || ! $referral->isValidForCourse($course, $user)) {
             return response()->json([
                 'valid' => false,
                 'message' => 'Kode referral tidak valid, sudah dipakai, atau kedaluwarsa.',
@@ -163,11 +160,11 @@ class CourseController extends Controller
             'original_price' => (float) $course->price,
             'final_price' => $finalPrice,
             'is_free' => $finalPrice == 0,
-            'formatted_discount' => 'Rp ' . number_format($discount, 0, ',', '.'),
-            'formatted_final_price' => $finalPrice == 0 ? 'GRATIS' : 'Rp ' . number_format($finalPrice, 0, ',', '.'),
-            'message' => $finalPrice == 0 
-                ? 'Kode referral valid! Kursus menjadi 100% GRATIS!' 
-                : 'Kode referral valid! Anda hemat Rp ' . number_format($discount, 0, ',', '.') . '.',
+            'formatted_discount' => 'Rp '.number_format($discount, 0, ',', '.'),
+            'formatted_final_price' => $finalPrice == 0 ? 'GRATIS' : 'Rp '.number_format($finalPrice, 0, ',', '.'),
+            'message' => $finalPrice == 0
+                ? 'Kode referral valid! Kursus menjadi 100% GRATIS!'
+                : 'Kode referral valid! Anda hemat Rp '.number_format($discount, 0, ',', '.').'.',
         ]);
     }
 
@@ -189,7 +186,7 @@ class CourseController extends Controller
             $codeStr = strtoupper(trim($request->referral_code));
             $referralCode = ReferralCode::where('code', $codeStr)->first();
 
-            if (!$referralCode || !$referralCode->isValidForCourse($course, $user)) {
+            if (! $referralCode || ! $referralCode->isValidForCourse($course, $user)) {
                 return redirect()->route('user.courses.show', $course->id)
                     ->with('error', 'Kode referral tidak valid, sudah mencapai batas penggunaan, atau telah kedaluwarsa.');
             }
@@ -200,7 +197,7 @@ class CourseController extends Controller
 
         if ($finalPrice > 0 && $user->balance < $finalPrice) {
             return redirect()->route('user.courses.show', $course->id)
-                ->with('error', 'Saldo tidak mencukupi (Biaya: Rp ' . number_format($finalPrice, 0, ',', '.') . '). Silakan top up saldo terlebih dahulu.');
+                ->with('error', 'Saldo tidak mencukupi (Biaya: Rp '.number_format($finalPrice, 0, ',', '.').'). Silakan top up saldo terlebih dahulu.');
         }
 
         DB::transaction(function () use ($user, $course, $finalPrice, $discount, $referralCode) {
@@ -209,9 +206,9 @@ class CourseController extends Controller
                 User::where('id', $user->id)->decrement('balance', $finalPrice);
             }
 
-            $desc = 'Purchase course: ' . $course->title;
+            $desc = 'Purchase course: '.$course->title;
             if ($referralCode) {
-                $desc .= ' (Ref: ' . $referralCode->code . ' - Potongan Rp ' . number_format($discount, 0, ',', '.') . ')';
+                $desc .= ' (Ref: '.$referralCode->code.' - Potongan Rp '.number_format($discount, 0, ',', '.').')';
             }
 
             Transaction::create([
@@ -241,7 +238,7 @@ class CourseController extends Controller
             $firstContentId = null;
 
             if ($firstContent) {
-                $firstContentId = $firstContent->type . ':' . $firstContent->id;
+                $firstContentId = $firstContent->type.':'.$firstContent->id;
             }
 
             UserCourse::create([
@@ -267,19 +264,20 @@ class CourseController extends Controller
     {
         $user = Auth::user();
         $userCourses = UserCourse::where('user_id', $user->id)
+            ->whereHas('course')
             ->with(['course'])
             ->latest()
             ->get();
 
         foreach ($userCourses as $userCourse) {
             $course = $userCourse->course;
-            
+
             $totalNodes = $course->stories()->count() + $course->questions()->count() + $course->videos()->count() + $course->htmls()->count();
-            
-            $storyRefs = $course->stories()->pluck('id')->map(fn($id) => "story:{$id}")->toArray();
-            $questionRefs = $course->questions()->pluck('id')->map(fn($id) => "question:{$id}")->toArray();
-            $videoRefs = $course->videos()->pluck('id')->map(fn($id) => "video:{$id}")->toArray();
-            $htmlRefs = $course->htmls()->pluck('id')->map(fn($id) => "html:{$id}")->toArray();
+
+            $storyRefs = $course->stories()->pluck('id')->map(fn ($id) => "story:{$id}")->toArray();
+            $questionRefs = $course->questions()->pluck('id')->map(fn ($id) => "question:{$id}")->toArray();
+            $videoRefs = $course->videos()->pluck('id')->map(fn ($id) => "video:{$id}")->toArray();
+            $htmlRefs = $course->htmls()->pluck('id')->map(fn ($id) => "html:{$id}")->toArray();
             $allRefs = array_merge($storyRefs, $questionRefs, $videoRefs, $htmlRefs);
 
             $syncedNodes = UserAnswer::where('user_id', $user->id)
@@ -295,6 +293,7 @@ class CourseController extends Controller
             $course->progress = $userCourse->progress;
             $course->is_completed = $userCourse->is_completed;
             $course->enrolled_at = $userCourse->created_at;
+
             return $course;
         });
 
@@ -310,7 +309,7 @@ class CourseController extends Controller
             ->where('course_id', $course->id)
             ->first();
 
-        if (!$userCourse) {
+        if (! $userCourse) {
             return redirect()->route('user.courses.show', $course->id)
                 ->with('error', 'Anda belum membeli kursus ini.');
         }
@@ -333,7 +332,7 @@ class CourseController extends Controller
             ->where('course_id', $course->id)
             ->first();
 
-        if (!$userCourse) {
+        if (! $userCourse) {
             return redirect()->route('user.courses.show', $course->id)
                 ->with('error', 'Anda belum membeli kursus ini.');
         }
@@ -354,7 +353,7 @@ class CourseController extends Controller
                     'content_id' => $content->id,
                 ],
                 [
-                    'content_reference' => 'story:' . $content->id,
+                    'content_reference' => 'story:'.$content->id,
                     'answer' => 'read',
                     'is_correct' => true,
                     'points' => 0, // No score for story as requested
@@ -375,7 +374,7 @@ class CourseController extends Controller
                     'content_id' => $content->id,
                 ],
                 [
-                    'content_reference' => 'video:' . $content->id,
+                    'content_reference' => 'video:'.$content->id,
                     'answer' => 'watched',
                     'is_correct' => true,
                     'points' => 0,
@@ -396,7 +395,7 @@ class CourseController extends Controller
                     'content_id' => $content->id,
                 ],
                 [
-                    'content_reference' => 'html:' . $content->id,
+                    'content_reference' => 'html:'.$content->id,
                     'answer' => 'viewed',
                     'is_correct' => true,
                     'points' => 0,
@@ -426,6 +425,7 @@ class CourseController extends Controller
         // For coding questions, use dedicated view
         if ($type === 'question' && $content->isCoding()) {
             $codingRules = CourseQuestion::availableCodingRules();
+
             return response()->view('user.course_coding', compact(
                 'course', 'content', 'userAnswer', 'userCourse',
                 'previousContent', 'nextContent', 'codingRules'
@@ -466,7 +466,7 @@ class CourseController extends Controller
             ->where('course_id', $course->id)
             ->first();
 
-        if (!$userCourse) {
+        if (! $userCourse) {
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => false,
@@ -487,6 +487,7 @@ class CourseController extends Controller
                     'is_locked' => true,
                 ], 403);
             }
+
             return redirect()->back()->with('error', 'Kuis ini sudah dikumpulkan secara final. Jawaban telah dikunci.');
         }
 
@@ -497,7 +498,7 @@ class CourseController extends Controller
             $request->validate([
                 'code' => 'required|string',
                 'output' => 'nullable|string',
-                'language' => 'nullable|string'
+                'language' => 'nullable|string',
             ]);
 
             $code = $request->input('code');
@@ -506,14 +507,14 @@ class CourseController extends Controller
 
             // Validate rules
             $rulesResult = $this->codeService->validateRules($code, $content->coding_rules ?? []);
-            $allRulesPassed = !in_array(false, $rulesResult, true);
+            $allRulesPassed = ! in_array(false, $rulesResult, true);
 
             // Check output
             $outputMatches = $this->codeService->checkOutput($output, $content->expected_output);
 
             // Check test cases if they exist
             $allTestsPassed = true;
-            if (!empty($content->test_cases)) {
+            if (! empty($content->test_cases)) {
                 $testResults = $this->codeService->runTestCases($code, $content->test_cases, $language);
                 $allTestsPassed = $testResults['all_passed'];
                 $isCorrect = $allRulesPassed && $allTestsPassed;
@@ -529,7 +530,7 @@ class CourseController extends Controller
                     'content_id' => $content->id,
                 ],
                 [
-                    'content_reference' => 'question:' . $content->id,
+                    'content_reference' => 'question:'.$content->id,
                     'answer' => $output,
                     'code_submitted' => $code,
                     'code_output' => $output,
@@ -553,15 +554,15 @@ class CourseController extends Controller
 
             if ($request->ajax()) {
                 $userCourse = UserCourse::where('user_id', $user->id)->where('course_id', $course->id)->first();
-                $isCompleted = $userCourse ? (bool)$userCourse->is_completed : false;
+                $isCompleted = $userCourse ? (bool) $userCourse->is_completed : false;
 
                 $allContents = $course->allContents($user);
-                $currentIndex = $allContents->search(fn($c) => $c->type === $content->type && $c->id === $content->id);
+                $currentIndex = $allContents->search(fn ($c) => $c->type === $content->type && $c->id === $content->id);
                 $nextContent = ($currentIndex !== false && $currentIndex < $allContents->count() - 1) ? $allContents[$currentIndex + 1] : null;
 
-                $nextUrl = ($isCompleted || !$nextContent)
+                $nextUrl = ($isCompleted || ! $nextContent)
                     ? route('user.courses.results', $course->id)
-                    : route('user.courses.content', [$course->id, $nextContent->type . ':' . $nextContent->id]);
+                    : route('user.courses.content', [$course->id, $nextContent->type.':'.$nextContent->id]);
 
                 return response()->json([
                     'success' => true,
@@ -590,7 +591,7 @@ class CourseController extends Controller
                 'content_id' => $content->id,
             ],
             [
-                'content_reference' => 'question:' . $content->id,
+                'content_reference' => 'question:'.$content->id,
                 'answer' => $request->input('answer'),
                 'is_correct' => $isCorrect,
                 'points' => $isCorrect ? 10 : 0,
@@ -634,7 +635,7 @@ class CourseController extends Controller
         if ($userCourse) {
             $allContents = $course->allContents($user);
             $totalNodes = $allContents->count();
-            $allRefs = $allContents->map(fn($c) => $c->type . ':' . $c->id)->toArray();
+            $allRefs = $allContents->map(fn ($c) => $c->type.':'.$c->id)->toArray();
 
             $completedRefs = UserAnswer::where('user_id', $user->id)
                 ->whereIn('content_reference', $allRefs)
@@ -657,7 +658,7 @@ class CourseController extends Controller
                         'course_id' => $course->id,
                     ],
                     [
-                        'certificate_code' => 'TG-' . strtoupper(uniqid()),
+                        'certificate_code' => 'TG-'.strtoupper(uniqid()),
                         'type' => 'automatic',
                         'issued_at' => now(),
                     ]
@@ -672,20 +673,20 @@ class CourseController extends Controller
                 if ($currentIndex !== false) {
                     for ($i = $currentIndex + 1; $i < $totalNodes; $i++) {
                         $candidate = $allContents[$i];
-                        if (!in_array($candidate->type . ':' . $candidate->id, $completedRefs)) {
+                        if (! in_array($candidate->type.':'.$candidate->id, $completedRefs)) {
                             $nextUncompleted = $candidate;
                             break;
                         }
                     }
                 }
 
-                if (!$nextUncompleted) {
+                if (! $nextUncompleted) {
                     $nextUncompleted = $allContents->first(function ($candidate) use ($completedRefs) {
-                        return !in_array($candidate->type . ':' . $candidate->id, $completedRefs);
+                        return ! in_array($candidate->type.':'.$candidate->id, $completedRefs);
                     });
                 }
 
-                $nextContentId = $nextUncompleted ? ($nextUncompleted->type . ':' . $nextUncompleted->id) : null;
+                $nextContentId = $nextUncompleted ? ($nextUncompleted->type.':'.$nextUncompleted->id) : null;
                 $userCourse->update([
                     'current_content_id' => $nextContentId,
                     'is_completed' => false,
@@ -706,7 +707,7 @@ class CourseController extends Controller
             ->where('course_id', $course->id)
             ->first();
 
-        if (!$userCourse) {
+        if (! $userCourse) {
             return redirect()->route('user.courses.show', $course->id)
                 ->with('error', 'Anda belum membeli kursus ini.');
         }
@@ -714,7 +715,7 @@ class CourseController extends Controller
         // Cek apakah seluruh node sudah selesai
         $allContents = $course->allContents($user);
         $totalNodes = $allContents->count();
-        $allRefs = $allContents->map(fn($c) => $c->type . ':' . $c->id)->toArray();
+        $allRefs = $allContents->map(fn ($c) => $c->type.':'.$c->id)->toArray();
         $syncedNodes = UserAnswer::where('user_id', $user->id)
             ->whereIn('content_reference', $allRefs)
             ->distinct('content_reference')
@@ -722,12 +723,12 @@ class CourseController extends Controller
 
         $isCompleted = $userCourse->is_completed || ($totalNodes > 0 && $syncedNodes >= $totalNodes);
 
-        if (!$isCompleted) {
+        if (! $isCompleted) {
             return redirect()->route('user.courses.results', $course->id)
                 ->with('error', 'Selesaikan seluruh materi kursus terlebih dahulu untuk mendapatkan sertifikat.');
         }
 
-        if (!$userCourse->is_completed) {
+        if (! $userCourse->is_completed) {
             $userCourse->update(['is_completed' => true]);
         }
 
@@ -737,14 +738,14 @@ class CourseController extends Controller
                 'course_id' => $course->id,
             ],
             [
-                'certificate_code' => 'TG-' . strtoupper(uniqid()),
+                'certificate_code' => 'TG-'.strtoupper(uniqid()),
                 'type' => 'automatic',
                 'issued_at' => now(),
             ]
         );
 
         if ($certificate->isManual() && $certificate->file_path) {
-            return response()->file(storage_path('app/public/' . $certificate->file_path));
+            return response()->file(storage_path('app/public/'.$certificate->file_path));
         }
 
         return view('user.certificate_view', compact('course', 'user', 'certificate'));
@@ -759,26 +760,26 @@ class CourseController extends Controller
             ->where('course_id', $course->id)
             ->first();
 
-        if (!$userCourse) {
+        if (! $userCourse) {
             return redirect()->route('user.courses.show', $course->id)
                 ->with('error', 'Anda belum membeli kursus ini.');
         }
 
         $allContents = $course->allContents($user);
         $totalNodes = $allContents->count();
-        $allRefs = $allContents->map(fn($c) => $c->type . ':' . $c->id)->toArray();
-        
+        $allRefs = $allContents->map(fn ($c) => $c->type.':'.$c->id)->toArray();
+
         $userAnswersAll = UserAnswer::where('user_id', $user->id)
             ->whereIn('content_reference', $allRefs)
             ->with(['courseQuestion', 'courseStory'])
             ->get();
-            
+
         $completedRefs = $userAnswersAll->pluck('content_reference')->unique()->toArray();
         $syncedNodes = count($completedRefs);
 
         // Jika seluruh materi sudah selesai, sinkronkan is_completed dan sertifikat
         if ($totalNodes > 0 && $syncedNodes >= $totalNodes) {
-            if (!$userCourse->is_completed) {
+            if (! $userCourse->is_completed) {
                 $userCourse->update(['is_completed' => true]);
             }
 
@@ -788,7 +789,7 @@ class CourseController extends Controller
                     'course_id' => $course->id,
                 ],
                 [
-                    'certificate_code' => 'TG-' . strtoupper(uniqid()),
+                    'certificate_code' => 'TG-'.strtoupper(uniqid()),
                     'type' => 'automatic',
                     'issued_at' => now(),
                 ]
@@ -801,8 +802,9 @@ class CourseController extends Controller
         $answersMap = $userAnswersAll->keyBy('content_reference');
 
         $evaluatedQuestions = $questions->map(function ($q) use ($answersMap) {
-            $ref = 'question:' . $q->id;
+            $ref = 'question:'.$q->id;
             $userAns = $answersMap->get($ref);
+
             return [
                 'question' => $q,
                 'user_answer' => $userAns,
