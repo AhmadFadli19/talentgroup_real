@@ -1,6 +1,5 @@
 @php
     $protectWholePage = (bool) ($protectWholePage ?? false);
-    $securityIdentity = auth()->user()?->email ?: auth()->user()?->name ?: 'Pengguna TalentGroup.id';
 @endphp
 
 <style>
@@ -15,33 +14,6 @@
     [data-quiz-page-protected] img {
         -webkit-user-drag: none !important;
         user-drag: none !important;
-    }
-
-    #quiz-security-watermark {
-        position: fixed;
-        inset: -18vh -16vw;
-        z-index: 900;
-        display: grid;
-        grid-template-columns: repeat(3, minmax(260px, 1fr));
-        grid-auto-rows: minmax(130px, 1fr);
-        align-items: center;
-        justify-items: center;
-        overflow: hidden;
-        pointer-events: none;
-        user-select: none;
-        transform: rotate(-24deg);
-    }
-
-    #quiz-security-watermark span {
-        color: rgba(15, 23, 42, .105);
-        font: 800 12px/1.45 'Fira Code', monospace;
-        letter-spacing: .04em;
-        text-align: center;
-        white-space: nowrap;
-    }
-
-    .dark #quiz-security-watermark span {
-        color: rgba(255, 255, 255, .095);
     }
 
     #quiz-security-shield {
@@ -113,14 +85,6 @@
         }
     }
 </style>
-
-@if($protectWholePage)
-    <div id="quiz-security-watermark" aria-hidden="true">
-        @for($watermark = 0; $watermark < 18; $watermark++)
-            <span>TalentGroup.id<br>{{ $securityIdentity }}</span>
-        @endfor
-    </div>
-@endif
 
 <div id="quiz-security-shield" role="alert" aria-live="assertive" aria-hidden="true">
     <div>
