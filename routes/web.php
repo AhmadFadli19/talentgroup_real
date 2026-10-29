@@ -48,6 +48,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/modules/unlock', [ModuleController::class, 'unlock'])->name('modules.unlock');
     Route::get('/modules/read/{slug}', [ModuleController::class, 'showLegacy'])->name('modules.show');
     Route::get('/modules/{moduleSlug}', [ModuleController::class, 'showModule'])->name('modules.module.show');
+    Route::get('/modules/{moduleSlug}/{lessonSlug}/page/{page}', [ModuleController::class, 'protectedPage'])
+        ->whereNumber('page')
+        ->name('modules.lesson.page');
     Route::get('/modules/{moduleSlug}/{lessonSlug}', [ModuleController::class, 'showLesson'])->name('modules.lesson.show');
 });
 

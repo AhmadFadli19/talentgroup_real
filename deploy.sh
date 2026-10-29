@@ -149,7 +149,8 @@ echo ""
 echo "📝 [7/8] Menyinkronkan bank latihan Figma dan Web..."
 php artisan db:seed --class=FigmaPracticeSeeder --force
 php artisan db:seed --class=WebFundamentalsPracticeSeeder --force
-echo "✅ Bank latihan berhasil disinkronkan"
+php artisan db:seed --class=TalentGroupHimaUpnvjModuleSeeder --force
+echo "✅ Bank latihan dan modul mentoring berhasil disinkronkan"
 
 # 8. Jalankan pembersihan cache Laravel
 echo ""
@@ -164,5 +165,6 @@ echo "  ✓ Root .htaccess & index.php aktif"
 echo "  ✓ Bypass symlink storage aktif"
 echo "  ✓ Migration database telah diterapkan"
 echo "  ✓ Bank latihan telah disinkronkan"
+echo "  ✓ Modul mentoring TalentGroup.id x HIMA UPNVJ telah disinkronkan"
 echo "  ✓ Cache sistem telah disegarkan"
 echo "=========================================="

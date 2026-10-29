@@ -917,6 +917,7 @@
         }
         @endguest
     </style>
+    @yield('head-security')
 </head>
 
 <body x-data="{ sidebarOpen: localStorage.getItem('sidebarOpen') !== 'false', mobileSidebarOpen: false }" 

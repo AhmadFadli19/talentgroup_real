@@ -41,7 +41,12 @@ class PracticeQuestionSecurityTest extends TestCase
             ->assertHeader('Pragma', 'no-cache')
             ->assertHeader('X-Robots-Tag', 'noindex, noarchive, nosnippet')
             ->assertSee('data-quiz-protected', false)
+            ->assertSee('data-quiz-page-protected', false)
             ->assertSee('quiz-security-shield', false)
+            ->assertSee('quiz-security-watermark', false)
+            ->assertSee('security-student@example.com', false)
+            ->assertSee("['copy', 'cut', 'paste', 'contextmenu', 'dragstart']", false)
+            ->assertSee('modifierFirst', false)
             ->assertSee('Pencetakan dan simpan PDF dinonaktifkan', false);
     }
 

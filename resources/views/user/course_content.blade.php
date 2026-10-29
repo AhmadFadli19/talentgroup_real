@@ -2,6 +2,55 @@
 
 @section('title', 'Pembelajaran: ' . $content->title)
 
+@section('head-security')
+    @if($content->type === 'question')
+        <style>
+            html.quiz-early-blackout,
+            html.quiz-early-blackout body {
+                background: #000 !important;
+                color: #000 !important;
+            }
+
+            html.quiz-early-blackout::before {
+                content: '';
+                position: fixed;
+                inset: 0;
+                z-index: 2147483647;
+                background: #000;
+                pointer-events: none;
+            }
+        </style>
+        <script>
+            (() => {
+                'use strict';
+
+                const armEarlyBlackout = () => {
+                    window.__tgQuizEarlyBlackoutActive = true;
+                    document.documentElement.classList.add('quiz-early-blackout');
+                };
+
+                window.__tgQuizArmEarlyBlackout = armEarlyBlackout;
+                window.addEventListener('keydown', (event) => {
+                    const modifierFirst = ['Meta', 'OS', 'Control'].includes(event.key)
+                        || event.metaKey
+                        || (event.ctrlKey && event.shiftKey);
+                    const printScreen = event.key === 'PrintScreen'
+                        || event.code === 'PrintScreen'
+                        || event.keyCode === 44;
+
+                    if (modifierFirst || printScreen) {
+                        armEarlyBlackout();
+                    }
+                }, true);
+                window.addEventListener('blur', armEarlyBlackout, true);
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden) armEarlyBlackout();
+                }, true);
+            })();
+        </script>
+    @endif
+@endsection
+
 @section('content')
 
 @php
@@ -108,7 +157,7 @@
 }
 </style>
 
-<div id="learning-root" x-data="learningData()" class="max-w-6xl mx-auto py-6 px-4">
+<div id="learning-root" @if($content->type === 'question') data-quiz-page-protected @endif x-data="learningData()" class="max-w-6xl mx-auto py-6 px-4">
 
     <!-- Top learning bar showing progress -->
     <div class="cyber-card mb-6 p-5 bg-[var(--bg2)] border-[var(--border)] relative overflow-hidden" style="border-left-width: 4px; border-left-color: var(--cyan);">
@@ -689,6 +738,6 @@ function copyCodeBlock(codeId, button) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/autoloader/prism-autoloader.min.js"></script>
 @if($content->type === 'question')
-    @include('user.partials.quiz-protection')
+    @include('user.partials.quiz-protection', ['protectWholePage' => true])
 @endif
 @endsection

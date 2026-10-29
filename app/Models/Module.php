@@ -22,6 +22,7 @@ class Module extends Model
         'file_path',
         'file_name',
         'file_size',
+        'page_count',
         'order',
         'is_published',
         'is_public',
@@ -41,6 +42,7 @@ class Module extends Model
         'enable_anti_copy' => 'boolean',
         'views_count' => 'integer',
         'file_size' => 'integer',
+        'page_count' => 'integer',
     ];
 
     /**
@@ -100,13 +102,22 @@ class Module extends Model
         );
     }
 
+    public function isProtectedSlides(): bool
+    {
+        return $this->content_type === 'protected_slides';
+    }
+
     public function isDocument(): bool
     {
-        return $this->isPdf() || $this->isWord() || $this->isPpt();
+        return $this->isPdf() || $this->isWord() || $this->isPpt() || $this->isProtectedSlides();
     }
 
     public function getFileUrlAttribute(): ?string
     {
+        if ($this->isProtectedSlides()) {
+            return null;
+        }
+
         return $this->file_path ? asset('storage/' . $this->file_path) : null;
     }
 

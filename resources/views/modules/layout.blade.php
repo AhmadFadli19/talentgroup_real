@@ -280,6 +280,47 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
 
     @stack('styles')
+
+    @if($antiScreenshot)
+        <style>
+            html.ss-blackout::before {
+                content: '';
+                position: fixed;
+                inset: 0;
+                z-index: 2147483647;
+                background: #000;
+                pointer-events: none;
+            }
+        </style>
+        <script>
+            (() => {
+                'use strict';
+
+                const armEarlyBlackout = () => {
+                    window.__tgModuleEarlyBlackoutActive = true;
+                    document.documentElement.classList.add('ss-blackout');
+                };
+
+                window.__tgModuleArmEarlyBlackout = armEarlyBlackout;
+                window.addEventListener('keydown', (event) => {
+                    const modifierFirst = ['Meta', 'OS', 'Control'].includes(event.key)
+                        || event.metaKey
+                        || (event.ctrlKey && event.shiftKey);
+                    const printScreen = event.key === 'PrintScreen'
+                        || event.code === 'PrintScreen'
+                        || event.keyCode === 44;
+
+                    if (modifierFirst || printScreen) {
+                        armEarlyBlackout();
+                    }
+                }, true);
+                window.addEventListener('blur', armEarlyBlackout, true);
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden) armEarlyBlackout();
+                }, true);
+            })();
+        </script>
+    @endif
 </head>
 
 <body class="bg-[var(--bg)] text-[color:var(--body)] min-h-screen flex flex-col antialiased selection:bg-[var(--blue-light)] selection:text-[color:var(--blue)]">
@@ -1012,6 +1053,7 @@
             function triggerInstantBlackout(reason, duration = 4500, lock = true) {
                 blackoutActive = true;
                 hadScreenshotAttempt = true;
+                window.__tgModuleEarlyBlackoutActive = true;
 
                 if (lock) {
                     isSnippingLocked = true;
@@ -1051,6 +1093,7 @@
             function clearBlackout(notify = false) {
                 blackoutActive = false;
                 isSnippingLocked = false;
+                window.__tgModuleEarlyBlackoutActive = false;
                 clearTimeout(blackoutTimer);
                 clearTimeout(lockReleaseTimer);
 
@@ -1069,6 +1112,19 @@
             // A. HARDWARE & KEYBOARD SHORTCUTS (DESKTOP & MAC OS)
             // ========================================================
             function handleKeyDown(e) {
+                // Arm on the first modifier key. Waiting for the complete OS
+                // shortcut is too late because the operating system captures it first.
+                const modifierFirst = ['Meta', 'OS', 'Control'].includes(e.key)
+                    || e.metaKey
+                    || (e.ctrlKey && e.shiftKey);
+
+                if (modifierFirst) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    triggerInstantBlackout('Screenshot modifier key', 5000, true);
+                    return false;
+                }
+
                 // Developer Tools Shortcuts: F12, Ctrl+Shift+I/J/C, Ctrl+U
                 if (e.key === 'F12' || e.keyCode === 123) {
                     e.preventDefault();
@@ -1156,6 +1212,10 @@
 
             window.addEventListener('keydown', handleKeyDown, true);
             document.addEventListener('keydown', handleKeyDown, true);
+
+            if (window.__tgModuleEarlyBlackoutActive) {
+                triggerInstantBlackout('Early modifier key', 5000, true);
+            }
 
             window.addEventListener('keyup', function(e) {
                 if (e.key === 'PrintScreen' || e.keyCode === 44 || e.code === 'PrintScreen') {

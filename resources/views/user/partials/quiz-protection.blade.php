@@ -1,14 +1,47 @@
+@php
+    $protectWholePage = (bool) ($protectWholePage ?? false);
+    $securityIdentity = auth()->user()?->email ?: auth()->user()?->name ?: 'Pengguna TalentGroup.id';
+@endphp
+
 <style>
-    [data-quiz-protected] {
+    [data-quiz-protected],
+    [data-quiz-page-protected] {
         -webkit-user-select: none !important;
         user-select: none !important;
         -webkit-touch-callout: none !important;
     }
 
-    [data-quiz-protected] img {
+    [data-quiz-protected] img,
+    [data-quiz-page-protected] img {
         -webkit-user-drag: none !important;
         user-drag: none !important;
+    }
+
+    #quiz-security-watermark {
+        position: fixed;
+        inset: -18vh -16vw;
+        z-index: 900;
+        display: grid;
+        grid-template-columns: repeat(3, minmax(260px, 1fr));
+        grid-auto-rows: minmax(130px, 1fr);
+        align-items: center;
+        justify-items: center;
+        overflow: hidden;
         pointer-events: none;
+        user-select: none;
+        transform: rotate(-24deg);
+    }
+
+    #quiz-security-watermark span {
+        color: rgba(15, 23, 42, .105);
+        font: 800 12px/1.45 'Fira Code', monospace;
+        letter-spacing: .04em;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    .dark #quiz-security-watermark span {
+        color: rgba(255, 255, 255, .095);
     }
 
     #quiz-security-shield {
@@ -23,10 +56,17 @@
         color: #fff;
         text-align: center;
         cursor: pointer;
+        transition: none !important;
     }
 
     #quiz-security-shield.active {
         display: flex !important;
+    }
+
+    html.quiz-early-blackout,
+    html.quiz-early-blackout body {
+        background: #000 !important;
+        color: #000 !important;
     }
 
     #quiz-security-toast {
@@ -74,7 +114,15 @@
     }
 </style>
 
-<div id="quiz-security-shield" role="alert" aria-live="assertive">
+@if($protectWholePage)
+    <div id="quiz-security-watermark" aria-hidden="true">
+        @for($watermark = 0; $watermark < 18; $watermark++)
+            <span>TalentGroup.id<br>{{ $securityIdentity }}</span>
+        @endfor
+    </div>
+@endif
+
+<div id="quiz-security-shield" role="alert" aria-live="assertive" aria-hidden="true">
     <div>
         <i class="fas fa-shield-halved text-3xl mb-3"></i>
         <p class="text-sm font-extrabold">Tampilan latihan disembunyikan untuk melindungi soal.</p>
@@ -87,6 +135,7 @@
 (() => {
     'use strict';
 
+    const protectWholePage = @json($protectWholePage);
     const shield = document.getElementById('quiz-security-shield');
     const toast = document.getElementById('quiz-security-toast');
     let toastTimer;
@@ -100,39 +149,60 @@
     };
 
     const isProtectedNode = (node) => {
+        if (protectWholePage) return true;
         const element = node instanceof Element ? node : node?.parentElement;
         return Boolean(element?.closest('[data-quiz-protected]'));
     };
 
     const hasProtectedSelection = () => {
+        if (protectWholePage) return true;
         const selection = window.getSelection?.();
         return Boolean(selection && (isProtectedNode(selection.anchorNode) || isProtectedNode(selection.focusNode)));
     };
 
+    const clearClipboard = () => {
+        if (!navigator.clipboard || window.__allowClipboardAction) return;
+        navigator.clipboard.writeText('').catch(() => {});
+    };
+
+    const clearClipboardBurst = () => {
+        clearClipboard();
+        [60, 180, 420, 900, 1800].forEach((delay) => window.setTimeout(clearClipboard, delay));
+    };
+
     const blackout = (message = 'Tangkapan layar, perekaman, dan pencetakan dinonaktifkan pada latihan.') => {
-        if (!shield) return;
-        shield.classList.add('active');
-        shield.setAttribute('aria-hidden', 'false');
+        window.__tgQuizEarlyBlackoutActive = true;
+        document.documentElement.classList.add('quiz-early-blackout');
+        shield?.classList.add('active');
+        shield?.setAttribute('aria-hidden', 'false');
         window.getSelection?.().removeAllRanges();
+        clearClipboardBurst();
         showToast(message);
     };
 
     const restore = () => {
-        if (document.hidden || !shield) return;
-        shield.classList.remove('active');
-        shield.setAttribute('aria-hidden', 'true');
+        if (document.hidden) return;
+        window.__tgQuizEarlyBlackoutActive = false;
+        document.documentElement.classList.remove('quiz-early-blackout');
+        shield?.classList.remove('active');
+        shield?.setAttribute('aria-hidden', 'true');
     };
 
     shield?.addEventListener('click', restore);
     shield?.addEventListener('touchstart', restore, { passive: true });
 
-    ['copy', 'cut', 'contextmenu', 'dragstart'].forEach((eventName) => {
+    if (window.__tgQuizEarlyBlackoutActive) {
+        blackout();
+    }
+
+    ['copy', 'cut', 'paste', 'contextmenu', 'dragstart'].forEach((eventName) => {
         document.addEventListener(eventName, (event) => {
             if (!isProtectedNode(event.target) && !hasProtectedSelection()) return;
             event.preventDefault();
-            event.stopPropagation();
+            event.stopImmediatePropagation();
             window.getSelection?.().removeAllRanges();
-            showToast('Isi latihan tidak dapat disalin atau diunduh.');
+            clearClipboardBurst();
+            showToast('Isi latihan tidak dapat disalin, ditempel, atau diunduh.');
         }, true);
     });
 
@@ -140,19 +210,22 @@
         const key = String(event.key || '').toLowerCase();
         const command = event.ctrlKey || event.metaKey;
         const protectedAction = isProtectedNode(event.target) || hasProtectedSelection();
+        const modifierFirst = ['meta', 'os', 'control'].includes(key)
+            || event.metaKey
+            || (event.ctrlKey && event.shiftKey);
         const screenshotShortcut =
-            event.key === 'PrintScreen' || event.code === 'PrintScreen' ||
-            (event.metaKey && event.shiftKey && ['3', '4', '5', 's'].includes(key)) ||
+            event.key === 'PrintScreen' || event.code === 'PrintScreen' || event.keyCode === 44 ||
+            (event.metaKey && event.shiftKey) ||
             (event.ctrlKey && event.shiftKey && key === 's');
 
-        if (screenshotShortcut) {
+        if (modifierFirst || screenshotShortcut) {
             event.preventDefault();
             event.stopImmediatePropagation();
             blackout();
             return;
         }
 
-        if (event.key === 'F12' || (command && event.shiftKey && ['i', 'j', 'c'].includes(key))) {
+        if (event.key === 'F12') {
             event.preventDefault();
             event.stopImmediatePropagation();
             showToast('Developer tools dinonaktifkan selama latihan.');
@@ -166,11 +239,12 @@
             return;
         }
 
-        if (protectedAction && command && ['a', 'c', 'x'].includes(key)) {
+        if (protectedAction && command && ['a', 'c', 'v', 'x'].includes(key)) {
             event.preventDefault();
             event.stopImmediatePropagation();
             window.getSelection?.().removeAllRanges();
-            showToast('Teks soal dan pilihan jawaban tidak dapat disalin.');
+            clearClipboardBurst();
+            showToast('Teks soal dan pilihan jawaban tidak dapat disalin atau ditempel.');
         }
     }, true);
 

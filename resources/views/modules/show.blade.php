@@ -166,13 +166,13 @@
             @if(!empty($module->file_path))
                 <div class="mb-6 p-4 sm:p-5 rounded-2xl border border-[color:var(--line)] bg-gradient-to-r from-[var(--surface)] to-[var(--surface)] shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0 {{ $module->isPdf() ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30' : ($module->isWord() ? 'bg-[var(--blue-light)] text-[color:var(--blue)] border border-[color:var(--blue)]' : ($module->isPpt() ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' : 'bg-purple-500/15 text-purple-400 border border-purple-500/30')) }}">
-                            <i class="{{ $module->isPdf() ? 'fas fa-file-pdf' : ($module->isWord() ? 'fas fa-file-word' : ($module->isPpt() ? 'fas fa-file-powerpoint' : 'fas fa-file-alt')) }}"></i>
+                        <div class="w-12 h-12 rounded-xl flex items-center justify-center text-xl shrink-0 {{ $module->isProtectedSlides() ? 'bg-blue-500/15 text-blue-400 border border-blue-500/30' : ($module->isPdf() ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30' : ($module->isWord() ? 'bg-[var(--blue-light)] text-[color:var(--blue)] border border-[color:var(--blue)]' : ($module->isPpt() ? 'bg-amber-500/15 text-amber-400 border border-amber-500/30' : 'bg-purple-500/15 text-purple-400 border border-purple-500/30'))) }}">
+                            <i class="{{ $module->isProtectedSlides() ? 'fas fa-shield-halved' : ($module->isPdf() ? 'fas fa-file-pdf' : ($module->isWord() ? 'fas fa-file-word' : ($module->isPpt() ? 'fas fa-file-powerpoint' : 'fas fa-file-alt'))) }}"></i>
                         </div>
                         <div>
                             <div class="flex items-center gap-2">
-                                <span class="text-xs uppercase font-mono font-bold px-2 py-0.5 rounded {{ $module->isPdf() ? 'bg-rose-950 text-rose-300 border border-rose-800' : ($module->isWord() ? 'bg-[var(--blue-light)] text-[color:var(--blue)] border border-[color:var(--blue)]' : ($module->isPpt() ? 'bg-amber-950 text-amber-300 border border-amber-800' : 'bg-purple-950 text-purple-300 border border-purple-800')) }}">
-                                    {{ strtoupper($module->content_type ?: ($module->isPdf() ? 'PDF' : ($module->isWord() ? 'WORD' : ($module->isPpt() ? 'PPT' : 'DOKUMEN')))) }}
+                                <span class="text-xs uppercase font-mono font-bold px-2 py-0.5 rounded {{ $module->isProtectedSlides() ? 'bg-blue-950 text-blue-300 border border-blue-800' : ($module->isPdf() ? 'bg-rose-950 text-rose-300 border border-rose-800' : ($module->isWord() ? 'bg-[var(--blue-light)] text-[color:var(--blue)] border border-[color:var(--blue)]' : ($module->isPpt() ? 'bg-amber-950 text-amber-300 border border-amber-800' : 'bg-purple-950 text-purple-300 border border-purple-800'))) }}">
+                                    {{ $module->isProtectedSlides() ? 'SLIDE TERPROTEKSI' : strtoupper($module->content_type ?: ($module->isPdf() ? 'PDF' : ($module->isWord() ? 'WORD' : ($module->isPpt() ? 'PPT' : 'DOKUMEN')))) }}
                                 </span>
                                 <span class="text-xs text-[color:var(--muted)] font-mono">{{ $module->formatted_file_size }}</span>
                             </div>
@@ -191,7 +191,50 @@
                 </div>
 
                 <!-- Embedded Document Viewers (Full Size & Large) -->
-                @if($module->isPdf())
+                @if($module->isProtectedSlides())
+                    @php
+                        $readerIdentity = auth()->user()?->email ?: auth()->user()?->name ?: 'Pengguna TalentGroup.id';
+                    @endphp
+                    <div data-protected-slide-viewer class="mb-10 rounded-2xl overflow-hidden border border-[color:var(--line)] bg-slate-950 shadow-2xl">
+                        <div class="sticky top-14 sm:top-16 z-20 px-4 py-3 bg-slate-950/95 backdrop-blur border-b border-slate-800 flex items-center justify-between gap-3 text-xs font-mono text-slate-400">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <i class="fas fa-shield-halved text-emerald-400"></i>
+                                <span class="text-white font-semibold truncate">{{ $module->file_name ?? $module->title }}</span>
+                            </div>
+                            <span class="text-[11px] shrink-0">{{ (int) $module->page_count }} halaman</span>
+                        </div>
+
+                        <div class="p-2 sm:p-4 lg:p-6 space-y-3 sm:space-y-5">
+                            @for($page = 1; $page <= (int) $module->page_count; $page++)
+                                <figure data-protected-slide class="relative aspect-video overflow-hidden rounded-lg sm:rounded-xl border border-slate-800 bg-black shadow-xl select-none">
+                                    <img
+                                        src="{{ route('modules.lesson.page', ['moduleSlug' => $learningModule->slug, 'lessonSlug' => $module->slug, 'page' => $page]) }}"
+                                        alt="Halaman {{ $page }} dari {{ (int) $module->page_count }}"
+                                        class="block h-full w-full object-contain pointer-events-none select-none"
+                                        loading="{{ $page <= 2 ? 'eager' : 'lazy' }}"
+                                        fetchpriority="{{ $page === 1 ? 'high' : 'auto' }}"
+                                        decoding="async"
+                                        draggable="false"
+                                        referrerpolicy="no-referrer"
+                                        style="-webkit-user-drag:none; user-select:none;"
+                                    >
+
+                                    <div aria-hidden="true" class="absolute inset-[-20%] z-10 grid grid-cols-2 sm:grid-cols-3 content-around justify-items-center gap-y-8 rotate-[-22deg] pointer-events-none select-none overflow-hidden">
+                                        @for($mark = 0; $mark < 9; $mark++)
+                                            <span class="text-[8px] sm:text-[11px] font-mono font-black tracking-wide text-white/20 whitespace-nowrap text-center">
+                                                TalentGroup.id<br>{{ $readerIdentity }}
+                                            </span>
+                                        @endfor
+                                    </div>
+
+                                    <figcaption class="absolute bottom-2 right-2 z-20 rounded-md border border-white/15 bg-black/65 px-2 py-1 text-[10px] font-mono text-white/70 pointer-events-none">
+                                        {{ $page }} / {{ (int) $module->page_count }}
+                                    </figcaption>
+                                </figure>
+                            @endfor
+                        </div>
+                    </div>
+                @elseif($module->isPdf())
                     <div class="mb-10 rounded-2xl overflow-hidden border border-[color:var(--line)] bg-[var(--bg)] shadow-2xl">
                         <div class="px-4 py-3 bg-[var(--surface)] border-b border-[color:var(--line)] flex items-center justify-between text-xs font-mono text-[color:var(--muted)]">
                             <div class="flex items-center gap-2.5">

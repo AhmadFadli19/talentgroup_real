@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             ComprehensiveWebDevCoursesSeeder::class,
             FigmaPracticeSeeder::class,
             WebFundamentalsPracticeSeeder::class,
+            TalentGroupHimaUpnvjModuleSeeder::class,
         ]);
     }
 }

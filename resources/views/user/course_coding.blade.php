@@ -869,5 +869,5 @@ function copyCodeBlock(codeId, button) {
 }
 </script>
 
-@include('user.partials.quiz-protection')
+@include('user.partials.quiz-protection', ['protectWholePage' => false])
 @endsection

@@ -8,6 +8,9 @@ use App\Models\ReferralCode;
 use App\Models\ReferralCodeUsage;
 use App\Models\UserModuleAccess;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ModuleController extends Controller
 {
@@ -169,6 +172,65 @@ class ModuleController extends Controller
             'previousModule' => $previousLesson,
             'nextModule' => $nextLesson,
             'isLocked' => $isLocked,
+        ]);
+    }
+
+    /**
+     * Serve one encrypted slide page to an authorized reader.
+     */
+    public function protectedPage($moduleSlug, $lessonSlug, int $page)
+    {
+        $learningModule = ModuleCategory::where('slug', $moduleSlug)->firstOrFail();
+        $lesson = Module::where('category_id', $learningModule->id)
+            ->where('slug', $lessonSlug)
+            ->firstOrFail();
+
+        $user = auth()->user();
+        $isAdmin = $user && method_exists($user, 'isAdmin') && $user->isAdmin();
+
+        if ((!$learningModule->is_active || !$lesson->is_published) && !$isAdmin) {
+            abort(404);
+        }
+
+        if (!$lesson->isProtectedSlides()) {
+            abort(404);
+        }
+
+        if (!$learningModule->hasAccessForUser($user) || !$lesson->hasAccessForUser($user)) {
+            abort(403, 'Anda tidak memiliki akses ke materi ini.');
+        }
+
+        if ($page < 1 || $page > (int) $lesson->page_count) {
+            abort(404);
+        }
+
+        $encryptedPath = rtrim($lesson->file_path, '/')
+            . '/page-' . str_pad((string) $page, 3, '0', STR_PAD_LEFT) . '.enc';
+
+        if (!Storage::disk('secure')->exists($encryptedPath)) {
+            abort(404);
+        }
+
+        try {
+            $image = Crypt::decryptString(Storage::disk('secure')->get($encryptedPath));
+        } catch (\Throwable $exception) {
+            Log::error('Protected module page could not be decrypted.', [
+                'module_id' => $lesson->id,
+                'page' => $page,
+                'exception' => $exception,
+            ]);
+
+            abort(500, 'Materi gagal dibuka. Silakan hubungi administrator.');
+        }
+
+        return response($image, 200, [
+            'Content-Type' => 'image/webp',
+            'Content-Disposition' => 'inline; filename="materi-page-' . $page . '.webp"',
+            'Cache-Control' => 'private, no-store, no-cache, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+            'X-Content-Type-Options' => 'nosniff',
+            'X-Robots-Tag' => 'noindex, nofollow, noarchive, nosnippet',
         ]);
     }
 
