@@ -25,6 +25,7 @@ use App\Http\Controllers\PrototypeHostController;
 use App\Http\Controllers\User\PrototypeController as UserPrototypeController;
 use App\Http\Controllers\Admin\PrototypeAdminController as AdminPrototypeController;
 use App\Http\Controllers\Admin\PracticeQuestionController as AdminPracticeQuestionController;
+use App\Http\Controllers\Admin\StudentController as AdminStudentController;
 
 // ============================================
 // PUBLIC ROUTES
@@ -107,6 +108,11 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
 
     // Practice Question Management
     Route::get('/practice-questions', [AdminPracticeQuestionController::class, 'index'])->name('admin.practice-questions.index');
+
+    // Student Management & Reports
+    Route::get('/students', [AdminStudentController::class, 'index'])->name('admin.students.index');
+    Route::get('/students/export/excel', [AdminStudentController::class, 'exportExcel'])->name('admin.students.export.excel');
+    Route::get('/students/export/pdf', [AdminStudentController::class, 'exportPdf'])->name('admin.students.export.pdf');
 
     // Course Management
     Route::resource('courses', AdminCourseController::class)->names('admin.courses');

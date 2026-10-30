@@ -38,7 +38,7 @@
 
     <!-- STATS METRICS -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
-        <div class="cyber-card p-3.5 sm:p-5 bg-white border border-[var(--border)] shadow-sm rounded-2xl flex flex-col justify-between hover:border-[var(--blue)] transition-all">
+        <a href="{{ route('admin.students.index') }}" class="cyber-card p-3.5 sm:p-5 bg-white border border-[var(--border)] shadow-sm rounded-2xl flex flex-col justify-between hover:border-[var(--blue)] transition-all">
             <div class="flex justify-between items-start mb-2 sm:mb-3">
                 <div class="min-w-0 pr-1">
                     <span class="text-[10px] sm:text-xs font-bold text-[var(--muted)] uppercase tracking-wider block mb-0.5 sm:mb-1 truncate">Total Siswa</span>
@@ -51,7 +51,7 @@
             <div class="text-[10px] sm:text-[11px] font-bold text-emerald-700 flex items-center gap-1 mt-1 truncate">
                 <i class="fas fa-check-circle text-[10px]"></i> Terdaftar di database
             </div>
-        </div>
+        </a>
 
         <div class="cyber-card p-3.5 sm:p-5 bg-white border border-[var(--border)] shadow-sm rounded-2xl flex flex-col justify-between hover:border-purple-400 transition-all">
             <div class="flex justify-between items-start mb-2 sm:mb-3">
@@ -113,6 +113,11 @@
             <a href="{{ route('admin.courses.index') }}" class="btn btn-outline text-xs justify-start py-2.5">
                 <i class="fas fa-layer-group text-[var(--blue)] mr-1"></i> Kelola Daftar Kursus
             </a>
+            <a href="{{ route('admin.students.index') }}" class="btn btn-outline text-xs justify-start py-2.5">
+                <i class="fas fa-user-graduate text-[var(--blue)] mr-1"></i>
+                Lihat &amp; Ekspor Data Siswa
+                <span class="ml-auto px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-[10px] font-mono text-[var(--blue)]">{{ number_format($stats['total_users']) }}</span>
+            </a>
             <a href="{{ route('admin.practice-questions.index') }}" class="btn btn-outline text-xs justify-start py-2.5">
                 <i class="fas fa-clipboard-list text-[var(--blue)] mr-1"></i>
                 Kelola Latihan Soal
@@ -135,7 +140,7 @@
                 <h2 class="text-xs font-bold uppercase tracking-wider text-[var(--ink)] flex items-center gap-2">
                     <i class="fas fa-users text-[var(--blue)]"></i> Siswa Terdaftar Baru
                 </h2>
-                <span class="text-[10px] text-[var(--muted)] font-mono font-bold">{{ count($stats['recent_users']) }} Data</span>
+                <a href="{{ route('admin.students.index') }}" class="text-[10px] font-bold text-[var(--blue)] hover:underline">Semua →</a>
             </div>
             <div class="p-4 flex-1 flex flex-col gap-2 overflow-y-auto max-h-[300px]">
                 @forelse($stats['recent_users'] as $user)

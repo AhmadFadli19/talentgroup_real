@@ -947,6 +947,9 @@
                 <a href="{{ route('admin.dashboard') }}" class="nav-menu-link {{ Route::is('admin.dashboard') ? 'active' : '' }}">
                     <i class="fas fa-chart-line w-5 text-sm text-[var(--blue)]"></i> Dashboard Admin
                 </a>
+                <a href="{{ route('admin.students.index') }}" class="nav-menu-link {{ Route::is('admin.students.*') ? 'active' : '' }}">
+                    <i class="fas fa-user-graduate w-5 text-sm text-[var(--blue)]"></i> Data Siswa
+                </a>
                 <a href="{{ route('admin.courses.index') }}" class="nav-menu-link {{ Route::is('admin.courses.*') ? 'active' : '' }}">
                     <i class="fas fa-layer-group w-5 text-sm text-[var(--blue)]"></i> Kelola Kursus
                 </a>
